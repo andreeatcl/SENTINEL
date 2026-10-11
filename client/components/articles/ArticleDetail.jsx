@@ -3,6 +3,7 @@ import { timeAgo, formatDate } from "../../utils/newsApi";
 import { getDomain } from "../../utils/url";
 import { favoriteFromArticle } from "../../utils/favorites";
 import FavoriteButton from "../favorites/FavoriteButton";
+import NoteSection from "../notes/NoteSection";
 import TrustBadge from "../TrustBadge";
 import { DetailSection, SourceLinkFooter } from "../events/EventDetail";
 import Modal from "../ui/Modal";
@@ -21,6 +22,7 @@ export default function ArticleDetail({ article, onClose }) {
   const sourceName = article.source?.name || domain;
   const hasNonEnglish =
     article.language && !/^english$/i.test(article.language);
+  const favorite = favoriteFromArticle(article);
 
   return (
     <Modal
@@ -34,7 +36,7 @@ export default function ArticleDetail({ article, onClose }) {
           <span>{sourceName}</span>
         </>
       }
-      headerActions={<FavoriteButton favorite={favoriteFromArticle(article)} />}
+      headerActions={<FavoriteButton favorite={favorite} />}
     >
       {/* Image, when the article has one */}
       {article.urlToImage && !imageFailed && (
@@ -100,6 +102,8 @@ export default function ArticleDetail({ article, onClose }) {
             : "Curated English-language source"}
         </p>
       </DetailSection>
+
+      {article.url && <NoteSection item={favorite} />}
 
       {/* Source link — the "learn more" step */}
       {article.url && (

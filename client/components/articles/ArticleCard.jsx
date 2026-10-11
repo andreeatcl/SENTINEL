@@ -2,6 +2,7 @@ import { timeAgo } from "../../utils/newsApi";
 import { getDomain } from "../../utils/url";
 import { favoriteFromArticle } from "../../utils/favorites";
 import FavoriteButton from "../favorites/FavoriteButton";
+import NoteMarker from "../notes/NoteMarker";
 import TrustBadge from "../TrustBadge";
 import Badge from "../ui/Badge";
 
@@ -48,6 +49,7 @@ export default function ArticleCard({ article, onClick }) {
             </span>
           )}
           <TrustBadge trust={article._trustLabel} />
+          <NoteMarker url={article.url} />
           {article._provider === "gdelt" && <Badge>GDELT</Badge>}
           {article.language && !/^english$/i.test(article.language) && (
             <Badge>{article.language}</Badge>

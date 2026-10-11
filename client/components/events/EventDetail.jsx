@@ -13,6 +13,7 @@ import {
 } from "../../utils/eventDisplay";
 import { favoriteFromEvent } from "../../utils/favorites";
 import FavoriteButton from "../favorites/FavoriteButton";
+import NoteSection from "../notes/NoteSection";
 import TrustBadge from "../TrustBadge";
 import Modal from "../ui/Modal";
 import Button from "../ui/Button";
@@ -136,6 +137,8 @@ export default function EventDetail({ event, onClose }) {
         </p>
         <p className="text-xs text-carbon-500 mt-1">{coverageCaption(event)}</p>
       </DetailSection>
+
+      {favorite && <NoteSection item={favorite} />}
 
       {event.sourceUrl && (
         <SourceLinkFooter href={event.sourceUrl}>

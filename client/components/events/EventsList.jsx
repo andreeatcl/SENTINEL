@@ -7,6 +7,7 @@ import {
   MetaDivider,
 } from "../articles/ArticleCard";
 import FavoriteButton from "../favorites/FavoriteButton";
+import NoteMarker from "../notes/NoteMarker";
 import TrustBadge from "../TrustBadge";
 import EmptyState from "../ui/EmptyState";
 import {
@@ -62,6 +63,7 @@ function EventRow({ event, onClick }) {
             </span>
           )}
           <TrustBadge trust={event._trustLabel} />
+          <NoteMarker url={event.sourceUrl} />
         </div>
 
         <p className={ROW_TITLE_CLASS}>{headline}</p>

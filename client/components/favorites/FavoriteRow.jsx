@@ -8,6 +8,7 @@ import {
 } from "../../utils/eventTone";
 import { ROW_META_CLASS, MetaDivider } from "../articles/ArticleCard";
 import TrustBadge from "../TrustBadge";
+import NoteMarker from "../notes/NoteMarker";
 import Badge from "../ui/Badge";
 import { StarIcon, FolderIcon } from "../ui/icons";
 
@@ -69,6 +70,7 @@ export default function FavoriteRow({
               {item.sourceName || "Unknown source"}
             </span>
             <TrustBadge trust={item.trust} />
+            <NoteMarker url={item.url} />
             {isEvent && <Badge>Event</Badge>}
           </div>
 
