@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import WorldMap from "./components/WorldMap";
 import CountryPicker from "./components/CountryPicker";
 import TopBar from "./components/topbar/TopBar";
@@ -8,6 +8,7 @@ import ApiKeysModal from "./components/topbar/ApiKeysModal";
 import FavoritesPanel from "./components/favorites/FavoritesPanel";
 import SavedSearchesPanel from "./components/topbar/SavedSearchesPanel";
 import DataBackupModal from "./components/topbar/DataBackupModal";
+import NotesOverview from "./components/notes/NotesOverview";
 import EventDetail from "./components/events/EventDetail";
 import ArticleDetail from "./components/articles/ArticleDetail";
 import { FavoriteContext } from "./components/favorites/FavoriteButton";
@@ -21,6 +22,8 @@ export default function App() {
   const [showFavorites, setShowFavorites] = useState(false);
   const [showSavedSearches, setShowSavedSearches] = useState(false);
   const [showBackup, setShowBackup] = useState(false);
+  const [showNotes, setShowNotes] = useState(false);
+  const [panelTab, setPanelTab] = useState("notes");
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [selectedArticle, setSelectedArticle] = useState(null);
 
@@ -64,6 +67,19 @@ export default function App() {
   } = useAppControls();
 
   const { credits, refreshCredits } = useApiCredits(meta);
+
+  const selectCountry = useCallback(
+    (countryName) => {
+      setPanelTab("notes");
+      handleCountryClick(countryName);
+    },
+    [handleCountryClick],
+  );
+
+  function openCountryNotes(countryName) {
+    setShowNotes(false);
+    selectCountry(countryName);
+  }
 
   // a country selection opens the panel
   // Events tab loads immediately
@@ -119,6 +135,11 @@ export default function App() {
           isOpen={showBackup}
           onClose={() => setShowBackup(false)}
         />
+        <NotesOverview
+          isOpen={showNotes}
+          onClose={() => setShowNotes(false)}
+          onOpenCountry={openCountryNotes}
+        />
         <EventDetail
           event={selectedEvent}
           onClose={() => setSelectedEvent(null)}
@@ -138,7 +159,7 @@ export default function App() {
         >
           <WorldMap
             selectedCountry={selectedCountry}
-            onCountryClick={handleCountryClick}
+            onCountryClick={selectCountry}
             events={events}
             onEventClick={setSelectedEvent}
           />
@@ -154,6 +175,7 @@ export default function App() {
           onSourcesClick={() => setShowSourcesModal(true)}
           onKeysClick={() => setShowKeysModal(true)}
           onFavoritesClick={() => setShowFavorites(true)}
+          onNotesClick={() => setShowNotes(true)}
           onSavedSearchesClick={() => setShowSavedSearches(true)}
           onBackupClick={() => setShowBackup(true)}
         />
@@ -195,6 +217,8 @@ export default function App() {
             onSelectEvent={setSelectedEvent}
             onSelectArticle={setSelectedArticle}
             onOpenArticlesTab={handleOpenArticlesTab}
+            activeTab={panelTab}
+            onTabChange={setPanelTab}
           />
         )}
 
@@ -209,10 +233,7 @@ export default function App() {
                 aria-hidden
                 className="hidden sm:block w-px h-3.5 bg-carbon-700"
               />
-              <CountryPicker
-                value={selectedCountry}
-                onSelect={handleCountryClick}
-              />
+              <CountryPicker value={selectedCountry} onSelect={selectCountry} />
             </div>
           </div>
         )}

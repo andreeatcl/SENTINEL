@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
 import PanelHeader from "./PanelHeader";
 import EventsTab from "../events/EventsTab";
 import ArticlesTab from "../articles/ArticlesTab";
+import CountryNotesTab from "../notes/CountryNotesTab";
 
 export default function MonitorPanel({
   articles,
@@ -38,19 +38,16 @@ export default function MonitorPanel({
   onSelectEvent,
   onSelectArticle,
   onOpenArticlesTab,
+  activeTab,
+  onTabChange,
 }) {
-  const [activeTab, setActiveTab] = useState("events");
-
-  useEffect(() => {
-    setActiveTab("events");
-  }, [selectedCountry]);
-
   function handleTabClick(tabId) {
-    setActiveTab(tabId);
+    onTabChange(tabId);
     if (tabId === "articles") onOpenArticlesTab();
   }
 
   const showEventsTab = activeTab === "events" && !!selectedCountry;
+  const showNotesTab = activeTab === "notes" && !!selectedCountry;
 
   return (
     <div className="panel-enter absolute z-[1100] inset-x-3 md:inset-x-[10%] top-16 bottom-3 flex flex-col bg-carbon-900 border border-carbon-800 rounded-xl shadow-panel overflow-hidden">
@@ -65,7 +62,9 @@ export default function MonitorPanel({
         onClose={onClose}
       />
 
-      {showEventsTab ? (
+      {showNotesTab ? (
+        <CountryNotesTab key={selectedCountry} country={selectedCountry} />
+      ) : showEventsTab ? (
         <EventsTab
           selectedCountry={selectedCountry}
           events={events}

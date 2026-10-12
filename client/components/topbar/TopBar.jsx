@@ -58,6 +58,7 @@ export default function TopBar({
   onSourcesClick,
   onKeysClick,
   onFavoritesClick,
+  onNotesClick,
   onSavedSearchesClick,
   onBackupClick,
 }) {
@@ -75,6 +76,7 @@ export default function TopBar({
   const navItems = [
     { label: "Sources", onClick: onSourcesClick },
     { label: "Favorites", onClick: onFavoritesClick },
+    { label: "Notes", onClick: onNotesClick },
     { label: "Saved", onClick: onSavedSearchesClick },
     { label: "Backup", onClick: onBackupClick },
     { label: "API keys", onClick: onKeysClick },

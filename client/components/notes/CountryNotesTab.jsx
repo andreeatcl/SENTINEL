@@ -1,0 +1,203 @@
+import { useMemo, useRef, useState } from "react";
+import {
+  addCountryEntry,
+  updateCountryEntry,
+  getFavorites,
+} from "../../utils/storage";
+import { formatDate } from "../../utils/newsApi";
+import { useCountryEntries, useNotes } from "../../hooks/useNotes";
+import FavoriteDetail from "../favorites/FavoriteDetail";
+import Button, { IconButton } from "../ui/Button";
+import { Eyebrow } from "../ui/Field";
+import { PlusIcon } from "../ui/icons";
+import NoteEditor from "./NoteEditor";
+import NoteItemRow from "./NoteItemRow";
+
+function entryDate(value) {
+  const date = new Date(value);
+  const time = date.toLocaleTimeString(undefined, {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+  return `${formatDate(value, { withYear: true })}, ${time}`;
+}
+
+function EntryEditor({ country, entry, onCreated, onDone }) {
+  const [draft, setDraft] = useState(entry?.text ?? "");
+  const idRef = useRef(entry?.id ?? null);
+
+  function save(text) {
+    if (!text.trim()) return true;
+    if (idRef.current) {
+      return updateCountryEntry(country, idRef.current, text);
+    }
+    const created = addCountryEntry(country, text);
+    if (!created) return false;
+    idRef.current = created.id;
+    onCreated?.(created.id);
+    return true;
+  }
+
+  function handleDone() {
+    if (!draft.trim() && idRef.current) {
+      updateCountryEntry(country, idRef.current, "");
+    }
+    onDone();
+  }
+
+  return (
+    <NoteEditor
+      value={draft}
+      onChange={setDraft}
+      save={save}
+      onDone={handleDone}
+      placeholder={`What's happening in ${country}, what to watch…`}
+    />
+  );
+}
+
+function Entry({ entry, onEdit }) {
+  return (
+    <div className="px-4 py-3.5 border-b border-carbon-800">
+      <div className="flex items-center justify-between gap-3 mb-1.5">
+        <p className="text-xs text-carbon-400">{entryDate(entry.createdAt)}</p>
+        <Button size="sm" variant="ghost" onClick={onEdit} className="-mr-2">
+          Edit
+        </Button>
+      </div>
+      <p className="text-sm text-carbon-200 leading-relaxed whitespace-pre-wrap break-words">
+        {entry.text}
+      </p>
+    </div>
+  );
+}
+
+function SectionHeader({ label, count, action }) {
+  return (
+    <div className="flex items-center justify-between gap-2 px-4 pt-5 pb-1.5 border-b border-carbon-800">
+      <Eyebrow>{label}</Eyebrow>
+      <div className="flex items-center gap-1.5">
+        <span className="text-2xs text-carbon-500">{count}</span>
+        {action}
+      </div>
+    </div>
+  );
+}
+
+export default function CountryNotesTab({ country }) {
+  const entries = useCountryEntries(country);
+  const notes = useNotes();
+  const [favorites, setFavorites] = useState(getFavorites);
+  const [editingId, setEditingId] = useState(null);
+  const [newEntryId, setNewEntryId] = useState(null);
+  const [openItem, setOpenItem] = useState(null);
+
+  const countryNotes = useMemo(
+    () => notes.filter((note) => note.context?.country === country),
+    [notes, country],
+  );
+  const countryFavorites = useMemo(
+    () => favorites.filter((fav) => fav.context?.country === country),
+    [favorites, country],
+  );
+
+  function startNew() {
+    setNewEntryId(null);
+    setEditingId("new");
+  }
+
+  function stopEditing() {
+    setEditingId(null);
+    setNewEntryId(null);
+  }
+
+  function closeDetail() {
+    setOpenItem(null);
+    setFavorites(getFavorites());
+  }
+
+  const listedEntries =
+    editingId === "new" && newEntryId
+      ? entries.filter((entry) => entry.id !== newEntryId)
+      : entries;
+
+  return (
+    <div className="flex-1 overflow-y-auto">
+      <SectionHeader
+        label="Your entries"
+        count={entries.length}
+        action={
+          <IconButton
+            size="sm"
+            label="New entry"
+            onClick={startNew}
+            disabled={editingId === "new"}
+            className="-my-1.5 -mr-1.5 disabled:opacity-40 disabled:pointer-events-none"
+          >
+            <PlusIcon className="w-4 h-4" />
+          </IconButton>
+        }
+      />
+
+      {editingId === "new" && (
+        <div className="px-4 py-3.5 border-b border-carbon-800">
+          <EntryEditor
+            country={country}
+            entry={null}
+            onCreated={setNewEntryId}
+            onDone={stopEditing}
+          />
+        </div>
+      )}
+
+      {listedEntries.map((entry) =>
+        editingId === entry.id ? (
+          <div
+            key={entry.id}
+            className="px-4 py-3.5 border-b border-carbon-800"
+          >
+            <EntryEditor country={country} entry={entry} onDone={stopEditing} />
+          </div>
+        ) : (
+          <Entry
+            key={entry.id}
+            entry={entry}
+            onEdit={() => setEditingId(entry.id)}
+          />
+        ),
+      )}
+
+      {entries.length === 0 && editingId !== "new" && (
+        <p className="px-4 py-4 text-xs text-carbon-500 leading-relaxed">
+          Dated notes about {country}, newest first. Items you note or favorite
+          while browsing {country} are listed below them.
+        </p>
+      )}
+
+      {countryNotes.length > 0 && (
+        <>
+          <SectionHeader label="Has notes" count={countryNotes.length} />
+          {countryNotes.map((note) => (
+            <NoteItemRow
+              key={note.url}
+              item={note}
+              excerpt={note.text}
+              onOpen={setOpenItem}
+            />
+          ))}
+        </>
+      )}
+
+      {countryFavorites.length > 0 && (
+        <>
+          <SectionHeader label="Favorited" count={countryFavorites.length} />
+          {countryFavorites.map((fav) => (
+            <NoteItemRow key={fav.url} item={fav} onOpen={setOpenItem} />
+          ))}
+        </>
+      )}
+
+      {openItem && <FavoriteDetail item={openItem} onClose={closeDetail} />}
+    </div>
+  );
+}

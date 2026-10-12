@@ -16,7 +16,7 @@ function matches(country, needle) {
   );
 }
 
-function CountryMark({ code }) {
+export function CountryMark({ code }) {
   const flagSrc = getFlagSrc(code);
   if (flagSrc) {
     return (

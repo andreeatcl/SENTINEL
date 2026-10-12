@@ -1,7 +1,12 @@
 import { STORAGE_KEYS, read, write } from "./core";
 import { getFavorites, getFavoriteGroups } from "./favorites";
 import { getSavedSearches } from "./searches";
-import { getNotes, replaceNotes } from "./notes";
+import {
+  getNotes,
+  replaceNotes,
+  getCountryNotes,
+  replaceCountryNotes,
+} from "./notes";
 
 const DEFAULT_API_KEYS = { primary: "", backup: "", lastGood: "primary" };
 
@@ -27,6 +32,7 @@ export function exportData() {
     favoriteGroups: getFavoriteGroups(),
     savedSearches: getSavedSearches(),
     notes: getNotes(),
+    countryNotes: getCountryNotes(),
   };
 }
 
@@ -43,4 +49,10 @@ export function importData(data) {
   if (Array.isArray(data.savedSearches))
     write(STORAGE_KEYS.savedSearches, data.savedSearches);
   if (Array.isArray(data.notes)) replaceNotes(data.notes);
+  if (
+    data.countryNotes &&
+    typeof data.countryNotes === "object" &&
+    !Array.isArray(data.countryNotes)
+  )
+    replaceCountryNotes(data.countryNotes);
 }

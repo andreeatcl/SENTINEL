@@ -8,6 +8,7 @@ export const STORAGE_KEYS = {
   favoriteGroups: "sentinel.favoriteGroups",
   savedSearches: "sentinel.savedSearches",
   notes: "sentinel.notes",
+  countryNotes: "sentinel.countryNotes",
 };
 
 const cache = new Map();

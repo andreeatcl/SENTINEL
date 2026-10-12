@@ -3,6 +3,7 @@ import Button, { IconButton } from "../ui/Button";
 import { CheckIcon, CloseIcon } from "../ui/icons";
 
 const TABS = [
+  { id: "notes", label: "Notes" },
   { id: "events", label: "Events" },
   { id: "articles", label: "Articles" },
 ];

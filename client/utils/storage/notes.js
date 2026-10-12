@@ -14,9 +14,11 @@ export function getNote(url) {
   return getNotes().find((note) => note.url === url) || null;
 }
 
+const NOTE_KEYS = [STORAGE_KEYS.notes, STORAGE_KEYS.countryNotes];
+
 function onNotesStorage(e) {
-  if (e.key !== STORAGE_KEYS.notes && e.key !== null) return;
-  forget(STORAGE_KEYS.notes);
+  if (e.key !== null && !NOTE_KEYS.includes(e.key)) return;
+  NOTE_KEYS.forEach(forget);
   notesChanged();
 }
 
@@ -67,6 +69,54 @@ export function saveNote(item, text, context = null) {
 
 export function replaceNotes(notes) {
   const ok = write(STORAGE_KEYS.notes, notes);
+  notesChanged();
+  return ok;
+}
+
+// { [country]: [ { id, text, createdAt, updatedAt } ] }
+const NO_ENTRIES = [];
+
+export function getCountryNotes() {
+  return read(STORAGE_KEYS.countryNotes, {});
+}
+
+export function getCountryEntries(country) {
+  return getCountryNotes()[country] || NO_ENTRIES;
+}
+
+function writeCountryEntries(country, entries) {
+  const { [country]: _, ...others } = getCountryNotes();
+  const next = entries.length ? { ...others, [country]: entries } : others;
+  const ok = write(STORAGE_KEYS.countryNotes, next);
+  notesChanged();
+  return ok;
+}
+
+export function addCountryEntry(country, text) {
+  if (!country || !text.trim()) return null;
+  const now = new Date().toISOString();
+  const entry = { id: `${Date.now()}`, text, createdAt: now, updatedAt: now };
+  const ok = writeCountryEntries(country, [
+    entry,
+    ...getCountryEntries(country),
+  ]);
+  return ok ? entry : null;
+}
+
+export function updateCountryEntry(country, id, text) {
+  const entries = getCountryEntries(country);
+  const next = text.trim()
+    ? entries.map((entry) =>
+        entry.id === id
+          ? { ...entry, text, updatedAt: new Date().toISOString() }
+          : entry,
+      )
+    : entries.filter((entry) => entry.id !== id);
+  return writeCountryEntries(country, next);
+}
+
+export function replaceCountryNotes(countryNotes) {
+  const ok = write(STORAGE_KEYS.countryNotes, countryNotes);
   notesChanged();
   return ok;
 }

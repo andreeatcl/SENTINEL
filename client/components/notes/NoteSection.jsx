@@ -1,105 +1,36 @@
-import { useContext, useEffect, useRef, useState } from "react";
+import { useContext, useRef, useState } from "react";
 import { saveNote } from "../../utils/storage";
-import { timeAgo } from "../../utils/newsApi";
 import { useNote } from "../../hooks/useNotes";
 import { FavoriteContext } from "../favorites/FavoriteButton";
 import { DetailSection } from "../events/EventDetail";
 import Button from "../ui/Button";
-import { FIELD } from "../ui/Field";
 import { NoteIcon } from "../ui/icons";
-
-// instead of saving the note after every keystroke,
-// saving is done every 2 seconds or 0.5s after a pause in typing
-const SAVE_DELAY_MS = 500;
-const MAX_WAIT_MS = 2000;
+import NoteEditor from "./NoteEditor";
 
 export default function NoteSection({ item }) {
   const context = useContext(FavoriteContext);
   const note = useNote(item.url);
   const [draft, setDraft] = useState(null);
-  const [saveFailed, setSaveFailed] = useState(false);
-  const editing = draft !== null;
 
-  const pendingRef = useRef(null);
-  const delayTimerRef = useRef(null);
-  const maxWaitTimerRef = useRef(null);
-  // latest item/context for flushes from timers, listeners and unmount
+  // latest item/context for saves that flush after a re-render or unmount
   const latestRef = useRef({ item, context });
   latestRef.current = { item, context };
 
-  function flush() {
-    clearTimeout(delayTimerRef.current);
-    clearTimeout(maxWaitTimerRef.current);
-    delayTimerRef.current = null;
-    maxWaitTimerRef.current = null;
-    if (pendingRef.current === null) return;
-    const text = pendingRef.current;
-    pendingRef.current = null;
+  function save(text) {
     const { item, context } = latestRef.current;
-    setSaveFailed(!saveNote(item, text, context));
-  }
-  const flushRef = useRef(flush);
-  flushRef.current = flush;
-
-  // save on unmount (modal closed, e.g. with Escape)
-  useEffect(() => () => flushRef.current(), []);
-
-  useEffect(() => {
-    if (!editing) return;
-    function onHide() {
-      if (document.visibilityState === "hidden") flushRef.current();
-    }
-    function onPageHide() {
-      flushRef.current();
-    }
-    document.addEventListener("visibilitychange", onHide);
-    window.addEventListener("pagehide", onPageHide);
-    return () => {
-      document.removeEventListener("visibilitychange", onHide);
-      window.removeEventListener("pagehide", onPageHide);
-    };
-  }, [editing]);
-
-  function handleChange(e) {
-    setDraft(e.target.value);
-    pendingRef.current = e.target.value;
-    clearTimeout(delayTimerRef.current);
-    delayTimerRef.current = setTimeout(flush, SAVE_DELAY_MS);
-    if (!maxWaitTimerRef.current) {
-      maxWaitTimerRef.current = setTimeout(flush, MAX_WAIT_MS);
-    }
+    return saveNote(item, text, context);
   }
 
-  function handleDone() {
-    flush();
-    setDraft(null);
-  }
-
-  if (editing) {
+  if (draft !== null) {
     return (
       <DetailSection label="Your note">
-        <textarea
-          autoFocus
+        <NoteEditor
           value={draft}
-          onChange={handleChange}
-          rows={5}
+          onChange={setDraft}
+          save={save}
+          onDone={() => setDraft(null)}
           placeholder="Why this matters, what to follow up on…"
-          className={`${FIELD} w-full px-3 py-2 text-sm leading-relaxed resize-y`}
         />
-        <div className="flex items-center justify-between gap-3 mt-2">
-          <p
-            className={`text-xs ${saveFailed ? "text-signal-red" : "text-carbon-500"}`}
-          >
-            {saveFailed
-              ? "Couldn't save — browser storage is full or unavailable."
-              : draft.trim()
-                ? "Saves automatically"
-                : "Empty notes are removed"}
-          </p>
-          <Button size="sm" onClick={handleDone}>
-            Done
-          </Button>
-        </div>
       </DetailSection>
     );
   }
@@ -125,10 +56,7 @@ export default function NoteSection({ item }) {
       <p className="text-sm text-carbon-200 leading-relaxed whitespace-pre-wrap break-words">
         {note.text}
       </p>
-      <div className="flex items-center justify-between gap-3 mt-2">
-        <p className="text-xs text-carbon-500" title={note.updatedAt}>
-          Edited {timeAgo(note.updatedAt)}
-        </p>
+      <div className="flex justify-end mt-2">
         <Button size="sm" onClick={() => setDraft(note.text)}>
           Edit
         </Button>
