@@ -1,3 +1,4 @@
+import { useRef } from "react";
 import { useAutosave } from "../../hooks/useAutosave";
 import Button from "../ui/Button";
 import { FIELD } from "../ui/Field";
@@ -5,16 +6,28 @@ import { FIELD } from "../ui/Field";
 export default function NoteEditor({
   value,
   onChange,
+  title,
+  onTitleChange,
   save,
   onDone,
   placeholder,
   rows = 5,
 }) {
-  const { queue, flush, saveFailed } = useAutosave(save, true);
+  const hasTitle = onTitleChange !== undefined;
+  const textRef = useRef(null);
+  const { queue, flush, saveFailed } = useAutosave(
+    (next) => save(next.text, next.title),
+    true,
+  );
 
   function handleChange(e) {
     onChange(e.target.value);
-    queue(e.target.value);
+    queue({ text: e.target.value, title });
+  }
+
+  function handleTitleChange(e) {
+    onTitleChange(e.target.value);
+    queue({ text: value, title: e.target.value });
   }
 
   function handleDone() {
@@ -29,10 +42,33 @@ export default function NoteEditor({
     }
   }
 
+  function handleTitleKeyDown(e) {
+    if (e.key === "Enter" && !e.ctrlKey && !e.metaKey) {
+      e.preventDefault();
+      textRef.current?.focus();
+    } else {
+      handleKeyDown(e);
+    }
+  }
+
+  const isEmpty = !value.trim() && !(title ?? "").trim();
+  const focusTitle = hasTitle && isEmpty;
+
   return (
     <>
+      {hasTitle && (
+        <input
+          autoFocus={focusTitle}
+          value={title}
+          onChange={handleTitleChange}
+          onKeyDown={handleTitleKeyDown}
+          placeholder="Title (optional)"
+          className={`${FIELD} w-full px-3 py-2 mb-2 text-sm font-medium`}
+        />
+      )}
       <textarea
-        autoFocus
+        ref={textRef}
+        autoFocus={!focusTitle}
         value={value}
         onChange={handleChange}
         onKeyDown={handleKeyDown}
@@ -46,9 +82,9 @@ export default function NoteEditor({
         >
           {saveFailed
             ? "Couldn't save — browser storage is full or unavailable."
-            : value.trim()
-              ? "Saves automatically"
-              : "Empty notes are removed"}
+            : isEmpty
+              ? "Empty notes are removed"
+              : "Saves automatically"}
         </p>
         <Button size="sm" onClick={handleDone} title="Ctrl+Enter">
           Done

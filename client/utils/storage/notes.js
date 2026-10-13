@@ -73,7 +73,7 @@ export function replaceNotes(notes) {
   return ok;
 }
 
-// { [country]: [ { id, text, createdAt, updatedAt } ] }
+// { [country]: [ { id, title, text, createdAt, updatedAt } ] }
 const NO_ENTRIES = [];
 
 export function getCountryNotes() {
@@ -92,10 +92,20 @@ function writeCountryEntries(country, entries) {
   return ok;
 }
 
-export function addCountryEntry(country, text) {
-  if (!country || !text.trim()) return null;
+function isBlank({ title = "", text = "" }) {
+  return !title.trim() && !text.trim();
+}
+
+export function addCountryEntry(country, { title = "", text = "" }, id) {
+  if (!country || isBlank({ title, text })) return null;
   const now = new Date().toISOString();
-  const entry = { id: `${Date.now()}`, text, createdAt: now, updatedAt: now };
+  const entry = {
+    id: id ?? `${Date.now()}`,
+    title,
+    text,
+    createdAt: now,
+    updatedAt: now,
+  };
   const ok = writeCountryEntries(country, [
     entry,
     ...getCountryEntries(country),
@@ -103,15 +113,15 @@ export function addCountryEntry(country, text) {
   return ok ? entry : null;
 }
 
-export function updateCountryEntry(country, id, text) {
+export function updateCountryEntry(country, id, { title = "", text = "" }) {
   const entries = getCountryEntries(country);
-  const next = text.trim()
-    ? entries.map((entry) =>
+  const next = isBlank({ title, text })
+    ? entries.filter((entry) => entry.id !== id)
+    : entries.map((entry) =>
         entry.id === id
-          ? { ...entry, text, updatedAt: new Date().toISOString() }
+          ? { ...entry, title, text, updatedAt: new Date().toISOString() }
           : entry,
-      )
-    : entries.filter((entry) => entry.id !== id);
+      );
   return writeCountryEntries(country, next);
 }
 

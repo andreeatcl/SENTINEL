@@ -22,25 +22,25 @@ function entryDate(value) {
   return `${formatDate(value, { withYear: true })}, ${time}`;
 }
 
-function EntryEditor({ country, entry, onCreated, onDone }) {
+// an attempt at fixing a double saving issue
+function EntryEditor({ country, entry, id, onDone }) {
   const [draft, setDraft] = useState(entry?.text ?? "");
-  const idRef = useRef(entry?.id ?? null);
+  const [title, setTitle] = useState(entry?.title ?? "");
+  const savedRef = useRef(Boolean(entry));
 
-  function save(text) {
-    if (!text.trim()) return true;
-    if (idRef.current) {
-      return updateCountryEntry(country, idRef.current, text);
+  function save(text, title) {
+    if (!text.trim() && !title.trim() && !savedRef.current) return true;
+    if (savedRef.current) {
+      return updateCountryEntry(country, id, { title, text });
     }
-    const created = addCountryEntry(country, text);
-    if (!created) return false;
-    idRef.current = created.id;
-    onCreated?.(created.id);
+    if (!addCountryEntry(country, { title, text }, id)) return false;
+    savedRef.current = true;
     return true;
   }
 
   function handleDone() {
-    if (!draft.trim() && idRef.current) {
-      updateCountryEntry(country, idRef.current, "");
+    if (!draft.trim() && !title.trim() && savedRef.current) {
+      updateCountryEntry(country, id, { title: "", text: "" });
     }
     onDone();
   }
@@ -49,6 +49,8 @@ function EntryEditor({ country, entry, onCreated, onDone }) {
     <NoteEditor
       value={draft}
       onChange={setDraft}
+      title={title}
+      onTitleChange={setTitle}
       save={save}
       onDone={handleDone}
       placeholder={`What's happening in ${country}, what to watch…`}
@@ -65,9 +67,16 @@ function Entry({ entry, onEdit }) {
           Edit
         </Button>
       </div>
-      <p className="text-sm text-carbon-200 leading-relaxed whitespace-pre-wrap break-words">
-        {entry.text}
-      </p>
+      {entry.title && (
+        <p className="text-sm font-semibold text-carbon-100 leading-snug mb-1 break-words">
+          {entry.title}
+        </p>
+      )}
+      {entry.text && (
+        <p className="text-sm text-carbon-200 leading-relaxed whitespace-pre-wrap break-words">
+          {entry.text}
+        </p>
+      )}
     </div>
   );
 }
@@ -102,8 +111,8 @@ export default function CountryNotesTab({ country }) {
   );
 
   function startNew() {
-    setNewEntryId(null);
-    setEditingId("new");
+    setEditingId(null);
+    setNewEntryId(`${Date.now()}`);
   }
 
   function stopEditing() {
@@ -116,10 +125,9 @@ export default function CountryNotesTab({ country }) {
     setFavorites(getFavorites());
   }
 
-  const listedEntries =
-    editingId === "new" && newEntryId
-      ? entries.filter((entry) => entry.id !== newEntryId)
-      : entries;
+  const listedEntries = newEntryId
+    ? entries.filter((entry) => entry.id !== newEntryId)
+    : entries;
 
   return (
     <div className="flex-1 overflow-y-auto">
@@ -131,7 +139,7 @@ export default function CountryNotesTab({ country }) {
             size="sm"
             label="New entry"
             onClick={startNew}
-            disabled={editingId === "new"}
+            disabled={newEntryId !== null}
             className="-my-1.5 -mr-1.5 disabled:opacity-40 disabled:pointer-events-none"
           >
             <PlusIcon className="w-4 h-4" />
@@ -139,12 +147,13 @@ export default function CountryNotesTab({ country }) {
         }
       />
 
-      {editingId === "new" && (
+      {newEntryId && (
         <div className="px-4 py-3.5 border-b border-carbon-800">
           <EntryEditor
+            key={newEntryId}
             country={country}
             entry={null}
-            onCreated={setNewEntryId}
+            id={newEntryId}
             onDone={stopEditing}
           />
         </div>
@@ -156,18 +165,26 @@ export default function CountryNotesTab({ country }) {
             key={entry.id}
             className="px-4 py-3.5 border-b border-carbon-800"
           >
-            <EntryEditor country={country} entry={entry} onDone={stopEditing} />
+            <EntryEditor
+              country={country}
+              entry={entry}
+              id={entry.id}
+              onDone={stopEditing}
+            />
           </div>
         ) : (
           <Entry
             key={entry.id}
             entry={entry}
-            onEdit={() => setEditingId(entry.id)}
+            onEdit={() => {
+              setNewEntryId(null);
+              setEditingId(entry.id);
+            }}
           />
         ),
       )}
 
-      {entries.length === 0 && editingId !== "new" && (
+      {entries.length === 0 && !newEntryId && (
         <p className="px-4 py-4 text-xs text-carbon-500 leading-relaxed">
           Dated notes about {country}, newest first. Items you note or favorite
           while browsing {country} are listed below them.

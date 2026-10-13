@@ -19,9 +19,9 @@ export function useAutosave(save, active) {
     delayTimerRef.current = null;
     maxWaitTimerRef.current = null;
     if (pendingRef.current === null) return;
-    const text = pendingRef.current;
+    const value = pendingRef.current;
     pendingRef.current = null;
-    setSaveFailed(!saveRef.current(text));
+    setSaveFailed(!saveRef.current(value));
   }
   const flushRef = useRef(flush);
   flushRef.current = flush;
@@ -44,8 +44,8 @@ export function useAutosave(save, active) {
     };
   }, [active]);
 
-  function queue(text) {
-    pendingRef.current = text;
+  function queue(value) {
+    pendingRef.current = value;
     clearTimeout(delayTimerRef.current);
     delayTimerRef.current = setTimeout(flush, SAVE_DELAY_MS);
     if (!maxWaitTimerRef.current) {
