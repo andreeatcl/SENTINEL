@@ -23,8 +23,13 @@ export function hasAnyApiKey() {
   return Boolean(primary || backup);
 }
 
+export function getLastBackup() {
+  return read(STORAGE_KEYS.lastBackup, null);
+}
+
 // export/import used to counter Safari's data wipeout
 export function exportData() {
+  write(STORAGE_KEYS.lastBackup, new Date().toISOString());
   return {
     exportedAt: new Date().toISOString(),
     apiKeys: getApiKeys(),

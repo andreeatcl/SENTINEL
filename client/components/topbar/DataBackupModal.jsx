@@ -1,5 +1,11 @@
 import { useRef, useState } from "react";
-import { exportData, importData, getStorageUsage } from "../../utils/storage";
+import {
+  exportData,
+  importData,
+  getStorageUsage,
+  getLastBackup,
+} from "../../utils/storage";
+import { formatDate } from "../../utils/newsApi";
 import Modal from "../ui/Modal";
 import Button from "../ui/Button";
 
@@ -21,18 +27,15 @@ function formatSize(chars) {
   return `${(chars / 1_000_000).toFixed(1)} MB`;
 }
 
-function StorageMeter() {
-  const usage = getStorageUsage();
-  if (!usage) return null;
-  const percent = Math.min(100, Math.round(usage.ratio * 100));
+const BACKUP_DAYS = 7;
+const DAY_MS = 24 * 60 * 60 * 1000;
 
+function Meter({ label, value, title, percent }) {
   return (
-    <div className="pt-3 border-t border-carbon-800">
+    <div>
       <div className="flex items-center justify-between gap-3 text-2xs text-carbon-500">
-        <span>Browser storage</span>
-        <span title="Browsers allow about 5 MB per site">
-          {formatSize(usage.used)} of ~5 MB · {percent}%
-        </span>
+        <span>{label}</span>
+        <span title={title}>{value}</span>
       </div>
       <div className="h-1 mt-1.5 rounded-full bg-carbon-800 overflow-hidden">
         <div
@@ -40,6 +43,44 @@ function StorageMeter() {
           style={{ width: `${Math.max(percent, 1)}%` }}
         />
       </div>
+    </div>
+  );
+}
+
+function backupMeter(lastBackup) {
+  if (!lastBackup) return { value: "Never", percent: 100 };
+  const elapsed = Date.now() - new Date(lastBackup).getTime();
+  const days = Math.floor(elapsed / DAY_MS);
+  return {
+    value: `${formatDate(lastBackup)} · ${
+      days <= BACKUP_DAYS ? `${days} of ${BACKUP_DAYS} days` : `${days} days`
+    }`,
+    percent: Math.min(
+      100,
+      Math.round((elapsed / (BACKUP_DAYS * DAY_MS)) * 100),
+    ),
+  };
+}
+
+function StorageMeters() {
+  const usage = getStorageUsage();
+  if (!usage) return null;
+  const percent = Math.min(100, Math.round(usage.ratio * 100));
+  const lastBackup = getLastBackup();
+
+  return (
+    <div className="pt-3 border-t border-carbon-800 space-y-3">
+      <Meter
+        label="Last backup"
+        title={lastBackup ?? undefined}
+        {...backupMeter(lastBackup)}
+      />
+      <Meter
+        label="Browser storage"
+        title="Browsers allow about 5 MB per site"
+        value={`${formatSize(usage.used)} of ~5 MB · ${percent}%`}
+        percent={percent}
+      />
     </div>
   );
 }
@@ -117,7 +158,7 @@ export default function DataBackupModal({ isOpen, onClose }) {
           </p>
         )}
 
-        {isOpen && <StorageMeter />}
+        {isOpen && <StorageMeters />}
       </div>
     </Modal>
   );

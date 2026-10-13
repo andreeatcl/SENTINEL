@@ -9,6 +9,7 @@ export const STORAGE_KEYS = {
   savedSearches: "sentinel.savedSearches",
   notes: "sentinel.notes",
   countryNotes: "sentinel.countryNotes",
+  lastBackup: "sentinel.lastBackup",
 };
 
 const cache = new Map();
