@@ -12,6 +12,7 @@ import { Eyebrow } from "../ui/Field";
 import { PlusIcon } from "../ui/icons";
 import NoteEditor from "./NoteEditor";
 import NoteItemRow from "./NoteItemRow";
+import ShowMore, { usePaged } from "./ShowMore";
 
 function entryDate(value) {
   const date = new Date(value);
@@ -128,6 +129,9 @@ export default function CountryNotesTab({ country }) {
   const listedEntries = newEntryId
     ? entries.filter((entry) => entry.id !== newEntryId)
     : entries;
+  const pagedEntries = usePaged(listedEntries);
+  const pagedNotes = usePaged(countryNotes);
+  const pagedFavorites = usePaged(countryFavorites);
 
   return (
     <div className="flex-1 overflow-y-auto">
@@ -159,7 +163,7 @@ export default function CountryNotesTab({ country }) {
         </div>
       )}
 
-      {listedEntries.map((entry) =>
+      {pagedEntries.visible.map((entry) =>
         editingId === entry.id ? (
           <div
             key={entry.id}
@@ -183,6 +187,7 @@ export default function CountryNotesTab({ country }) {
           />
         ),
       )}
+      <ShowMore paged={pagedEntries} />
 
       {entries.length === 0 && !newEntryId && (
         <p className="px-4 py-4 text-xs text-carbon-500 leading-relaxed">
@@ -194,7 +199,7 @@ export default function CountryNotesTab({ country }) {
       {countryNotes.length > 0 && (
         <>
           <SectionHeader label="Has notes" count={countryNotes.length} />
-          {countryNotes.map((note) => (
+          {pagedNotes.visible.map((note) => (
             <NoteItemRow
               key={note.url}
               item={note}
@@ -202,15 +207,17 @@ export default function CountryNotesTab({ country }) {
               onOpen={setOpenItem}
             />
           ))}
+          <ShowMore paged={pagedNotes} />
         </>
       )}
 
       {countryFavorites.length > 0 && (
         <>
           <SectionHeader label="Favorited" count={countryFavorites.length} />
-          {countryFavorites.map((fav) => (
+          {pagedFavorites.visible.map((fav) => (
             <NoteItemRow key={fav.url} item={fav} onOpen={setOpenItem} />
           ))}
+          <ShowMore paged={pagedFavorites} />
         </>
       )}
 

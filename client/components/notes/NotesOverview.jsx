@@ -9,6 +9,7 @@ import Modal from "../ui/Modal";
 import EmptyState from "../ui/EmptyState";
 import { Eyebrow } from "../ui/Field";
 import NoteItemRow from "./NoteItemRow";
+import ShowMore, { usePaged } from "./ShowMore";
 
 function plural(n, one, many = `${one}s`) {
   return `${n} ${n === 1 ? one : many}`;
@@ -86,6 +87,8 @@ export default function NotesOverview({ isOpen, onClose, onOpenCountry }) {
     () => [...notes].sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)),
     [notes],
   );
+  const pagedCountries = usePaged(countries, isOpen);
+  const pagedItems = usePaged(items, isOpen);
 
   return (
     <>
@@ -109,7 +112,7 @@ export default function NotesOverview({ isOpen, onClose, onOpenCountry }) {
             {countries.length > 0 && (
               <section>
                 <SectionHeader label="Countries" count={countries.length} />
-                {countries.map((c) => (
+                {pagedCountries.visible.map((c) => (
                   <button
                     key={c.country}
                     type="button"
@@ -138,13 +141,14 @@ export default function NotesOverview({ isOpen, onClose, onOpenCountry }) {
                     </span>
                   </button>
                 ))}
+                <ShowMore paged={pagedCountries} className="px-5" />
               </section>
             )}
 
             {items.length > 0 && (
               <section>
                 <SectionHeader label="Item notes" count={items.length} />
-                {items.map((note) => (
+                {pagedItems.visible.map((note) => (
                   <NoteItemRow
                     key={note.url}
                     item={note}
@@ -153,6 +157,7 @@ export default function NotesOverview({ isOpen, onClose, onOpenCountry }) {
                     onOpen={setOpenItem}
                   />
                 ))}
+                <ShowMore paged={pagedItems} className="px-5" />
               </section>
             )}
           </>
