@@ -1,18 +1,18 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   addCountryEntry,
   updateCountryEntry,
-  getFavorites,
+  markCountryViewed,
 } from "../../utils/storage";
 import { formatDate } from "../../utils/newsApi";
 import { useCountryEntries, useNotes } from "../../hooks/useNotes";
 import FavoriteDetail from "../favorites/FavoriteDetail";
-import Button, { IconButton } from "../ui/Button";
+import { IconButton } from "../ui/Button";
 import { Eyebrow } from "../ui/Field";
 import { PlusIcon } from "../ui/icons";
 import NoteEditor from "./NoteEditor";
-import NoteItemRow from "./NoteItemRow";
-import ShowMore, { usePaged } from "./ShowMore";
+import { NoteItemCard } from "./NoteItemRow";
+import ShowMore, { usePaged, useGridColumns } from "./ShowMore";
 
 function entryDate(value) {
   const date = new Date(value);
@@ -59,28 +59,39 @@ function EntryEditor({ country, entry, id, onDone }) {
   );
 }
 
-function Entry({ entry, onEdit }) {
+function EntryCard({ entry, onEdit }) {
   return (
-    <div className="px-4 py-3.5 border-b border-carbon-800">
-      <div className="flex items-center justify-between gap-3 mb-1.5">
-        <p className="text-xs text-carbon-400">{entryDate(entry.createdAt)}</p>
-        <Button size="sm" variant="ghost" onClick={onEdit} className="-mr-2">
-          Edit
-        </Button>
-      </div>
+    <button
+      type="button"
+      onClick={onEdit}
+      aria-label={`Edit entry from ${entryDate(entry.createdAt)}`}
+      className="group flex flex-col w-full min-w-0 text-left p-3 rounded-md border border-carbon-800 bg-carbon-850 hover:border-carbon-600 hover:bg-carbon-800 transition-colors"
+    >
       {entry.title && (
-        <p className="text-sm font-semibold text-carbon-100 leading-snug mb-1 break-words">
+        <p className="text-sm font-semibold text-carbon-100 group-hover:text-white leading-snug line-clamp-2 break-words transition-colors">
           {entry.title}
         </p>
       )}
       {entry.text && (
-        <p className="text-sm text-carbon-200 leading-relaxed whitespace-pre-wrap break-words">
+        <p
+          className={`text-sm text-carbon-200 leading-relaxed line-clamp-6 whitespace-pre-wrap break-words ${
+            entry.title ? "mt-1" : ""
+          }`}
+        >
           {entry.text}
         </p>
       )}
-    </div>
+      <p className="mt-auto pt-2.5 text-xs text-carbon-400">
+        {entryDate(entry.createdAt)}
+      </p>
+    </button>
   );
 }
+
+const CARD_GRID =
+  "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 px-4 py-3 border-b border-carbon-800";
+const WIDE_EDITOR =
+  "col-span-full p-3 rounded-md border border-carbon-700 bg-carbon-850";
 
 function SectionHeader({ label, count, action }) {
   return (
@@ -97,18 +108,15 @@ function SectionHeader({ label, count, action }) {
 export default function CountryNotesTab({ country }) {
   const entries = useCountryEntries(country);
   const notes = useNotes();
-  const [favorites, setFavorites] = useState(getFavorites);
   const [editingId, setEditingId] = useState(null);
   const [newEntryId, setNewEntryId] = useState(null);
   const [openItem, setOpenItem] = useState(null);
 
+  useEffect(() => markCountryViewed(country), [country]);
+
   const countryNotes = useMemo(
     () => notes.filter((note) => note.context?.country === country),
     [notes, country],
-  );
-  const countryFavorites = useMemo(
-    () => favorites.filter((fav) => fav.context?.country === country),
-    [favorites, country],
   );
 
   function startNew() {
@@ -121,17 +129,12 @@ export default function CountryNotesTab({ country }) {
     setNewEntryId(null);
   }
 
-  function closeDetail() {
-    setOpenItem(null);
-    setFavorites(getFavorites());
-  }
-
   const listedEntries = newEntryId
     ? entries.filter((entry) => entry.id !== newEntryId)
     : entries;
-  const pagedEntries = usePaged(listedEntries);
-  const pagedNotes = usePaged(countryNotes);
-  const pagedFavorites = usePaged(countryFavorites);
+  const columns = useGridColumns();
+  const pagedEntries = usePaged(listedEntries, undefined, columns * 2);
+  const pagedNotes = usePaged(countryNotes, undefined, columns * 2);
 
   return (
     <div className="flex-1 overflow-y-auto">
@@ -151,41 +154,42 @@ export default function CountryNotesTab({ country }) {
         }
       />
 
-      {newEntryId && (
-        <div className="px-4 py-3.5 border-b border-carbon-800">
-          <EntryEditor
-            key={newEntryId}
-            country={country}
-            entry={null}
-            id={newEntryId}
-            onDone={stopEditing}
-          />
-        </div>
-      )}
+      {(newEntryId || listedEntries.length > 0) && (
+        <div className={CARD_GRID}>
+          {newEntryId && (
+            <div className={WIDE_EDITOR}>
+              <EntryEditor
+                key={newEntryId}
+                country={country}
+                entry={null}
+                id={newEntryId}
+                onDone={stopEditing}
+              />
+            </div>
+          )}
 
-      {pagedEntries.visible.map((entry) =>
-        editingId === entry.id ? (
-          <div
-            key={entry.id}
-            className="px-4 py-3.5 border-b border-carbon-800"
-          >
-            <EntryEditor
-              country={country}
-              entry={entry}
-              id={entry.id}
-              onDone={stopEditing}
-            />
-          </div>
-        ) : (
-          <Entry
-            key={entry.id}
-            entry={entry}
-            onEdit={() => {
-              setNewEntryId(null);
-              setEditingId(entry.id);
-            }}
-          />
-        ),
+          {pagedEntries.visible.map((entry) =>
+            editingId === entry.id ? (
+              <div key={entry.id} className={WIDE_EDITOR}>
+                <EntryEditor
+                  country={country}
+                  entry={entry}
+                  id={entry.id}
+                  onDone={stopEditing}
+                />
+              </div>
+            ) : (
+              <EntryCard
+                key={entry.id}
+                entry={entry}
+                onEdit={() => {
+                  setNewEntryId(null);
+                  setEditingId(entry.id);
+                }}
+              />
+            ),
+          )}
+        </div>
       )}
       <ShowMore paged={pagedEntries} />
 
@@ -198,30 +202,24 @@ export default function CountryNotesTab({ country }) {
 
       {countryNotes.length > 0 && (
         <>
-          <SectionHeader label="Has notes" count={countryNotes.length} />
-          {pagedNotes.visible.map((note) => (
-            <NoteItemRow
-              key={note.url}
-              item={note}
-              excerpt={note.text}
-              onOpen={setOpenItem}
-            />
-          ))}
+          <SectionHeader label="Annotations" count={countryNotes.length} />
+          <div className={CARD_GRID}>
+            {pagedNotes.visible.map((note) => (
+              <NoteItemCard
+                key={note.url}
+                item={note}
+                excerpt={note.text}
+                onOpen={setOpenItem}
+              />
+            ))}
+          </div>
           <ShowMore paged={pagedNotes} />
         </>
       )}
 
-      {countryFavorites.length > 0 && (
-        <>
-          <SectionHeader label="Favorited" count={countryFavorites.length} />
-          {pagedFavorites.visible.map((fav) => (
-            <NoteItemRow key={fav.url} item={fav} onOpen={setOpenItem} />
-          ))}
-          <ShowMore paged={pagedFavorites} />
-        </>
+      {openItem && (
+        <FavoriteDetail item={openItem} onClose={() => setOpenItem(null)} />
       )}
-
-      {openItem && <FavoriteDetail item={openItem} onClose={closeDetail} />}
     </div>
   );
 }

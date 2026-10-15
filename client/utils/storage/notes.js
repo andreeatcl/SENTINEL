@@ -125,6 +125,24 @@ export function updateCountryEntry(country, id, { title = "", text = "" }) {
   return writeCountryEntries(country, next);
 }
 
+const VIEWED_KEPT = 20;
+
+export function getViewedCountries() {
+  return read(STORAGE_KEYS.notesViewed, {});
+}
+
+export function markCountryViewed(country) {
+  if (!country) return;
+  const others = Object.entries(getViewedCountries())
+    .filter(([name]) => name !== country)
+    .sort((a, b) => b[1].localeCompare(a[1]))
+    .slice(0, VIEWED_KEPT - 1);
+  write(
+    STORAGE_KEYS.notesViewed,
+    Object.fromEntries([[country, new Date().toISOString()], ...others]),
+  );
+}
+
 export function replaceCountryNotes(countryNotes) {
   const ok = write(STORAGE_KEYS.countryNotes, countryNotes);
   notesChanged();
