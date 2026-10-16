@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { getCountryKeywordOptions } from "../../utils/queryBuilder";
 import KeywordQueryModal from "./KeywordQueryModal";
 import ArticleCard, { SkeletonCard } from "./ArticleCard";
@@ -7,8 +7,10 @@ import SortControl from "../ui/SortControl";
 import SearchBar from "../ui/SearchBar";
 import Button from "../ui/Button";
 import EmptyState from "../ui/EmptyState";
+import Pager, { usePaged } from "../ui/Pager";
 
 const TIME_RANGES = ["48h", "7d", "30d"];
+const PAGE_SIZE = 36;
 
 // mutually exclusive
 export const SOURCE_PRIORITY_OPTIONS = [
@@ -46,6 +48,16 @@ export default function ArticlesTab({
   onSelectArticle,
 }) {
   const [queryPreview, setQueryPreview] = useState("");
+  const listRef = useRef(null);
+  const paged = usePaged(articles, `${loading}:${articlesSortDir}`, PAGE_SIZE);
+  const [jumpFrom, setJumpFrom] = useState(null);
+  if (jumpFrom !== null && !loadingMore) {
+    setJumpFrom(null);
+    if (articles.length > jumpFrom) {
+      paged.setPage(Math.floor(jumpFrom / PAGE_SIZE) + 1);
+      listRef.current?.scrollTo({ top: 0 });
+    }
+  }
   const [showKeywordModal, setShowKeywordModal] = useState(false);
   const [draftFilters, setDraftFilters] = useState({
     sortBy,
@@ -194,7 +206,7 @@ export default function ArticlesTab({
       )}
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto">
+      <div ref={listRef} className="flex-1 overflow-y-auto">
         {loading && (
           <div>
             {Array.from({ length: 6 }).map((_, i) => (
@@ -218,14 +230,16 @@ export default function ArticlesTab({
           />
         )}
 
+        {!loading && <Pager paged={paged} scrollRef={listRef} />}
         {!loading &&
-          articles.map((article, i) => (
+          paged.visible.map((article, i) => (
             <ArticleCard
               key={article.url || i}
               article={article}
               onClick={() => onSelectArticle(article)}
             />
           ))}
+        {!loading && <Pager paged={paged} scrollRef={listRef} />}
       </div>
 
       {/* Footer */}
@@ -235,7 +249,14 @@ export default function ArticlesTab({
             {articles.length} loaded · NewsAPI
           </p>
           {canLoadMore && (
-            <Button size="sm" onClick={onLoadMore} disabled={loadingMore}>
+            <Button
+              size="sm"
+              onClick={() => {
+                setJumpFrom(articles.length);
+                onLoadMore();
+              }}
+              disabled={loadingMore}
+            >
               {loadingMore ? "Loading…" : "Load more"}
             </Button>
           )}

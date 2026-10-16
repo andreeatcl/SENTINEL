@@ -12,7 +12,8 @@ import { Eyebrow } from "../ui/Field";
 import { PlusIcon } from "../ui/icons";
 import NoteEditor from "./NoteEditor";
 import { NoteItemCard } from "./NoteItemRow";
-import ShowMore, { usePaged, useGridColumns } from "./ShowMore";
+import Pager, { usePaged } from "../ui/Pager";
+import { useGridColumns } from "../../hooks/useGridColumns";
 
 function entryDate(value) {
   const date = new Date(value);
@@ -133,7 +134,7 @@ export default function CountryNotesTab({ country }) {
     ? entries.filter((entry) => entry.id !== newEntryId)
     : entries;
   const columns = useGridColumns();
-  const pagedEntries = usePaged(listedEntries, undefined, columns * 2);
+  const pagedEntries = usePaged(listedEntries, newEntryId, columns * 2);
   const pagedNotes = usePaged(countryNotes, undefined, columns * 2);
 
   return (
@@ -191,7 +192,7 @@ export default function CountryNotesTab({ country }) {
           )}
         </div>
       )}
-      <ShowMore paged={pagedEntries} />
+      <Pager paged={pagedEntries} />
 
       {entries.length === 0 && !newEntryId && (
         <p className="px-4 py-4 text-xs text-carbon-500 leading-relaxed">
@@ -213,7 +214,7 @@ export default function CountryNotesTab({ country }) {
               />
             ))}
           </div>
-          <ShowMore paged={pagedNotes} />
+          <Pager paged={pagedNotes} />
         </>
       )}
 

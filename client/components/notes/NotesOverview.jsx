@@ -14,7 +14,7 @@ import FavoriteDetail from "../favorites/FavoriteDetail";
 import Modal from "../ui/Modal";
 import EmptyState from "../ui/EmptyState";
 import { Input } from "../ui/Field";
-import ShowMore, { usePaged } from "./ShowMore";
+import Pager, { usePaged } from "../ui/Pager";
 import {
   PAGES,
   SectionHeader,
@@ -171,7 +171,7 @@ export default function NotesOverview({ isOpen, onClose, onOpenCountry }) {
                         />
                       ))}
                     </div>
-                    <ShowMore paged={pagedCountries} className="px-5" />
+                    <Pager paged={pagedCountries} className="px-5" />
                   </section>
                 )}
 

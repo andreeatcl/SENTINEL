@@ -5,6 +5,9 @@ import Modal from "../ui/Modal";
 import Button from "../ui/Button";
 import { Input } from "../ui/Field";
 import CheckboxMark from "./CheckboxMark";
+import Pager, { usePaged } from "../ui/Pager";
+
+const PAGE_SIZE = 20;
 
 // pick favorites from within the group
 export default function GroupMembersPicker({
@@ -21,6 +24,7 @@ export default function GroupMembersPicker({
     () => sortFavorites(filterFavorites(favorites, { query }), "saved", "desc"),
     [favorites, query],
   );
+  const paged = usePaged(visible, query, PAGE_SIZE);
 
   return (
     <Modal
@@ -52,41 +56,45 @@ export default function GroupMembersPicker({
           No favorites match.
         </p>
       ) : (
-        <ul>
-          {visible.map((item) => {
-            const checked = members.has(item.url);
-            const published = formatDate(item.publishedAt);
-            return (
-              <li
-                key={item.url}
-                className="border-b border-carbon-800 last:border-b-0"
-              >
-                <button
-                  type="button"
-                  role="checkbox"
-                  aria-checked={checked}
-                  onClick={() => onToggle(group.id, item.url, !checked)}
-                  className="w-full flex items-start gap-3 px-5 py-3 text-left hover:bg-carbon-850 transition-colors"
+        <>
+          <Pager paged={paged} className="px-5" />
+          <ul>
+            {paged.visible.map((item) => {
+              const checked = members.has(item.url);
+              const published = formatDate(item.publishedAt);
+              return (
+                <li
+                  key={item.url}
+                  className="border-b border-carbon-800 last:border-b-0"
                 >
-                  <span className="pt-0.5">
-                    <CheckboxMark checked={checked} />
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block text-2xs text-carbon-500 truncate mb-0.5">
-                      {published && <>{published} · </>}
-                      {item.sourceName || "Unknown source"}
-                      {item.type === "event" && " · Event"}
+                  <button
+                    type="button"
+                    role="checkbox"
+                    aria-checked={checked}
+                    onClick={() => onToggle(group.id, item.url, !checked)}
+                    className="w-full flex items-start gap-3 px-5 py-3 text-left hover:bg-carbon-850 transition-colors"
+                  >
+                    <span className="pt-0.5">
+                      <CheckboxMark checked={checked} />
                     </span>
-                    <span className="block text-sm text-carbon-100 leading-snug line-clamp-2">
-                      {item.title}
+                    <span className="min-w-0 flex-1">
+                      <span className="block text-2xs text-carbon-500 truncate mb-0.5">
+                        {published && <>{published} · </>}
+                        {item.sourceName || "Unknown source"}
+                        {item.type === "event" && " · Event"}
+                      </span>
+                      <span className="block text-sm text-carbon-100 leading-snug line-clamp-2">
+                        {item.title}
+                      </span>
                     </span>
-                  </span>
-                </button>
-              </li>
-            );
-          })}
-        </ul>
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        </>
       )}
+      <Pager paged={paged} className="px-5" />
     </Modal>
   );
 }

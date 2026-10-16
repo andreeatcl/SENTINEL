@@ -133,6 +133,7 @@ export default function FavoritesPanel({ isOpen, onClose }) {
         ) : (
           <FavoritesList
             sections={sections}
+            resetKey={`${activeGroupId}:${JSON.stringify(view)}`}
             groups={groups}
             activeGroup={activeGroup}
             groupedUrls={store.groupedUrls}

@@ -5,7 +5,7 @@ import { CountryMark } from "../CountryPicker";
 import { ROW_META_CLASS } from "../articles/ArticleCard";
 import { Eyebrow } from "../ui/Field";
 import NoteItemRow from "./NoteItemRow";
-import ShowMore from "./ShowMore";
+import Pager from "../ui/Pager";
 
 export function SectionHeader({ label, count, divider = true }) {
   return (
@@ -158,7 +158,7 @@ export function ResultList({ paged, codes, onOpenCountry, onOpenItem }) {
           onOpenItem={onOpenItem}
         />
       ))}
-      <ShowMore paged={paged} className="px-5" />
+      <Pager paged={paged} className="px-5" />
     </>
   );
 }
