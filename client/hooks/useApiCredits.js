@@ -15,8 +15,6 @@ export function useApiCredits(meta) {
 
   useEffect(() => {
     refresh();
-    window.addEventListener("focus", refresh);
-    return () => window.removeEventListener("focus", refresh);
   }, [refresh]);
 
   useEffect(() => {

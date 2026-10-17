@@ -22,13 +22,22 @@ import { fetchPageMetadata } from "../lib/pageMetadata.js";
 import { isLowQualityDomain } from "../lib/lowQualitySources.js";
 
 // NewsAPI offers news with a 24h delay so refetching more than a few times a day will just be useless & burn our daily quota
-const CACHE_TTL_SECONDS = 60 * 60 * 6;
+// testing 1h cache - consider caching for longer if necessary
+const CACHE_TTL_SECONDS = 60 * 60;
 
-const GDELT_FAILURE_CACHE_TTL_SECONDS = 60 * 5;
+// const GDELT_FAILURE_CACHE_TTL_SECONDS = 60 * 5;
 
 const GDELT_BACKFILL_LIMIT = 12;
 
 const news = new Hono();
+
+// fixed a timing issue that resulted in cached data never being accessed
+// without rounding, a ms-difference to "from" makes every key unique
+function floorToHour(iso) {
+  const ms = Date.parse(iso);
+  if (Number.isNaN(ms)) return iso;
+  return new Date(ms - (ms % 3600000)).toISOString();
+}
 
 async function backfillGdeltDescriptions(env, articles) {
   const targets = [];
@@ -94,7 +103,7 @@ news.get("/news", async (c) => {
     topic,
     extraKeywords = "",
     sortBy = "relevancy",
-    from,
+    from: rawFrom,
     language,
     pageSize = "100",
     page = "1",
@@ -113,6 +122,7 @@ news.get("/news", async (c) => {
     );
   }
 
+  const from = rawFrom && floorToHour(rawFrom);
   const params = {
     q,
     topic,
@@ -181,14 +191,18 @@ news.get("/news", async (c) => {
   };
 
   // i am having issues with this damn api
-  const gdeltFailedOrThrottled =
-    Boolean(gdeltMeta._gdeltError) ||
-    gdeltMeta._gdeltSkipped === "rate-limited";
-  const cacheTtl = gdeltFailedOrThrottled
-    ? GDELT_FAILURE_CACHE_TTL_SECONDS
-    : CACHE_TTL_SECONDS;
+  // this piece of code is technically meant to help cache newsapi results for only 5 mins
+  // in case gdelt failed. but gdelt always fails.......
+  // maybe we will fix this. maybe not. who knows
 
-  await setCached(c.env, cacheKey, finalData, cacheTtl);
+  // const gdeltFailedOrThrottled =
+  //   Boolean(gdeltMeta._gdeltError) ||
+  //   gdeltMeta._gdeltSkipped === "rate-limited";
+  // const cacheTtl = gdeltFailedOrThrottled
+  //   /? GDELT_FAILURE_CACHE_TTL_SECONDS
+  //   : CACHE_TTL_SECONDS;
+
+  await setCached(c.env, cacheKey, finalData, CACHE_TTL_SECONDS);
 
   return c.json({
     ...finalData,
