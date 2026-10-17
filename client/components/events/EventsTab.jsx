@@ -1,13 +1,15 @@
 import { useEffect, useMemo, useState } from "react";
 import { CAMEO_ROOT_CATEGORIES } from "../../utils/cameoCategories";
 import { TONE_LABELS } from "../../utils/eventTone";
-import { AccordionSection, Pill } from "../ui/FilterAccordion";
+import { AccordionSection, FilterGroup, Pill } from "../ui/FilterAccordion";
 import SortControl from "../ui/SortControl";
 import SearchBar from "../ui/SearchBar";
 import EventsList from "./EventsList";
 import { SOURCE_PRIORITY_OPTIONS } from "../articles/ArticlesTab";
 import Button from "../ui/Button";
 import { Input } from "../ui/Field";
+import { useReadItems } from "../../hooks/useReadItems";
+import { isRead, eventReadKey } from "../../utils/storage";
 
 const TIME_RANGES = ["48h", "7d", "30d"];
 
@@ -72,6 +74,8 @@ export default function EventsTab({
   const [keyword, setKeyword] = useState("");
   const [loadMoreCooldown, setLoadMoreCooldown] = useState(false);
   const [draftFilters, setDraftFilters] = useState(eventsFilters);
+  const [hideRead, setHideRead] = useState(false);
+  const readItems = useReadItems();
 
   // reset keyword filter + draft when switching countries
   useEffect(() => {
@@ -81,11 +85,23 @@ export default function EventsTab({
   }, [selectedCountry]);
 
   const visibleEvents = useMemo(
-    () => events.filter((event) => matchesKeyword(event, keyword)),
-    [events, keyword],
+    () =>
+      events.filter(
+        (event) =>
+          matchesKeyword(event, keyword) &&
+          !(hideRead && isRead(readItems, eventReadKey(event))),
+      ),
+    [events, keyword, hideRead, readItems],
   );
 
   const isDirty = !filtersEqual(draftFilters, eventsFilters);
+
+  const activeFilterCount =
+    (draftFilters.category.length < CAMEO_ROOT_CATEGORIES.length ? 1 : 0) +
+    (draftFilters.tone.length < Object.keys(TONE_LABELS).length ? 1 : 0) +
+    (draftFilters.sourcePriority ? 1 : 0) +
+    (keyword ? 1 : 0) +
+    (hideRead ? 1 : 0);
 
   function handleLoadMoreClick() {
     onLoadMoreEvents();
@@ -108,7 +124,7 @@ export default function EventsTab({
         }
       />
 
-      <div className="shrink-0">
+      <FilterGroup activeCount={activeFilterCount}>
         <AccordionSection title="Time range" defaultOpen>
           {TIME_RANGES.map((t) => (
             <Pill
@@ -208,7 +224,13 @@ export default function EventsTab({
             className="w-full"
           />
         </AccordionSection>
-      </div>
+
+        <AccordionSection title="Read" activeCount={hideRead ? 1 : 0}>
+          <Pill active={hideRead} onClick={() => setHideRead((h) => !h)}>
+            Hide read
+          </Pill>
+        </AccordionSection>
+      </FilterGroup>
 
       {isDirty && (
         <SearchBar onSearch={() => onEventsFilterChange(draftFilters)} />
@@ -219,6 +241,7 @@ export default function EventsTab({
           events={visibleEvents}
           loading={eventsLoading}
           error={eventsError}
+          readItems={readItems}
           onSelectEvent={onSelectEvent}
         />
       </div>

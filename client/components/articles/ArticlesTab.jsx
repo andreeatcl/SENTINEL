@@ -2,12 +2,14 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { getCountryKeywordOptions } from "../../utils/queryBuilder";
 import KeywordQueryModal from "./KeywordQueryModal";
 import ArticleCard, { SkeletonCard } from "./ArticleCard";
-import { AccordionSection, Pill } from "../ui/FilterAccordion";
+import { AccordionSection, FilterGroup, Pill } from "../ui/FilterAccordion";
 import SortControl from "../ui/SortControl";
 import SearchBar from "../ui/SearchBar";
 import Button from "../ui/Button";
 import EmptyState from "../ui/EmptyState";
 import Pager, { usePaged } from "../ui/Pager";
+import { useReadItems } from "../../hooks/useReadItems";
+import { isRead, articleReadKey } from "../../utils/storage";
 
 const TIME_RANGES = ["48h", "7d", "30d"];
 const PAGE_SIZE = 36;
@@ -49,11 +51,24 @@ export default function ArticlesTab({
 }) {
   const [queryPreview, setQueryPreview] = useState("");
   const listRef = useRef(null);
-  const paged = usePaged(articles, `${loading}:${articlesSortDir}`, PAGE_SIZE);
+  const [hideRead, setHideRead] = useState(false);
+  const readItems = useReadItems();
+  const shownArticles = useMemo(
+    () =>
+      hideRead
+        ? articles.filter((a) => !isRead(readItems, articleReadKey(a)))
+        : articles,
+    [articles, hideRead, readItems],
+  );
+  const paged = usePaged(
+    shownArticles,
+    `${loading}:${articlesSortDir}:${hideRead}`,
+    PAGE_SIZE,
+  );
   const [jumpFrom, setJumpFrom] = useState(null);
   if (jumpFrom !== null && !loadingMore) {
     setJumpFrom(null);
-    if (articles.length > jumpFrom) {
+    if (shownArticles.length > jumpFrom) {
       paged.setPage(Math.floor(jumpFrom / PAGE_SIZE) + 1);
       listRef.current?.scrollTo({ top: 0 });
     }
@@ -82,6 +97,13 @@ export default function ArticlesTab({
     draftFilters.sortBy !== sortBy ||
     draftFilters.timeRange !== timeRange ||
     draftFilters.includePoliticalKeywords !== includePoliticalKeywords;
+
+  const sourcesActive =
+    (useTopSourcesOnly ? 1 : 0) +
+    (englishOnly ? 1 : 0) +
+    (sourcePriority ? 1 : 0);
+  const activeFilterCount =
+    (sourcesActive ? 1 : 0) + (queryPreview ? 1 : 0) + (hideRead ? 1 : 0);
 
   function handleApplyKeywordQuery({ expression, queryOptions }) {
     const nextExpression = expression || "";
@@ -116,7 +138,7 @@ export default function ArticlesTab({
         onToggleDirection={onToggleArticlesSortDir}
       />
 
-      <div className="shrink-0">
+      <FilterGroup activeCount={activeFilterCount}>
         <AccordionSection title="Time range" defaultOpen>
           {TIME_RANGES.map((t) => (
             <Pill
@@ -130,14 +152,7 @@ export default function ArticlesTab({
         </AccordionSection>
 
         {/* client-side only, no request — stays live */}
-        <AccordionSection
-          title="Sources"
-          activeCount={
-            (useTopSourcesOnly ? 1 : 0) +
-            (englishOnly ? 1 : 0) +
-            (sourcePriority ? 1 : 0)
-          }
-        >
+        <AccordionSection title="Sources" activeCount={sourcesActive}>
           <Pill active={useTopSourcesOnly} onClick={onTopSourcesToggle}>
             Top sources only
           </Pill>
@@ -199,7 +214,13 @@ export default function ArticlesTab({
             </div>
           </AccordionSection>
         )}
-      </div>
+
+        <AccordionSection title="Read" activeCount={hideRead ? 1 : 0}>
+          <Pill active={hideRead} onClick={() => setHideRead((h) => !h)}>
+            Hide read
+          </Pill>
+        </AccordionSection>
+      </FilterGroup>
 
       {isDirty && (
         <SearchBar onSearch={() => onApplyArticleFilters(draftFilters)} />
@@ -230,12 +251,20 @@ export default function ArticlesTab({
           />
         )}
 
+        {!loading && !error && articles.length > 0 && !shownArticles.length && (
+          <EmptyState
+            title="All caught up"
+            description="Every loaded article is read. Load more, or turn off Hide read."
+          />
+        )}
+
         {!loading && <Pager paged={paged} scrollRef={listRef} />}
         {!loading &&
           paged.visible.map((article, i) => (
             <ArticleCard
               key={article.url || i}
               article={article}
+              read={isRead(readItems, articleReadKey(article))}
               onClick={() => onSelectArticle(article)}
             />
           ))}
@@ -246,13 +275,17 @@ export default function ArticlesTab({
       {articles.length > 0 && (
         <div className="shrink-0 flex items-center justify-between gap-3 px-4 py-2.5 border-t border-carbon-800">
           <p className="text-xs text-carbon-500">
-            {articles.length} loaded · NewsAPI
+            {articles.length} loaded
+            {hideRead && shownArticles.length < articles.length
+              ? ` · ${articles.length - shownArticles.length} read hidden`
+              : ""}{" "}
+            · NewsAPI
           </p>
           {canLoadMore && (
             <Button
               size="sm"
               onClick={() => {
-                setJumpFrom(articles.length);
+                setJumpFrom(shownArticles.length);
                 onLoadMore();
               }}
               disabled={loadingMore}

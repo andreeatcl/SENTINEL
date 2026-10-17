@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import {
   filterFavorites,
   sortFavorites,
@@ -30,6 +30,7 @@ export default function FavoritesPanel({ isOpen, onClose }) {
   const [openItem, setOpenItem] = useState(null);
   const [pickerItem, setPickerItem] = useState(null);
   const [showMembersPicker, setShowMembersPicker] = useState(false);
+  const toolbarRef = useRef(null);
 
   const activeGroup = groups.find((g) => g.id === activeGroupId) || null;
 
@@ -106,7 +107,7 @@ export default function FavoritesPanel({ isOpen, onClose }) {
         footer={undoFooter}
       >
         {/* Toolbar */}
-        <div className="sticky top-0 z-10 bg-carbon-900">
+        <div ref={toolbarRef} className="sticky top-0 z-10 bg-carbon-900">
           <GroupChips {...groupNav} />
 
           {activeGroup && (
@@ -133,6 +134,7 @@ export default function FavoritesPanel({ isOpen, onClose }) {
         ) : (
           <FavoritesList
             sections={sections}
+            toolbarRef={toolbarRef}
             resetKey={`${activeGroupId}:${JSON.stringify(view)}`}
             groups={groups}
             activeGroup={activeGroup}

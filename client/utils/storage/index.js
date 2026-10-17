@@ -3,3 +3,4 @@ export * from "./settings";
 export * from "./favorites";
 export * from "./searches";
 export * from "./notes";
+export * from "./readItems";

@@ -10,8 +10,6 @@ const TABS = [
 
 export default function PanelHeader({
   selectedCountry,
-  loading,
-  hasArticles,
   meta,
   activeTab,
   onTabClick,
@@ -30,17 +28,9 @@ export default function PanelHeader({
     <div className="shrink-0 border-b border-carbon-800">
       <div className="flex items-start justify-between gap-3 px-4 pt-4 pb-3">
         <div className="min-w-0">
-          <div className="flex items-center gap-2">
-            {loading && (
-              <span className="w-1.5 h-1.5 rounded-full bg-signal-amber shrink-0" />
-            )}
-            {!loading && hasArticles && (
-              <span className="w-1.5 h-1.5 rounded-full bg-signal-green shrink-0" />
-            )}
-            <h2 className="text-lg font-semibold tracking-tight text-white truncate">
-              {selectedCountry || "Search results"}
-            </h2>
-          </div>
+          <h2 className="text-lg font-semibold tracking-tight text-white truncate">
+            {selectedCountry || "Search results"}
+          </h2>
           {meta && (
             <p className="text-xs text-carbon-500 mt-0.5 truncate">
               {meta.totalResults?.toLocaleString()} results

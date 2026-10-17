@@ -12,6 +12,7 @@ export const ROW_BUTTON_CLASS =
 export const ROW_TITLE_CLASS =
   "text-sm font-medium text-carbon-100 leading-snug group-hover:text-white transition-colors";
 export const ROW_META_CLASS = "text-xs text-carbon-500";
+export const ROW_READ_CLASS = "opacity-55";
 
 export function MetaDivider() {
   return <span aria-hidden className="w-px h-3 bg-carbon-700 shrink-0" />;
@@ -28,12 +29,15 @@ export function SkeletonCard() {
   );
 }
 
-export default function ArticleCard({ article, onClick }) {
+export default function ArticleCard({ article, read = false, onClick }) {
   const domain = getDomain(article.url);
 
   return (
     <div className={ROW_CLASS}>
-      <button onClick={onClick} className={ROW_BUTTON_CLASS}>
+      <button
+        onClick={onClick}
+        className={`${ROW_BUTTON_CLASS} ${read ? ROW_READ_CLASS : ""}`}
+      >
         {/* Time + source */}
         <div className="flex items-center gap-1.5 mb-1.5 min-w-0">
           <span className={`${ROW_META_CLASS} shrink-0`}>

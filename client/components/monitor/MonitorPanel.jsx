@@ -53,8 +53,6 @@ export default function MonitorPanel({
     <div className="panel-enter absolute z-[1100] inset-x-3 md:inset-x-[10%] top-16 bottom-3 flex flex-col bg-carbon-900 border border-carbon-800 rounded-xl shadow-panel overflow-hidden">
       <PanelHeader
         selectedCountry={selectedCountry}
-        loading={loading}
-        hasArticles={articles.length > 0}
         meta={meta}
         activeTab={activeTab}
         onTabClick={handleTabClick}

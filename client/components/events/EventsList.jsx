@@ -4,6 +4,7 @@ import {
   ROW_BUTTON_CLASS,
   ROW_TITLE_CLASS,
   ROW_META_CLASS,
+  ROW_READ_CLASS,
   MetaDivider,
 } from "../articles/ArticleCard";
 import FavoriteButton from "../favorites/FavoriteButton";
@@ -22,8 +23,9 @@ import {
   getDomain,
 } from "../../utils/eventDisplay";
 import { favoriteFromEvent } from "../../utils/favorites";
+import { isRead, eventReadKey } from "../../utils/storage";
 
-function EventRow({ event, onClick }) {
+function EventRow({ event, read, onClick }) {
   const tone = toneCategory(event.goldstein);
   const dotClass = TONE_DOT_CLASS[tone];
 
@@ -41,7 +43,10 @@ function EventRow({ event, onClick }) {
 
   return (
     <div className={ROW_CLASS}>
-      <button onClick={onClick} className={ROW_BUTTON_CLASS}>
+      <button
+        onClick={onClick}
+        className={`${ROW_BUTTON_CLASS} ${read ? ROW_READ_CLASS : ""}`}
+      >
         {/* Tone + time + source */}
         <div className="flex items-center gap-1.5 mb-1.5 min-w-0">
           <span
@@ -90,7 +95,13 @@ function EventRow({ event, onClick }) {
   );
 }
 
-export default function EventsList({ events, loading, error, onSelectEvent }) {
+export default function EventsList({
+  events,
+  loading,
+  error,
+  readItems,
+  onSelectEvent,
+}) {
   if (loading) {
     return (
       <div>
@@ -122,6 +133,7 @@ export default function EventsList({ events, loading, error, onSelectEvent }) {
         <EventRow
           key={event.id}
           event={event}
+          read={isRead(readItems, eventReadKey(event))}
           onClick={() => onSelectEvent(event)}
         />
       ))}

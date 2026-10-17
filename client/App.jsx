@@ -14,7 +14,13 @@ import ArticleDetail from "./components/articles/ArticleDetail";
 import { FavoriteContext } from "./components/favorites/FavoriteButton";
 import { useAppControls } from "./hooks/useAppControls";
 import { useApiCredits } from "./hooks/useApiCredits";
-import { hasAnyApiKey, addSavedSearch } from "./utils/storage";
+import {
+  hasAnyApiKey,
+  addSavedSearch,
+  markRead,
+  articleReadKey,
+  eventReadKey,
+} from "./utils/storage";
 
 export default function App() {
   const [showSourcesModal, setShowSourcesModal] = useState(false);
@@ -26,6 +32,15 @@ export default function App() {
   const [panelTab, setPanelTab] = useState("notes");
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [selectedArticle, setSelectedArticle] = useState(null);
+
+  const openEvent = useCallback((event) => {
+    markRead(eventReadKey(event));
+    setSelectedEvent(event);
+  }, []);
+  const openArticle = useCallback((article) => {
+    markRead(articleReadKey(article));
+    setSelectedArticle(article);
+  }, []);
 
   const {
     selectedCountry,
@@ -161,7 +176,7 @@ export default function App() {
             selectedCountry={selectedCountry}
             onCountryClick={selectCountry}
             events={events}
-            onEventClick={setSelectedEvent}
+            onEventClick={openEvent}
           />
         </div>
 
@@ -214,8 +229,8 @@ export default function App() {
             eventsFilters={eventsFilters}
             onEventsFilterChange={handleEventsFilterChange}
             onLoadMoreEvents={handleLoadMoreEvents}
-            onSelectEvent={setSelectedEvent}
-            onSelectArticle={setSelectedArticle}
+            onSelectEvent={openEvent}
+            onSelectArticle={openArticle}
             onOpenArticlesTab={handleOpenArticlesTab}
             activeTab={panelTab}
             onTabChange={setPanelTab}

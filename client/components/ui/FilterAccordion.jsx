@@ -1,6 +1,42 @@
 import { useState } from "react";
 import { ChevronDownIcon } from "./icons";
 
+function CountBadge({ count }) {
+  return (
+    <span className="min-w-[18px] h-[18px] px-1 inline-flex items-center justify-center rounded-full bg-accent text-2xs font-semibold text-white">
+      {count}
+    </span>
+  );
+}
+
+export function FilterGroup({ activeCount = 0, children }) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div className="shrink-0 border-b border-carbon-800">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        aria-expanded={open}
+        className="flex items-center gap-2 w-full px-4 h-10 text-xs font-semibold text-carbon-200 hover:text-white transition-colors"
+      >
+        Filters
+        {activeCount > 0 && <CountBadge count={activeCount} />}
+        <ChevronDownIcon
+          className={`w-3.5 h-3.5 text-carbon-500 transition-transform duration-150 ${
+            open ? "rotate-180" : ""
+          }`}
+        />
+      </button>
+      {open && (
+        <div className="border-t border-carbon-800 [&>*:last-child]:border-b-0">
+          {children}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function AccordionSection({
   title,
   children,
@@ -25,11 +61,7 @@ export function AccordionSection({
           className="flex items-center gap-2 h-full text-xs font-medium text-carbon-300 hover:text-white transition-colors"
         >
           {title}
-          {activeCount > 0 && (
-            <span className="min-w-[18px] h-[18px] px-1 inline-flex items-center justify-center rounded-full bg-accent text-2xs font-semibold text-white">
-              {activeCount}
-            </span>
-          )}
+          {activeCount > 0 && <CountBadge count={activeCount} />}
           <ChevronDownIcon
             className={`w-3.5 h-3.5 text-carbon-500 transition-transform duration-150 ${
               open ? "rotate-180" : ""
