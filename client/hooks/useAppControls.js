@@ -219,18 +219,25 @@ export function useAppControls() {
 
   // re-run a search saved earlier (see SavedSearchesPanel.jsx)
   const handleRunSavedSearch = useCallback(
-    ({ topic, extraKeywords, queryOptions }) => {
+    ({ topic, extraKeywords, queryOptions, includePoliticalKeywords }) => {
+      const political = includePoliticalKeywords !== false;
       setSelectedCountry(topic);
+      setIncludePoliticalKeywords(political);
       articlesFetchedRef.current = true;
-      runSearch({ topic, extraKeywords, queryOptions });
+      runSearch({
+        topic,
+        extraKeywords,
+        queryOptions,
+        includePoliticalKeywords: political,
+      });
       searchEvents(topic);
     },
     [runSearch, searchEvents],
   );
 
   const getCurrentSearch = useCallback(
-    () => ({ ...searchContextRef.current }),
-    [],
+    () => ({ ...searchContextRef.current, includePoliticalKeywords }),
+    [includePoliticalKeywords],
   );
 
   return {

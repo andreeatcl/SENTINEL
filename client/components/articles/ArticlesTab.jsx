@@ -2,13 +2,19 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { getCountryKeywordOptions } from "../../utils/queryBuilder";
 import KeywordQueryModal from "./KeywordQueryModal";
 import ArticleCard, { SkeletonCard } from "./ArticleCard";
-import { AccordionSection, FilterGroup, Pill } from "../ui/FilterAccordion";
+import {
+  FilterCheckbox,
+  FilterSection,
+  FilterGroup,
+  Pill,
+} from "../ui/FilterAccordion";
 import SortControl from "../ui/SortControl";
 import SearchBar from "../ui/SearchBar";
 import Button from "../ui/Button";
 import EmptyState from "../ui/EmptyState";
 import Pager, { usePaged } from "../ui/Pager";
 import { useReadItems } from "../../hooks/useReadItems";
+import { useKeywordOverrides } from "../../hooks/useKeywordOverrides";
 import { isRead, articleReadKey } from "../../utils/storage";
 
 const TIME_RANGES = ["48h", "7d", "30d"];
@@ -48,6 +54,7 @@ export default function ArticlesTab({
   onExtraSearch,
   onLoadMore,
   onSelectArticle,
+  onEditKeywords,
 }) {
   const [queryPreview, setQueryPreview] = useState("");
   const listRef = useRef(null);
@@ -80,9 +87,11 @@ export default function ArticlesTab({
     includePoliticalKeywords,
   });
 
+  const keywordOverrides = useKeywordOverrides();
   const availableKeywords = useMemo(
     () => (selectedCountry ? getCountryKeywordOptions(selectedCountry) : []),
-    [selectedCountry],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [selectedCountry, keywordOverrides],
   );
 
   // reset keyword query + draft when switching countries
@@ -102,8 +111,7 @@ export default function ArticlesTab({
     (useTopSourcesOnly ? 1 : 0) +
     (englishOnly ? 1 : 0) +
     (sourcePriority ? 1 : 0);
-  const activeFilterCount =
-    (sourcesActive ? 1 : 0) + (queryPreview ? 1 : 0) + (hideRead ? 1 : 0);
+  const activeFilterCount = (sourcesActive ? 1 : 0) + (queryPreview ? 1 : 0);
 
   function handleApplyKeywordQuery({ expression, queryOptions }) {
     const nextExpression = expression || "";
@@ -136,10 +144,14 @@ export default function ArticlesTab({
         options={ARTICLE_SORT_OPTIONS}
         onChange={(value) => setDraftFilters((f) => ({ ...f, sortBy: value }))}
         onToggleDirection={onToggleArticlesSortDir}
-      />
+      >
+        <FilterCheckbox checked={hideRead} onChange={setHideRead}>
+          Hide read
+        </FilterCheckbox>
+      </SortControl>
 
       <FilterGroup activeCount={activeFilterCount}>
-        <AccordionSection title="Time range" defaultOpen>
+        <FilterSection title="Time range">
           {TIME_RANGES.map((t) => (
             <Pill
               key={t}
@@ -149,10 +161,10 @@ export default function ArticlesTab({
               {t}
             </Pill>
           ))}
-        </AccordionSection>
+        </FilterSection>
 
         {/* client-side only, no request — stays live */}
-        <AccordionSection title="Sources" activeCount={sourcesActive}>
+        <FilterSection title="Sources" activeCount={sourcesActive}>
           <Pill active={useTopSourcesOnly} onClick={onTopSourcesToggle}>
             Top sources only
           </Pill>
@@ -168,23 +180,32 @@ export default function ArticlesTab({
               {label}
             </Pill>
           ))}
-        </AccordionSection>
+        </FilterSection>
 
         {selectedCountry && (
-          <AccordionSection title="Keywords" activeCount={queryPreview ? 1 : 0}>
+          <FilterSection title="Keywords" activeCount={queryPreview ? 1 : 0}>
             <div className="w-full space-y-2">
               <div className="flex flex-wrap items-center gap-1.5">
-                <Pill
-                  active={draftFilters.includePoliticalKeywords}
-                  onClick={() =>
+                <FilterCheckbox
+                  checked={draftFilters.includePoliticalKeywords}
+                  disabled={!!queryPreview}
+                  onChange={(checked) =>
                     setDraftFilters((f) => ({
                       ...f,
-                      includePoliticalKeywords: !f.includePoliticalKeywords,
+                      includePoliticalKeywords: checked,
                     }))
                   }
                 >
-                  Political
-                </Pill>
+                  Use country keywords
+                </FilterCheckbox>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => onEditKeywords(selectedCountry)}
+                  className="rounded-full mr-auto"
+                >
+                  Edit
+                </Button>
                 <Button
                   size="sm"
                   onClick={() => setShowKeywordModal(true)}
@@ -204,6 +225,11 @@ export default function ArticlesTab({
                 )}
               </div>
               {!!queryPreview && (
+                <p className="text-2xs text-carbon-500">
+                  The keyword builder query replaces the country keywords.
+                </p>
+              )}
+              {!!queryPreview && (
                 <p className="text-xs text-carbon-500 break-words max-h-12 overflow-y-auto">
                   Active:{" "}
                   <span className="font-mono text-carbon-300">
@@ -212,14 +238,8 @@ export default function ArticlesTab({
                 </p>
               )}
             </div>
-          </AccordionSection>
+          </FilterSection>
         )}
-
-        <AccordionSection title="Read" activeCount={hideRead ? 1 : 0}>
-          <Pill active={hideRead} onClick={() => setHideRead((h) => !h)}>
-            Hide read
-          </Pill>
-        </AccordionSection>
       </FilterGroup>
 
       {isDirty && (

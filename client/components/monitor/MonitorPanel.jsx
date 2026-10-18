@@ -27,6 +27,7 @@ export default function MonitorPanel({
   sourcePriority,
   onSourcePriorityToggle,
   onSaveSearch,
+  onEditKeywords,
   events,
   eventsLoading,
   eventsLoadingMore,
@@ -98,6 +99,7 @@ export default function MonitorPanel({
           onExtraSearch={onExtraSearch}
           onLoadMore={onLoadMore}
           onSelectArticle={onSelectArticle}
+          onEditKeywords={onEditKeywords}
         />
       )}
     </div>

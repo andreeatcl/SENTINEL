@@ -36,7 +36,7 @@ async function fetchWithTimeout(url, options, timeoutMs) {
 export async function fetchNews({
   q,
   topic,
-  extraKeywords,
+  gdeltKeywords,
   sortBy = "relevancy",
   timeRange = "7d",
   language,
@@ -53,8 +53,8 @@ export async function fetchNews({
   if (topic) {
     params.set("topic", topic);
   }
-  if (topic && extraKeywords) {
-    params.set("extraKeywords", extraKeywords);
+  if (topic && gdeltKeywords !== undefined) {
+    params.set("keywords", gdeltKeywords);
   }
   params.set("from", buildTimeRangeFilter(timeRange));
 

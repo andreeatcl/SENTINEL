@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { ChevronDownIcon } from "./icons";
+import CheckboxMark from "../favorites/CheckboxMark";
 
 function CountBadge({ count }) {
   return (
@@ -29,11 +30,67 @@ export function FilterGroup({ activeCount = 0, children }) {
         />
       </button>
       {open && (
-        <div className="border-t border-carbon-800 [&>*:last-child]:border-b-0">
+        <div className="border-t border-carbon-800 px-4 py-3 space-y-3.5">
           {children}
         </div>
       )}
     </div>
+  );
+}
+
+// a titled block inside FilterGroup, always expanded
+export function FilterSection({
+  title,
+  children,
+  activeCount = 0,
+  totalCount = 0,
+  onSelectAll,
+  onDeselectAll,
+  scrollX = false,
+}) {
+  const allSelected = totalCount > 0 && activeCount === totalCount;
+
+  return (
+    <section>
+      <div className="flex items-center justify-between gap-2 mb-1.5 min-h-[18px]">
+        <h3 className="flex items-center gap-2 text-2xs font-medium uppercase tracking-wider text-carbon-500">
+          {title}
+          {activeCount > 0 && <CountBadge count={activeCount} />}
+        </h3>
+        {onSelectAll && onDeselectAll && (
+          <button
+            type="button"
+            onClick={allSelected ? onDeselectAll : onSelectAll}
+            className="text-xs text-carbon-400 hover:text-white transition-colors"
+          >
+            {allSelected ? "Clear all" : "Select all"}
+          </button>
+        )}
+      </div>
+      <div
+        className={`flex gap-1.5 ${
+          scrollX ? "flex-nowrap overflow-x-auto no-scrollbar" : "flex-wrap"
+        }`}
+      >
+        {children}
+      </div>
+    </section>
+  );
+}
+
+export function FilterCheckbox({ checked, onChange, disabled, children }) {
+  return (
+    <button
+      type="button"
+      role="checkbox"
+      aria-checked={checked}
+      disabled={disabled}
+      onClick={() => onChange(!checked)}
+      className="flex items-center gap-2 text-xs text-carbon-200 hover:text-white transition-colors disabled:opacity-40 disabled:pointer-events-none"
+    >
+      <CheckboxMark checked={checked} />
+      {children}
+    </button>
   );
 }
 

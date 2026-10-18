@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef } from "react";
 import { fetchNews } from "../utils/newsApi";
-import { buildTopicQuery } from "../utils/queryBuilder";
+import { buildTopicQuery, getGdeltKeywordsParam } from "../utils/queryBuilder";
 import {
   sanitizeArticles,
   filterTopSources as filterToTopSources,
@@ -81,7 +81,13 @@ export function useNews() {
         const data = await fetchNews({
           q,
           topic: raw ? undefined : topic,
-          extraKeywords: raw ? undefined : extraKeywords,
+          gdeltKeywords: raw
+            ? undefined
+            : getGdeltKeywordsParam(
+                topic,
+                includePoliticalKeywords,
+                queryOptions,
+              ),
           sortBy,
           timeRange,
           page,

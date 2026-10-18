@@ -70,12 +70,12 @@ async function backfillGdeltDescriptions(env, articles) {
   });
 }
 
-async function fetchGdeltForMerge({ topic, extraKeywords, from, page }) {
+async function fetchGdeltForMerge({ topic, gdeltKeywords, from, page }) {
   if (!topic) return { articles: null };
   if (page !== "1") return { articles: null, skipped: "pagination" };
 
   try {
-    const query = buildGdeltDocQuery(topic, extraKeywords);
+    const query = buildGdeltDocQuery(topic, gdeltKeywords);
     const { articles: gdeltRaw, error } = await fetchGdeltDoc({ query, from });
     if (error?.startsWith("skipped:")) {
       return { articles: null, skipped: "rate-limited" };
@@ -101,7 +101,7 @@ news.get("/news", async (c) => {
   const {
     q,
     topic,
-    extraKeywords = "",
+    keywords: gdeltKeywords,
     sortBy = "relevancy",
     from: rawFrom,
     language,
@@ -126,7 +126,7 @@ news.get("/news", async (c) => {
   const params = {
     q,
     topic,
-    extraKeywords,
+    gdeltKeywords,
     sortBy,
     from,
     language,
@@ -150,7 +150,12 @@ news.get("/news", async (c) => {
     });
   }
 
-  const gdeltPromise = fetchGdeltForMerge({ topic, extraKeywords, from, page });
+  const gdeltPromise = fetchGdeltForMerge({
+    topic,
+    gdeltKeywords,
+    from,
+    page,
+  });
 
   const result = await withKeyFailover(c.env, keys, (apiKey) =>
     fetchEverything({

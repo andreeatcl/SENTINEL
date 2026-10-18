@@ -55,7 +55,7 @@ export default function TopBar({
   meta,
   credits,
   activeQuery,
-  onSourcesClick,
+  onKeywordsClick,
   onKeysClick,
   onFavoritesClick,
   onNotesClick,
@@ -74,7 +74,7 @@ export default function TopBar({
   const remaining =
     typeof credits?.remaining === "number" ? credits.remaining : "—";
   const navItems = [
-    { label: "Sources", onClick: onSourcesClick },
+    { label: "Keywords", onClick: onKeywordsClick },
     { label: "Favorites", onClick: onFavoritesClick },
     { label: "Notes", onClick: onNotesClick },
     { label: "Saved", onClick: onSavedSearchesClick },

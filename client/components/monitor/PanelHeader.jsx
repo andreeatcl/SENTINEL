@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Button, { IconButton } from "../ui/Button";
 import { CheckIcon, CloseIcon } from "../ui/icons";
+import { timeAgo } from "../../utils/newsApi";
 
 const TABS = [
   { id: "notes", label: "Notes" },
@@ -34,7 +35,9 @@ export default function PanelHeader({
           {meta && (
             <p className="text-xs text-carbon-500 mt-0.5 truncate">
               {meta.totalResults?.toLocaleString()} results
-              {meta.cached ? ` · cached ${meta.cacheAge}s ago` : ""}
+              {meta.cached
+                ? ` · cached ${timeAgo(Date.now() - meta.cacheAge * 1000)}`
+                : ""}
             </p>
           )}
         </div>

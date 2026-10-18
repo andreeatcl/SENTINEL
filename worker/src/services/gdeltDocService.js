@@ -2,7 +2,6 @@ import countryKeywords from "../../../temporary/countryKeywords.json";
 
 const GDELT_DOC_BASE = "https://api.gdeltproject.org/api/v2/doc/doc";
 const MAX_KEYWORDS = 12; // keeps the query under GDELT's length limit
-const MAX_EXTRA_KEYWORDS = 8;
 const MAX_RECORDS = 75;
 const FETCH_TIMEOUT_MS = 6000;
 const MIN_REQUEST_INTERVAL_MS = 5200;
@@ -24,26 +23,21 @@ function quotePhrase(term) {
   return clean.includes(" ") ? `"${clean}"` : clean;
 }
 
-function buildExtraKeywordGroup(extraKeywords = "") {
-  const terms = extraKeywords
-    .split(",")
-    .map((t) => t.trim())
-    .filter(Boolean)
-    .slice(0, MAX_EXTRA_KEYWORDS);
-  return terms.map(quotePhrase).filter(Boolean).join(" OR ");
-}
-
-export function buildGdeltDocQuery(countryOrTopic, extraKeywords = "") {
+// keywordsParam: comma-separated list chosen by the client, overrides the JSON when present
+export function buildGdeltDocQuery(countryOrTopic, keywordsParam) {
   const normalized = normalizeCountryKey(countryOrTopic);
   const aliases = countryKeywords.aliases || {};
   const resolvedKey = aliases[normalized] || normalized;
   const countryPhrase = quotePhrase(countryOrTopic);
 
-  const keywords = Array.isArray(countryKeywords[normalized])
-    ? countryKeywords[normalized]
-    : Array.isArray(countryKeywords[resolvedKey])
-      ? countryKeywords[resolvedKey]
-      : [];
+  const keywords =
+    keywordsParam !== undefined
+      ? keywordsParam.split(",").filter((k) => k.trim())
+      : Array.isArray(countryKeywords[normalized])
+        ? countryKeywords[normalized]
+        : Array.isArray(countryKeywords[resolvedKey])
+          ? countryKeywords[resolvedKey]
+          : [];
 
   const keywordGroup = keywords
     .slice(0, MAX_KEYWORDS)
@@ -51,11 +45,8 @@ export function buildGdeltDocQuery(countryOrTopic, extraKeywords = "") {
     .filter(Boolean)
     .join(" OR ");
 
-  const extraGroup = buildExtraKeywordGroup(extraKeywords);
-
   const parts = [countryPhrase];
   if (keywordGroup) parts.push(`(${keywordGroup})`);
-  if (extraGroup) parts.push(`(${extraGroup})`);
   return parts.join(" ");
 }
 

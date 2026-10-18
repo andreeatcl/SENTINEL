@@ -34,7 +34,12 @@ export function CountryMark({ code }) {
   );
 }
 
-export default function CountryPicker({ value, onSelect }) {
+export default function CountryPicker({
+  value,
+  onSelect,
+  placement = "up",
+  className = "h-7 w-48 max-w-[60vw]",
+}) {
   const [countries, setCountries] = useState([]);
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -111,7 +116,7 @@ export default function CountryPicker({ value, onSelect }) {
         aria-haspopup="listbox"
         aria-expanded={open}
         disabled={countries.length === 0}
-        className={`${FIELD} relative h-7 w-48 max-w-[60vw] pl-2 pr-7 inline-flex items-center gap-2 text-xs text-left cursor-pointer disabled:opacity-50 disabled:cursor-default`}
+        className={`${FIELD} relative ${className} pl-2 pr-7 inline-flex items-center gap-2 text-xs text-left cursor-pointer disabled:opacity-50 disabled:cursor-default`}
       >
         {selected && <CountryMark code={selected.code} />}
         <span
@@ -127,7 +132,11 @@ export default function CountryPicker({ value, onSelect }) {
       </button>
 
       {open && (
-        <div className="absolute bottom-full left-0 mb-2 w-72 max-w-[calc(100vw-1.5rem)] flex flex-col bg-carbon-900 border border-carbon-800 rounded-xl shadow-panel overflow-hidden animate-pop-in">
+        <div
+          className={`absolute ${
+            placement === "down" ? "top-full mt-2" : "bottom-full mb-2"
+          } left-0 w-72 max-w-[calc(100vw-1.5rem)] z-10 flex flex-col bg-carbon-900 border border-carbon-800 rounded-xl shadow-panel overflow-hidden animate-pop-in`}
+        >
           <div className="p-2 border-b border-carbon-800">
             <Input
               size="sm"

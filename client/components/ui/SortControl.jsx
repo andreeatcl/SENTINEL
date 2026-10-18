@@ -7,6 +7,7 @@ export default function SortControl({
   options,
   onChange,
   onToggleDirection,
+  children,
 }) {
   return (
     <div className="flex items-center gap-2 px-4 py-2.5 border-b border-carbon-800 shrink-0">
@@ -36,6 +37,7 @@ export default function SortControl({
           <ArrowDownIcon className="w-3.5 h-3.5" />
         )}
       </button>
+      {children && <div className="ml-auto shrink-0 pl-2">{children}</div>}
     </div>
   );
 }

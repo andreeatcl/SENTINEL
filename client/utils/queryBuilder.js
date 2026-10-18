@@ -1,7 +1,10 @@
 import countryKeywords from "../../temporary/countryKeywords.json";
+import { getKeywordOverrides, setKeywordOverride } from "./storage";
+
+export const MAX_COUNTRY_KEYWORDS = 25;
 
 // normalize country names to avoid mismatch caused by special characters
-function normalizeCountryKey(value = "") {
+export function normalizeCountryKey(value = "") {
   return value
     .toString()
     .trim()
@@ -70,23 +73,108 @@ function toDisplayVariant(normalizedValue) {
     .join(" ");
 }
 
+function getDataKey(normalizedCountry, resolvedKey) {
+  return Array.isArray(countryKeywords[normalizedCountry])
+    ? normalizedCountry
+    : resolvedKey;
+}
+
+function getDefaultKeywords(dataKey) {
+  return Array.isArray(countryKeywords[dataKey])
+    ? countryKeywords[dataKey]
+    : [];
+}
+
+function applyOverride(defaults, override) {
+  if (!override) return defaults;
+  const removed = new Set(override.remove.map(normalizeCountryKey));
+  return [
+    ...defaults.filter((k) => !removed.has(normalizeCountryKey(k))),
+    ...override.add,
+  ];
+}
+
 function getCountrySpecificKeywords(normalizedCountry, resolvedKey) {
-  if (Array.isArray(countryKeywords[normalizedCountry])) {
-    return countryKeywords[normalizedCountry];
-  }
-  if (Array.isArray(countryKeywords[resolvedKey])) {
-    return countryKeywords[resolvedKey];
-  }
-  return [];
+  const dataKey = getDataKey(normalizedCountry, resolvedKey);
+  return applyOverride(
+    getDefaultKeywords(dataKey),
+    getKeywordOverrides()[dataKey],
+  );
 }
 
 function resolveActiveKeywords(normalizedCountry, resolvedKey) {
+  const dataKey = getDataKey(normalizedCountry, resolvedKey);
   const countrySpecific = getCountrySpecificKeywords(
     normalizedCountry,
     resolvedKey,
   );
-  if (countrySpecific.length > 0) return countrySpecific;
+  // an emptied custom list means no keywords, not the default fallback
+  if (countrySpecific.length > 0 || getKeywordOverrides()[dataKey]) {
+    return countrySpecific;
+  }
   return Array.isArray(countryKeywords.default) ? countryKeywords.default : [];
+}
+
+function countryDataKey(country) {
+  const { normalizedCountry, resolvedKey } = resolveCountryKey(country);
+  return getDataKey(normalizedCountry, resolvedKey);
+}
+
+export function getDefaultCountryKeywords(country) {
+  return getDefaultKeywords(countryDataKey(country));
+}
+
+export function hasCustomKeywords(country) {
+  return Boolean(getKeywordOverrides()[countryDataKey(country)]);
+}
+
+export function getCustomizedCountries() {
+  return Object.values(getKeywordOverrides())
+    .map((override) => override.name)
+    .filter(Boolean);
+}
+
+// stores only the difference from the defaults so curated updates still arrive
+export function saveCountryKeywords(country, keywords) {
+  const dataKey = countryDataKey(country);
+  const defaults = getDefaultKeywords(dataKey);
+  const defaultSet = new Set(defaults.map(normalizeCountryKey));
+  const keptSet = new Set(keywords.map(normalizeCountryKey));
+  const add = keywords.filter((k) => !defaultSet.has(normalizeCountryKey(k)));
+  const remove = defaults.filter((k) => !keptSet.has(normalizeCountryKey(k)));
+  setKeywordOverride(
+    dataKey,
+    add.length || remove.length ? { name: country, add, remove } : null,
+  );
+}
+
+export function resetCountryKeywords(country) {
+  setKeywordOverride(countryDataKey(country), null);
+}
+
+// keywords for the GDELT query
+export function getGdeltKeywordsParam(
+  country,
+  includePoliticalKeywords = true,
+  queryOptions = {},
+) {
+  const toParam = (list) =>
+    list.map((k) => k.replace(/,/g, " ").replace(/\s+/g, " ").trim()).join(",");
+  if (Array.isArray(queryOptions.gdeltTerms)) {
+    return toParam(queryOptions.gdeltTerms);
+  }
+  if (!includePoliticalKeywords || queryOptions.overrideCountryKeywords) {
+    return "";
+  }
+  const override = getKeywordOverrides()[countryDataKey(country)];
+  if (!override) return undefined;
+  // added keywords first so they fall within GDELT's keyword cap
+  const added = new Set(override.add.map(normalizeCountryKey));
+  const keywords = getCountryKeywordOptions(country);
+  return toParam([
+    ...keywords.filter((k) => added.has(normalizeCountryKey(k))),
+    ...keywords.filter((k) => !added.has(normalizeCountryKey(k))),
+  ]);
 }
 
 function hasBooleanOperator(text) {

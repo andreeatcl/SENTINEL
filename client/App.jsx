@@ -3,7 +3,7 @@ import WorldMap from "./components/WorldMap";
 import CountryPicker from "./components/CountryPicker";
 import TopBar from "./components/topbar/TopBar";
 import MonitorPanel from "./components/monitor/MonitorPanel";
-import SourcesModal from "./components/topbar/SourcesModal";
+import KeywordsModal from "./components/topbar/KeywordsModal";
 import ApiKeysModal from "./components/topbar/ApiKeysModal";
 import FavoritesPanel from "./components/favorites/FavoritesPanel";
 import SavedSearchesPanel from "./components/topbar/SavedSearchesPanel";
@@ -23,7 +23,7 @@ import {
 } from "./utils/storage";
 
 export default function App() {
-  const [showSourcesModal, setShowSourcesModal] = useState(false);
+  const [keywordsCountry, setKeywordsCountry] = useState(undefined);
   const [showKeysModal, setShowKeysModal] = useState(() => !hasAnyApiKey());
   const [showFavorites, setShowFavorites] = useState(false);
   const [showSavedSearches, setShowSavedSearches] = useState(false);
@@ -112,13 +112,15 @@ export default function App() {
   );
 
   function handleSaveSearch() {
-    const { topic, extraKeywords, queryOptions } = getCurrentSearch();
+    const { topic, extraKeywords, queryOptions, includePoliticalKeywords } =
+      getCurrentSearch();
     if (!topic) return;
     addSavedSearch({
       label: selectedCountry,
       topic,
       extraKeywords,
       queryOptions,
+      includePoliticalKeywords,
     });
   }
 
@@ -126,9 +128,10 @@ export default function App() {
     <FavoriteContext.Provider value={favoriteContext}>
       <div className="relative w-full h-full overflow-hidden bg-carbon-950">
         {/* Modals */}
-        <SourcesModal
-          isOpen={showSourcesModal}
-          onClose={() => setShowSourcesModal(false)}
+        <KeywordsModal
+          isOpen={keywordsCountry !== undefined}
+          initialCountry={keywordsCountry}
+          onClose={() => setKeywordsCountry(undefined)}
         />
         <ApiKeysModal
           isOpen={showKeysModal}
@@ -187,7 +190,7 @@ export default function App() {
           meta={meta}
           credits={credits}
           activeQuery={activeQuery}
-          onSourcesClick={() => setShowSourcesModal(true)}
+          onKeywordsClick={() => setKeywordsCountry(null)}
           onKeysClick={() => setShowKeysModal(true)}
           onFavoritesClick={() => setShowFavorites(true)}
           onNotesClick={() => setShowNotes(true)}
@@ -221,6 +224,7 @@ export default function App() {
             sourcePriority={sourcePriority}
             onSourcePriorityToggle={handleSourcePriorityToggle}
             onSaveSearch={handleSaveSearch}
+            onEditKeywords={setKeywordsCountry}
             events={events}
             eventsLoading={eventsLoading}
             eventsLoadingMore={eventsLoadingMore}

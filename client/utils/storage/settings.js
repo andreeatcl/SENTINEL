@@ -7,6 +7,7 @@ import {
   getCountryNotes,
   replaceCountryNotes,
 } from "./notes";
+import { getKeywordOverrides, replaceKeywordOverrides } from "./keywords";
 
 const DEFAULT_API_KEYS = { primary: "", backup: "", lastGood: "primary" };
 
@@ -38,6 +39,7 @@ export function exportData() {
     savedSearches: getSavedSearches(),
     notes: getNotes(),
     countryNotes: getCountryNotes(),
+    keywordOverrides: getKeywordOverrides(),
   };
 }
 
@@ -60,4 +62,10 @@ export function importData(data) {
     !Array.isArray(data.countryNotes)
   )
     replaceCountryNotes(data.countryNotes);
+  if (
+    data.keywordOverrides &&
+    typeof data.keywordOverrides === "object" &&
+    !Array.isArray(data.keywordOverrides)
+  )
+    replaceKeywordOverrides(data.keywordOverrides);
 }

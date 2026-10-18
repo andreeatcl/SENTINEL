@@ -103,6 +103,7 @@ export default function KeywordQueryModal({
       queryOptions: {
         includeCountry: includeCountryInQuery,
         overrideCountryKeywords: true,
+        gdeltTerms: [...selectedKeywords, ...customTerms],
       },
     });
     onClose();

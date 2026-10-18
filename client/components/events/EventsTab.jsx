@@ -1,7 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { CAMEO_ROOT_CATEGORIES } from "../../utils/cameoCategories";
 import { TONE_LABELS } from "../../utils/eventTone";
-import { AccordionSection, FilterGroup, Pill } from "../ui/FilterAccordion";
+import {
+  FilterCheckbox,
+  FilterSection,
+  FilterGroup,
+  Pill,
+} from "../ui/FilterAccordion";
 import SortControl from "../ui/SortControl";
 import SearchBar from "../ui/SearchBar";
 import EventsList from "./EventsList";
@@ -100,8 +105,7 @@ export default function EventsTab({
     (draftFilters.category.length < CAMEO_ROOT_CATEGORIES.length ? 1 : 0) +
     (draftFilters.tone.length < Object.keys(TONE_LABELS).length ? 1 : 0) +
     (draftFilters.sourcePriority ? 1 : 0) +
-    (keyword ? 1 : 0) +
-    (hideRead ? 1 : 0);
+    (keyword ? 1 : 0);
 
   function handleLoadMoreClick() {
     onLoadMoreEvents();
@@ -122,10 +126,14 @@ export default function EventsTab({
             sortDir: f.sortDir === "asc" ? "desc" : "asc",
           }))
         }
-      />
+      >
+        <FilterCheckbox checked={hideRead} onChange={setHideRead}>
+          Hide read
+        </FilterCheckbox>
+      </SortControl>
 
       <FilterGroup activeCount={activeFilterCount}>
-        <AccordionSection title="Time range" defaultOpen>
+        <FilterSection title="Time range">
           {TIME_RANGES.map((t) => (
             <Pill
               key={t}
@@ -135,9 +143,9 @@ export default function EventsTab({
               {t}
             </Pill>
           ))}
-        </AccordionSection>
+        </FilterSection>
 
-        <AccordionSection
+        <FilterSection
           title="Category"
           scrollX
           activeCount={draftFilters.category.length}
@@ -164,9 +172,9 @@ export default function EventsTab({
               {label}
             </Pill>
           ))}
-        </AccordionSection>
+        </FilterSection>
 
-        <AccordionSection
+        <FilterSection
           title="Tone"
           activeCount={draftFilters.tone.length}
           totalCount={Object.keys(TONE_LABELS).length}
@@ -190,9 +198,9 @@ export default function EventsTab({
               {label}
             </Pill>
           ))}
-        </AccordionSection>
+        </FilterSection>
 
-        <AccordionSection
+        <FilterSection
           title="Source"
           activeCount={draftFilters.sourcePriority ? 1 : 0}
         >
@@ -210,11 +218,11 @@ export default function EventsTab({
               {label}
             </Pill>
           ))}
-        </AccordionSection>
+        </FilterSection>
 
         {/* Client-side only (filters what's already loaded) — instant,
             no request, so it's live rather than gated behind Search */}
-        <AccordionSection title="Keyword" activeCount={keyword ? 1 : 0}>
+        <FilterSection title="Keyword" activeCount={keyword ? 1 : 0}>
           <Input
             size="sm"
             type="text"
@@ -223,13 +231,7 @@ export default function EventsTab({
             placeholder="Filter loaded events…"
             className="w-full"
           />
-        </AccordionSection>
-
-        <AccordionSection title="Read" activeCount={hideRead ? 1 : 0}>
-          <Pill active={hideRead} onClick={() => setHideRead((h) => !h)}>
-            Hide read
-          </Pill>
-        </AccordionSection>
+        </FilterSection>
       </FilterGroup>
 
       {isDirty && (
