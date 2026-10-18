@@ -13,6 +13,12 @@ import EventDetail from "./components/events/EventDetail";
 import ArticleDetail from "./components/articles/ArticleDetail";
 import { FavoriteContext } from "./components/favorites/FavoriteButton";
 import { useAppControls } from "./hooks/useAppControls";
+import {
+  buildTopicQuery,
+  getCountryKeywordOptions,
+  getGdeltKeywordsParam,
+} from "./utils/queryBuilder";
+import SaveSearchModal from "./components/monitor/SaveSearchModal";
 import { useApiCredits } from "./hooks/useApiCredits";
 import {
   hasAnyApiKey,
@@ -30,6 +36,8 @@ export default function App() {
   const [showBackup, setShowBackup] = useState(false);
   const [showNotes, setShowNotes] = useState(false);
   const [panelTab, setPanelTab] = useState("notes");
+  // snapshot waiting in the Save dialog, null when closed
+  const [pendingSave, setPendingSave] = useState(null);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [selectedArticle, setSelectedArticle] = useState(null);
 
@@ -51,6 +59,8 @@ export default function App() {
     useTopSourcesOnly,
     englishOnly,
     sourcePriority,
+    savedQueryActive,
+    activeBuilder,
     articles,
     loading,
     loadingMore,
@@ -112,16 +122,43 @@ export default function App() {
   );
 
   function handleSaveSearch() {
-    const { topic, extraKeywords, queryOptions, includePoliticalKeywords } =
-      getCurrentSearch();
-    if (!topic) return;
-    addSavedSearch({
-      label: selectedCountry,
-      topic,
-      extraKeywords,
-      queryOptions,
-      includePoliticalKeywords,
+    const current = getCurrentSearch();
+    if (!current.topic) return;
+    const fresh = current.topic !== current.lastTopic;
+    const q = fresh
+      ? current.raw
+        ? current.topic
+        : buildTopicQuery(
+            current.topic,
+            current.extraKeywords,
+            current.includePoliticalKeywords,
+            current.queryOptions,
+          )
+      : current.q;
+    let gdeltKeywords = fresh
+      ? getGdeltKeywordsParam(
+          current.topic,
+          current.includePoliticalKeywords,
+          current.queryOptions,
+        )
+      : current.gdeltKeywords;
+    if (!current.raw && gdeltKeywords === undefined) {
+      gdeltKeywords = getCountryKeywordOptions(current.topic).join(",");
+    }
+    setPendingSave({
+      ...current,
+      q,
+      gdeltKeywords: current.raw ? undefined : gdeltKeywords,
     });
+  }
+
+  function handleConfirmSave(label) {
+    if (pendingSave) addSavedSearch({ ...pendingSave, label });
+  }
+
+  function handleRunSaved(saved) {
+    handleRunSavedSearch(saved);
+    setPanelTab("articles");
   }
 
   return (
@@ -147,7 +184,14 @@ export default function App() {
         <SavedSearchesPanel
           isOpen={showSavedSearches}
           onClose={() => setShowSavedSearches(false)}
-          onRun={handleRunSavedSearch}
+          onRun={handleRunSaved}
+        />
+        <SaveSearchModal
+          isOpen={!!pendingSave}
+          defaultLabel={selectedCountry || pendingSave?.topic}
+          query={pendingSave?.q}
+          onSave={handleConfirmSave}
+          onClose={() => setPendingSave(null)}
         />
         <DataBackupModal
           isOpen={showBackup}
@@ -189,7 +233,6 @@ export default function App() {
           loading={loading}
           meta={meta}
           credits={credits}
-          activeQuery={activeQuery}
           onKeywordsClick={() => setKeywordsCountry(null)}
           onKeysClick={() => setShowKeysModal(true)}
           onFavoritesClick={() => setShowFavorites(true)}
@@ -224,7 +267,10 @@ export default function App() {
             sourcePriority={sourcePriority}
             onSourcePriorityToggle={handleSourcePriorityToggle}
             onSaveSearch={handleSaveSearch}
+            canSaveSearch={!!selectedCountry || !!activeQuery}
+            activeBuilder={activeBuilder}
             onEditKeywords={setKeywordsCountry}
+            savedQueryActive={savedQueryActive}
             events={events}
             eventsLoading={eventsLoading}
             eventsLoadingMore={eventsLoadingMore}

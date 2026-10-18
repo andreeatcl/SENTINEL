@@ -25,6 +25,7 @@ export function useNews() {
   const englishOnlyRef = useRef(false);
   const sourcePriorityRef = useRef(null);
   const pageRef = useRef(1);
+  const lastRequestRef = useRef({});
 
   // avoids a new API call when any toggle changes
   function applyClientFilters(inputArticles) {
@@ -62,14 +63,28 @@ export function useNews() {
       sourcePriorityRef.current = sourcePriority;
 
       pageRef.current = page;
-      const q = raw
-        ? topic
-        : buildTopicQuery(
-            topic,
-            extraKeywords,
-            includePoliticalKeywords,
-            queryOptions,
-          );
+
+      const fixed = queryOptions.fixed;
+      const q = fixed
+        ? fixed.q
+        : raw
+          ? topic
+          : buildTopicQuery(
+              topic,
+              extraKeywords,
+              includePoliticalKeywords,
+              queryOptions,
+            );
+      const gdeltKeywords = raw
+        ? undefined
+        : fixed
+          ? fixed.gdeltKeywords
+          : getGdeltKeywordsParam(
+              topic,
+              includePoliticalKeywords,
+              queryOptions,
+            );
+      lastRequestRef.current = { q, gdeltKeywords, lastTopic: topic };
       if (append) {
         setLoadingMore(true);
       } else {
@@ -81,13 +96,7 @@ export function useNews() {
         const data = await fetchNews({
           q,
           topic: raw ? undefined : topic,
-          gdeltKeywords: raw
-            ? undefined
-            : getGdeltKeywordsParam(
-                topic,
-                includePoliticalKeywords,
-                queryOptions,
-              ),
+          gdeltKeywords,
           sortBy,
           timeRange,
           page,
@@ -183,6 +192,7 @@ export function useNews() {
     englishOnlyRef.current = false;
     sourcePriorityRef.current = null;
     pageRef.current = 1;
+    lastRequestRef.current = {};
   }, []);
 
   const setTopSourcesOnly = useCallback(
@@ -209,6 +219,8 @@ export function useNews() {
     [allArticles],
   );
 
+  const getLastRequest = useCallback(() => ({ ...lastRequestRef.current }), []);
+
   const totalForApi = Math.min(meta?.totalResults ?? 0, 100);
   const canLoadMore =
     allArticles.length > 0 && allArticles.length < totalForApi;
@@ -222,6 +234,7 @@ export function useNews() {
     meta,
     activeQuery,
     search,
+    getLastRequest,
     resort,
     loadMore,
     setTopSourcesOnly,

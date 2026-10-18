@@ -27,7 +27,10 @@ export default function MonitorPanel({
   sourcePriority,
   onSourcePriorityToggle,
   onSaveSearch,
+  canSaveSearch,
+  activeBuilder,
   onEditKeywords,
+  savedQueryActive,
   events,
   eventsLoading,
   eventsLoadingMore,
@@ -58,6 +61,7 @@ export default function MonitorPanel({
         activeTab={activeTab}
         onTabClick={handleTabClick}
         onSaveSearch={onSaveSearch}
+        canSaveSearch={canSaveSearch}
         onClose={onClose}
       />
 
@@ -100,6 +104,8 @@ export default function MonitorPanel({
           onLoadMore={onLoadMore}
           onSelectArticle={onSelectArticle}
           onEditKeywords={onEditKeywords}
+          savedQueryActive={savedQueryActive}
+          activeBuilder={activeBuilder}
         />
       )}
     </div>

@@ -5,25 +5,60 @@ export function getSavedSearches() {
   return read(STORAGE_KEYS.savedSearches, []);
 }
 
-export function addSavedSearch({
+function toSavedFields({
   label,
   topic,
+  raw,
   extraKeywords,
   queryOptions,
   includePoliticalKeywords,
+  q,
+  gdeltKeywords,
+  sortBy,
+  timeRange,
+  useTopSourcesOnly,
+  englishOnly,
+  sourcePriority,
 }) {
-  if (!topic) return;
+  // eslint-disable-next-line no-unused-vars
+  const { fixed, ...builderOptions } = queryOptions || {};
+  return {
+    label: label?.trim() || topic,
+    topic,
+    raw: !!raw,
+    extraKeywords: extraKeywords || "",
+    queryOptions: builderOptions,
+    includePoliticalKeywords: includePoliticalKeywords !== false,
+    q,
+    gdeltKeywords,
+    sortBy,
+    timeRange,
+    useTopSourcesOnly: !!useTopSourcesOnly,
+    englishOnly: !!englishOnly,
+    sourcePriority: sourcePriority || null,
+  };
+}
+
+export function addSavedSearch(search) {
+  if (!search?.topic) return;
   const savedSearch = {
     id: `${Date.now()}`,
-    label: label || topic,
-    topic,
-    extraKeywords: extraKeywords || "",
-    queryOptions: queryOptions || {},
-    includePoliticalKeywords: includePoliticalKeywords !== false,
+    ...toSavedFields(search),
     createdAt: new Date().toISOString(),
   };
   write(STORAGE_KEYS.savedSearches, [savedSearch, ...getSavedSearches()]);
   return savedSearch;
+}
+
+export function renameSavedSearch(id, label) {
+  const clean = label.trim();
+  if (!clean) return;
+  write(
+    STORAGE_KEYS.savedSearches,
+    getSavedSearches().map((item) =>
+      item.id === id ? { ...item, label: clean } : item,
+    ),
+  );
 }
 
 export function removeSavedSearch(id) {

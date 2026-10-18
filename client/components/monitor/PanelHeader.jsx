@@ -1,6 +1,5 @@
-import { useState } from "react";
 import Button, { IconButton } from "../ui/Button";
-import { CheckIcon, CloseIcon } from "../ui/icons";
+import { CloseIcon } from "../ui/icons";
 import { timeAgo } from "../../utils/newsApi";
 
 const TABS = [
@@ -15,16 +14,9 @@ export default function PanelHeader({
   activeTab,
   onTabClick,
   onSaveSearch,
+  canSaveSearch,
   onClose,
 }) {
-  const [savedFlash, setSavedFlash] = useState(false);
-
-  function handleSaveSearchClick() {
-    onSaveSearch();
-    setSavedFlash(true);
-    setTimeout(() => setSavedFlash(false), 1200);
-  }
-
   return (
     <div className="shrink-0 border-b border-carbon-800">
       <div className="flex items-start justify-between gap-3 px-4 pt-4 pb-3">
@@ -43,21 +35,14 @@ export default function PanelHeader({
         </div>
 
         <div className="flex items-center gap-1 shrink-0 -mr-1.5">
-          {selectedCountry && (
+          {canSaveSearch && (
             <Button
               size="sm"
               variant="secondary"
-              onClick={handleSaveSearchClick}
+              onClick={onSaveSearch}
               title="Save this search"
             >
-              {savedFlash ? (
-                <>
-                  <CheckIcon className="w-3.5 h-3.5" />
-                  Saved
-                </>
-              ) : (
-                "Save search"
-              )}
+              Save search
             </Button>
           )}
           <IconButton label="Close panel" onClick={onClose}>

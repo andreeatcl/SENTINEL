@@ -14,6 +14,8 @@ export function useAppControls() {
   const [useTopSourcesOnly, setUseTopSourcesOnly] = useState(false);
   const [englishOnly, setEnglishOnlyState] = useState(false);
   const [sourcePriority, setSourcePriorityState] = useState(null);
+  const [savedQueryActive, setSavedQueryActive] = useState(false);
+  const [activeBuilder, setActiveBuilder] = useState(null);
   const [isMobile, setIsMobile] = useState(() =>
     typeof window !== "undefined"
       ? window.innerWidth < MOBILE_BREAKPOINT
@@ -48,6 +50,7 @@ export function useAppControls() {
     meta,
     activeQuery,
     search,
+    getLastRequest,
     loadMore,
     setTopSourcesOnly: applyTopSourcesFilter,
     setEnglishOnly: applyEnglishOnlyFilter,
@@ -86,7 +89,16 @@ export function useAppControls() {
       includePoliticalKeywords: political = includePoliticalKeywords,
       sortBy: sortByOverride = sortBy,
       timeRange: timeRangeOverride = timeRange,
+      useTopSourcesOnly: topSourcesOverride = useTopSourcesOnly,
+      englishOnly: englishOnlyOverride = englishOnly,
+      sourcePriority: sourcePriorityOverride = sourcePriority,
     }) => {
+      setSavedQueryActive(Boolean(queryOptions.fixed));
+      setActiveBuilder(
+        queryOptions.builder
+          ? { expression: extraKeywords, state: queryOptions.builder }
+          : null,
+      );
       searchContextRef.current = { topic, extraKeywords, queryOptions, raw };
       search({
         topic,
@@ -96,9 +108,9 @@ export function useAppControls() {
         sortBy: sortByOverride,
         timeRange: timeRangeOverride,
         includePoliticalKeywords: political,
-        useTopSourcesOnly,
-        englishOnly,
-        sourcePriority,
+        useTopSourcesOnly: topSourcesOverride,
+        englishOnly: englishOnlyOverride,
+        sourcePriority: sourcePriorityOverride,
         page: 1,
         append: false,
       });
@@ -117,6 +129,8 @@ export function useAppControls() {
   const handleCountryClick = useCallback(
     (countryName) => {
       setSelectedCountry(countryName);
+      setSavedQueryActive(false);
+      setActiveBuilder(null);
       searchContextRef.current = {
         topic: countryName,
         extraKeywords: "",
@@ -187,6 +201,7 @@ export function useAppControls() {
 
   const handleClose = useCallback(() => {
     setSelectedCountry(null);
+    setActiveBuilder(null);
     articlesFetchedRef.current = false;
     clear();
     clearEvents();
@@ -219,25 +234,75 @@ export function useAppControls() {
 
   // re-run a search saved earlier (see SavedSearchesPanel.jsx)
   const handleRunSavedSearch = useCallback(
-    ({ topic, extraKeywords, queryOptions, includePoliticalKeywords }) => {
+    (saved) => {
+      const { topic, extraKeywords, queryOptions, includePoliticalKeywords } =
+        saved;
       const political = includePoliticalKeywords !== false;
-      setSelectedCountry(topic);
+      setSelectedCountry(saved.raw ? null : topic);
       setIncludePoliticalKeywords(political);
       articlesFetchedRef.current = true;
+      if (!saved.q) {
+        runSearch({
+          topic,
+          extraKeywords,
+          queryOptions,
+          includePoliticalKeywords: political,
+        });
+        searchEvents(topic);
+        return;
+      }
+      const filters = {
+        sortBy: saved.sortBy || "relevancy",
+        timeRange: saved.timeRange || "7d",
+        useTopSourcesOnly: !!saved.useTopSourcesOnly,
+        englishOnly: !!saved.englishOnly,
+        sourcePriority: saved.sourcePriority || null,
+      };
+      setSortBy(filters.sortBy);
+      setTimeRange(filters.timeRange);
+      setUseTopSourcesOnly(filters.useTopSourcesOnly);
+      setEnglishOnlyState(filters.englishOnly);
+      setSourcePriorityState(filters.sourcePriority);
       runSearch({
         topic,
         extraKeywords,
-        queryOptions,
+        queryOptions: {
+          ...queryOptions,
+          fixed: { q: saved.q, gdeltKeywords: saved.gdeltKeywords },
+        },
         includePoliticalKeywords: political,
+        raw: !!saved.raw,
+        ...filters,
       });
+      if (saved.raw) {
+        clearEvents();
+        return;
+      }
       searchEvents(topic);
     },
-    [runSearch, searchEvents],
+    [runSearch, searchEvents, clearEvents],
   );
 
   const getCurrentSearch = useCallback(
-    () => ({ ...searchContextRef.current, includePoliticalKeywords }),
-    [includePoliticalKeywords],
+    () => ({
+      ...searchContextRef.current,
+      ...getLastRequest(),
+      includePoliticalKeywords,
+      sortBy,
+      timeRange,
+      useTopSourcesOnly,
+      englishOnly,
+      sourcePriority,
+    }),
+    [
+      getLastRequest,
+      includePoliticalKeywords,
+      sortBy,
+      timeRange,
+      useTopSourcesOnly,
+      englishOnly,
+      sourcePriority,
+    ],
   );
 
   return {
@@ -249,6 +314,8 @@ export function useAppControls() {
     useTopSourcesOnly,
     englishOnly,
     sourcePriority,
+    savedQueryActive,
+    activeBuilder,
     isMobile,
     articles,
     loading,

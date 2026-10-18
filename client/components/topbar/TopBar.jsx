@@ -54,7 +54,6 @@ export default function TopBar({
   loading,
   meta,
   credits,
-  activeQuery,
   onKeywordsClick,
   onKeysClick,
   onFavoritesClick,
@@ -148,29 +147,6 @@ export default function TopBar({
         ))}
       </nav>
       <NavMenu items={navItems} />
-
-      {/* Active query label */}
-      {activeQuery && (
-        <div
-          className={`${HUD_SURFACE} hidden xl:flex flex-col justify-center group relative px-3 max-w-xs`}
-          title={activeQuery}
-          tabIndex={0}
-        >
-          <span className="text-2xs text-carbon-500 leading-none">Query</span>
-          <span className="text-xs font-mono text-carbon-200 truncate leading-tight mt-0.5">
-            {activeQuery}
-          </span>
-
-          <div className="pointer-events-none absolute right-0 top-full mt-2 w-[540px] max-w-[75vw] p-3 bg-carbon-900 border border-carbon-800 rounded-lg shadow-panel z-[1001] opacity-0 invisible transition-opacity duration-150 group-hover:opacity-100 group-hover:visible group-focus-within:opacity-100 group-focus-within:visible">
-            <span className="text-2xs font-medium uppercase tracking-wider text-carbon-500 block mb-1.5">
-              Full query
-            </span>
-            <p className="text-xs font-mono text-carbon-200 whitespace-pre-wrap break-words leading-relaxed max-h-44 overflow-y-auto">
-              {activeQuery}
-            </p>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

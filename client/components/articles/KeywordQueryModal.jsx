@@ -1,15 +1,17 @@
 import { useEffect, useMemo, useState } from "react";
-import { quoteKeyword } from "../../utils/queryBuilder";
+import { buildTopicQuery, quoteKeyword } from "../../utils/queryBuilder";
 import KeywordGrid from "./KeywordGrid";
 import KeywordOperatorControls from "./KeywordOperatorControls";
 import CustomTermInput from "./CustomTermInput";
 import Modal from "../ui/Modal";
 import Button from "../ui/Button";
+import { Eyebrow } from "../ui/Field";
 
 export default function KeywordQueryModal({
   isOpen,
   countryName,
   availableKeywords,
+  initialState,
   onApply,
   onClose,
 }) {
@@ -23,13 +25,20 @@ export default function KeywordQueryModal({
 
   useEffect(() => {
     if (!isOpen) return;
-    setSelectedKeywords([]);
-    setCustomTerms([]);
+    const state = initialState || {};
+    const available = new Set(availableKeywords || []);
+    const selected = state.selectedKeywords || [];
+    setSelectedKeywords(selected.filter((k) => available.has(k)));
+    setCustomTerms([
+      ...selected.filter((k) => !available.has(k)),
+      ...(state.customTerms || []),
+    ]);
     setCustomInput("");
-    setSelectedOperator("OR");
-    setCustomOperator("OR");
-    setCombineOperator("OR");
-    setIncludeCountryInQuery(true);
+    setSelectedOperator(state.selectedOperator || "OR");
+    setCustomOperator(state.customOperator || "OR");
+    setCombineOperator(state.combineOperator || "OR");
+    setIncludeCountryInQuery(state.includeCountry !== false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
 
   const sortedKeywords = useMemo(
@@ -79,24 +88,35 @@ export default function KeywordQueryModal({
   }
 
   // merging independent keyword groups using OR/AND operators
-  function handleApply() {
+  const expression = useMemo(() => {
     const selectedExpr = selectedKeywords
       .map((keyword) => quoteKeyword(keyword))
       .join(` ${selectedOperator} `);
     const customExpr = customTerms
       .map((keyword) => quoteKeyword(keyword))
       .join(` ${customOperator} `);
-
-    let expression = "";
     if (selectedExpr && customExpr) {
-      expression = `(${selectedExpr}) ${combineOperator} (${customExpr})`;
-    } else {
-      expression = selectedExpr || customExpr;
+      return `(${selectedExpr}) ${combineOperator} (${customExpr})`;
     }
+    return selectedExpr || customExpr;
+  }, [
+    selectedKeywords,
+    customTerms,
+    selectedOperator,
+    customOperator,
+    combineOperator,
+  ]);
 
-    if (!includeCountryInQuery && !expression) {
-      return;
-    }
+  const canApply = includeCountryInQuery || !!expression;
+  const previewQuery = canApply
+    ? buildTopicQuery(countryName || "", expression, true, {
+        includeCountry: includeCountryInQuery,
+        overrideCountryKeywords: true,
+      })
+    : "";
+
+  function handleApply() {
+    if (!canApply) return;
 
     onApply({
       expression,
@@ -104,6 +124,14 @@ export default function KeywordQueryModal({
         includeCountry: includeCountryInQuery,
         overrideCountryKeywords: true,
         gdeltTerms: [...selectedKeywords, ...customTerms],
+        builder: {
+          selectedKeywords,
+          customTerms,
+          selectedOperator,
+          customOperator,
+          combineOperator,
+          includeCountry: includeCountryInQuery,
+        },
       },
     });
     onClose();
@@ -120,7 +148,7 @@ export default function KeywordQueryModal({
       footer={
         <>
           <Button onClick={onClose}>Cancel</Button>
-          <Button variant="primary" onClick={handleApply}>
+          <Button variant="primary" onClick={handleApply} disabled={!canApply}>
             Apply query
           </Button>
         </>
@@ -155,6 +183,19 @@ export default function KeywordQueryModal({
           customTerms={customTerms}
           onRemoveTerm={removeCustomTerm}
         />
+      </div>
+
+      <div className="sticky bottom-0 px-5 py-3 border-t border-carbon-800 bg-carbon-900">
+        <Eyebrow className="mb-1.5">Query preview</Eyebrow>
+        {previewQuery ? (
+          <p className="text-xs font-mono text-carbon-200 break-words max-h-20 overflow-y-auto">
+            {previewQuery}
+          </p>
+        ) : (
+          <p className="text-xs text-carbon-500">
+            Pick a keyword or include the country name.
+          </p>
+        )}
       </div>
     </Modal>
   );

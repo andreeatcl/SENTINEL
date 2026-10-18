@@ -55,8 +55,10 @@ export default function ArticlesTab({
   onLoadMore,
   onSelectArticle,
   onEditKeywords,
+  savedQueryActive,
+  activeBuilder,
 }) {
-  const [queryPreview, setQueryPreview] = useState("");
+  const queryPreview = activeBuilder?.expression || "";
   const listRef = useRef(null);
   const [hideRead, setHideRead] = useState(false);
   const readItems = useReadItems();
@@ -94,9 +96,13 @@ export default function ArticlesTab({
     [selectedCountry, keywordOverrides],
   );
 
+  // keep the draft in line with applied filters (e.g. after running a saved query)
+  useEffect(() => {
+    setDraftFilters({ sortBy, timeRange, includePoliticalKeywords });
+  }, [sortBy, timeRange, includePoliticalKeywords]);
+
   // reset keyword query + draft when switching countries
   useEffect(() => {
-    setQueryPreview("");
     setShowKeywordModal(false);
     setDraftFilters({ sortBy, timeRange, includePoliticalKeywords });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -115,7 +121,6 @@ export default function ArticlesTab({
 
   function handleApplyKeywordQuery({ expression, queryOptions }) {
     const nextExpression = expression || "";
-    setQueryPreview(nextExpression);
     if (selectedCountry) {
       onExtraSearch({
         topic: selectedCountry,
@@ -126,7 +131,6 @@ export default function ArticlesTab({
   }
 
   function clearKeywordQuery() {
-    setQueryPreview("");
     if (selectedCountry) {
       onExtraSearch({
         topic: selectedCountry,
@@ -188,7 +192,7 @@ export default function ArticlesTab({
               <div className="flex flex-wrap items-center gap-1.5">
                 <FilterCheckbox
                   checked={draftFilters.includePoliticalKeywords}
-                  disabled={!!queryPreview}
+                  disabled={!!queryPreview || savedQueryActive}
                   onChange={(checked) =>
                     setDraftFilters((f) => ({
                       ...f,
@@ -224,9 +228,11 @@ export default function ArticlesTab({
                   </Button>
                 )}
               </div>
-              {!!queryPreview && (
+              {(!!queryPreview || savedQueryActive) && (
                 <p className="text-2xs text-carbon-500">
-                  The keyword builder query replaces the country keywords.
+                  {queryPreview
+                    ? "The keyword builder query replaces the country keywords."
+                    : "Running a saved query — its keywords are fixed."}
                 </p>
               )}
               {!!queryPreview && (
@@ -320,6 +326,7 @@ export default function ArticlesTab({
         isOpen={showKeywordModal && !!selectedCountry}
         countryName={selectedCountry}
         availableKeywords={availableKeywords}
+        initialState={activeBuilder?.state}
         onApply={handleApplyKeywordQuery}
         onClose={() => setShowKeywordModal(false)}
       />
