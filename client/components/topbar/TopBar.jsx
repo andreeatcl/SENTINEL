@@ -1,10 +1,16 @@
 import { useEffect, useRef, useState } from "react";
 import { SearchIcon, MenuIcon, RadarIcon } from "../ui/icons";
+import { getBackupReminder } from "../../utils/storage";
 
 const HUD_SURFACE =
   "pointer-events-auto h-10 bg-carbon-900/90 border border-carbon-800 rounded-lg backdrop-blur-md shadow-pop";
 
-function NavMenu({ items }) {
+const REMINDER_TONE = {
+  warn: "text-signal-amber",
+  overdue: "text-signal-red",
+};
+
+function NavMenu({ items, tone }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
 
@@ -24,7 +30,7 @@ function NavMenu({ items }) {
         onClick={() => setOpen((o) => !o)}
         aria-expanded={open}
         aria-label="Menu"
-        className={`${HUD_SURFACE} w-10 flex items-center justify-center text-carbon-300 hover:text-white transition-colors`}
+        className={`${HUD_SURFACE} w-10 flex items-center justify-center hover:text-white transition-colors ${tone ?? "text-carbon-300"}`}
       >
         <MenuIcon />
       </button>
@@ -38,7 +44,7 @@ function NavMenu({ items }) {
                 setOpen(false);
                 item.onClick();
               }}
-              className="w-full h-9 px-3 flex items-center rounded-md text-sm text-carbon-200 hover:bg-carbon-800 hover:text-white transition-colors"
+              className={`w-full h-9 px-3 flex items-center rounded-md text-sm hover:bg-carbon-800 hover:text-white transition-colors ${item.tone ?? "text-carbon-200"}`}
             >
               {item.label}
             </button>
@@ -72,12 +78,13 @@ export default function TopBar({
 
   const remaining =
     typeof credits?.remaining === "number" ? credits.remaining : "—";
+  const backupTone = REMINDER_TONE[getBackupReminder()];
   const navItems = [
     { label: "Keywords", onClick: onKeywordsClick },
     { label: "Favorites", onClick: onFavoritesClick },
     { label: "Notes", onClick: onNotesClick },
     { label: "Saved", onClick: onSavedSearchesClick },
-    { label: "Backup", onClick: onBackupClick },
+    { label: "Backup", onClick: onBackupClick, tone: backupTone },
     { label: "API keys", onClick: onKeysClick },
   ];
 
@@ -140,13 +147,13 @@ export default function TopBar({
             key={item.label}
             type="button"
             onClick={item.onClick}
-            className="h-8 px-2.5 rounded-md text-xs font-medium text-carbon-300 hover:bg-carbon-800 hover:text-white transition-colors"
+            className={`h-8 px-2.5 rounded-md text-xs font-medium hover:bg-carbon-800 hover:text-white transition-colors ${item.tone ?? "text-carbon-300"}`}
           >
             {item.label}
           </button>
         ))}
       </nav>
-      <NavMenu items={navItems} />
+      <NavMenu items={navItems} tone={backupTone} />
     </div>
   );
 }

@@ -28,6 +28,22 @@ export function getLastBackup() {
   return read(STORAGE_KEYS.lastBackup, null);
 }
 
+// snooze backup reminder for 5 days
+export function snoozeBackupReminder() {
+  write(STORAGE_KEYS.backupSnoozed, new Date().toISOString());
+}
+
+export function getBackupReminder() {
+  const times = [getLastBackup(), read(STORAGE_KEYS.backupSnoozed, null)]
+    .filter(Boolean)
+    .map((t) => new Date(t).getTime());
+  if (!times.length) return "overdue";
+  const days = Math.floor((Date.now() - Math.max(...times)) / 86_400_000);
+  if (days >= 7) return "overdue";
+  if (days >= 5) return "warn";
+  return null;
+}
+
 // export/import used to counter Safari's data wipeout
 export function exportData() {
   write(STORAGE_KEYS.lastBackup, new Date().toISOString());

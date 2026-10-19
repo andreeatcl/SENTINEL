@@ -4,6 +4,8 @@ import {
   importData,
   getStorageUsage,
   getLastBackup,
+  getBackupReminder,
+  snoozeBackupReminder,
 } from "../../utils/storage";
 import { formatDate } from "../../utils/newsApi";
 import Modal from "../ui/Modal";
@@ -94,6 +96,11 @@ export default function DataBackupModal({ isOpen, onClose }) {
     setStatus({ type: "ok", message: "Backup downloaded." });
   }
 
+  function handleSnooze() {
+    snoozeBackupReminder();
+    setStatus({ type: "ok", message: "OK, no reminder for the next 5 days." });
+  }
+
   async function handleImportFile(e) {
     const file = e.target.files?.[0];
     e.target.value = "";
@@ -147,6 +154,16 @@ export default function DataBackupModal({ isOpen, onClose }) {
             className="hidden"
           />
         </div>
+
+        {isOpen && getBackupReminder() && (
+          <button
+            type="button"
+            onClick={handleSnooze}
+            className="text-xs text-carbon-400 hover:text-white underline underline-offset-2 transition-colors"
+          >
+            Remind me later
+          </button>
+        )}
 
         {status && (
           <p

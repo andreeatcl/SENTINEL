@@ -10,6 +10,7 @@ export const STORAGE_KEYS = {
   notes: "sentinel.notes",
   countryNotes: "sentinel.countryNotes",
   lastBackup: "sentinel.lastBackup",
+  backupSnoozed: "sentinel.backupSnoozed",
   notesViewed: "sentinel.notesViewed",
   readItems: "sentinel.readItems",
   keywordOverrides: "sentinel.keywordOverrides",
