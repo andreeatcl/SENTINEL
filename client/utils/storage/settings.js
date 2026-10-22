@@ -8,6 +8,7 @@ import {
   replaceCountryNotes,
 } from "./notes";
 import { getKeywordOverrides, replaceKeywordOverrides } from "./keywords";
+import { getMutedDomains, replaceMutedDomains } from "./mutedDomains";
 
 const DEFAULT_API_KEYS = { primary: "", backup: "", lastGood: "primary" };
 
@@ -56,6 +57,7 @@ export function exportData() {
     notes: getNotes(),
     countryNotes: getCountryNotes(),
     keywordOverrides: getKeywordOverrides(),
+    mutedDomains: getMutedDomains(),
   };
 }
 
@@ -84,4 +86,5 @@ export function importData(data) {
     !Array.isArray(data.keywordOverrides)
   )
     replaceKeywordOverrides(data.keywordOverrides);
+  if (Array.isArray(data.mutedDomains)) replaceMutedDomains(data.mutedDomains);
 }

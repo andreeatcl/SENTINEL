@@ -69,6 +69,21 @@ export function filterEnglishOnly(inputArticles) {
   });
 }
 
+// also mute subdomains
+export function isMutedDomain(url, mutedDomains) {
+  const hostname = hostnameOf(url || "");
+  if (!hostname) return false;
+  return mutedDomains.some(
+    (domain) => hostname === domain || hostname.endsWith(`.${domain}`),
+  );
+}
+
+export function filterMutedDomains(inputArticles, mutedDomains) {
+  const list = inputArticles || [];
+  if (!mutedDomains?.length) return list;
+  return list.filter((article) => !isMutedDomain(article?.url, mutedDomains));
+}
+
 export function prioritizeTier(inputArticles, tier) {
   const list = inputArticles || [];
   const matching = list.filter((a) => a?._trustLabel?.tier === tier);

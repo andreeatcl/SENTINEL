@@ -14,6 +14,7 @@ export const STORAGE_KEYS = {
   notesViewed: "sentinel.notesViewed",
   readItems: "sentinel.readItems",
   keywordOverrides: "sentinel.keywordOverrides",
+  mutedDomains: "sentinel.mutedDomains",
 };
 
 const cache = new Map();

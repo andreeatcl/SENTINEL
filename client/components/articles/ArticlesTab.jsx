@@ -15,7 +15,9 @@ import EmptyState from "../ui/EmptyState";
 import Pager, { usePaged } from "../ui/Pager";
 import { useReadItems } from "../../hooks/useReadItems";
 import { useKeywordOverrides } from "../../hooks/useKeywordOverrides";
+import { useMutedDomains } from "../../hooks/useMutedDomains";
 import { isRead, articleReadKey } from "../../utils/storage";
+import { filterMutedDomains } from "../../utils/articleFilters";
 
 const TIME_RANGES = ["48h", "7d", "30d"];
 const PAGE_SIZE = 36;
@@ -61,17 +63,20 @@ export default function ArticlesTab({
   const queryPreview = activeBuilder?.expression || "";
   const listRef = useRef(null);
   const [hideRead, setHideRead] = useState(false);
+  const [showMuted, setShowMuted] = useState(false);
   const readItems = useReadItems();
-  const shownArticles = useMemo(
-    () =>
-      hideRead
-        ? articles.filter((a) => !isRead(readItems, articleReadKey(a)))
-        : articles,
-    [articles, hideRead, readItems],
-  );
+  const mutedDomains = useMutedDomains();
+  const shownArticles = useMemo(() => {
+    const unmuted = showMuted
+      ? articles
+      : filterMutedDomains(articles, mutedDomains);
+    return hideRead
+      ? unmuted.filter((a) => !isRead(readItems, articleReadKey(a)))
+      : unmuted;
+  }, [articles, hideRead, readItems, showMuted, mutedDomains]);
   const paged = usePaged(
     shownArticles,
-    `${loading}:${articlesSortDir}:${hideRead}`,
+    `${loading}:${articlesSortDir}:${hideRead}:${showMuted}`,
     PAGE_SIZE,
   );
   const [jumpFrom, setJumpFrom] = useState(null);
@@ -116,7 +121,8 @@ export default function ArticlesTab({
   const sourcesActive =
     (useTopSourcesOnly ? 1 : 0) +
     (englishOnly ? 1 : 0) +
-    (sourcePriority ? 1 : 0);
+    (sourcePriority ? 1 : 0) +
+    (showMuted ? 1 : 0);
   const activeFilterCount = (sourcesActive ? 1 : 0) + (queryPreview ? 1 : 0);
 
   function handleApplyKeywordQuery({ expression, queryOptions }) {
@@ -184,6 +190,11 @@ export default function ArticlesTab({
               {label}
             </Pill>
           ))}
+          {mutedDomains.length > 0 && (
+            <Pill active={showMuted} onClick={() => setShowMuted((s) => !s)}>
+              Show muted
+            </Pill>
+          )}
         </FilterSection>
 
         {selectedCountry && (
@@ -280,7 +291,7 @@ export default function ArticlesTab({
         {!loading && !error && articles.length > 0 && !shownArticles.length && (
           <EmptyState
             title="All caught up"
-            description="Every loaded article is read. Load more, or turn off Hide read."
+            description="Every loaded article is read or muted. Load more, or adjust the filters."
           />
         )}
 

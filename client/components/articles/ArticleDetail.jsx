@@ -8,10 +8,30 @@ import TrustBadge from "../TrustBadge";
 import { DetailSection, SourceLinkFooter } from "../events/EventDetail";
 import Modal from "../ui/Modal";
 import { Eyebrow } from "../ui/Field";
+import { BanIcon } from "../ui/icons";
+import { useMutedDomains } from "../../hooks/useMutedDomains";
+import { isMutedDomain } from "../../utils/articleFilters";
+import {
+  muteDomain,
+  normalizeDomain,
+  replaceMutedDomains,
+} from "../../utils/storage";
 
 export default function ArticleDetail({ article, onClose }) {
   const [imageFailed, setImageFailed] = useState(false);
+  const mutedDomains = useMutedDomains();
   if (!article) return null;
+
+  const hostname = normalizeDomain(article.url || "");
+  const muted = isMutedDomain(article.url, mutedDomains);
+
+  // unmuting a domain also unmutes its parent domain (leave as is unless it causes issues later)
+  function toggleMute() {
+    if (!muted) return muteDomain(hostname);
+    replaceMutedDomains(
+      mutedDomains.filter((d) => !isMutedDomain(`https://${hostname}`, [d])),
+    );
+  }
 
   const isGdelt = article._provider === "gdelt";
   const domain = getDomain(article.url);
@@ -71,6 +91,24 @@ export default function ArticleDetail({ article, onClose }) {
               </span>
             )}
           </div>
+          {hostname && (
+            <button
+              type="button"
+              onClick={toggleMute}
+              className={`mt-2 inline-flex items-center gap-1.5 text-xs transition-colors ${
+                muted
+                  ? "text-carbon-400 hover:text-white"
+                  : "text-carbon-300 hover:text-signal-red"
+              }`}
+            >
+              <BanIcon
+                className={`w-3.5 h-3.5 ${
+                  muted ? "text-carbon-500" : "text-signal-red"
+                }`}
+              />
+              {muted ? `Unmute ${hostname}` : "Mute this source"}
+            </button>
+          )}
         </div>
         <div>
           <Eyebrow className="mb-1.5">Published</Eyebrow>

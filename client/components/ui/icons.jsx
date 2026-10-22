@@ -26,6 +26,15 @@ export function CloseIcon(props) {
   );
 }
 
+export function BanIcon(props) {
+  return (
+    <Icon {...props}>
+      <circle cx="12" cy="12" r="9" />
+      <path d="m5.6 5.6 12.8 12.8" />
+    </Icon>
+  );
+}
+
 export function ChevronDownIcon(props) {
   return (
     <Icon {...props}>
