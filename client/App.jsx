@@ -11,6 +11,7 @@ import NotesOverview from "./components/notes/NotesOverview";
 import EventDetail from "./components/events/EventDetail";
 import ArticleDetail from "./components/articles/ArticleDetail";
 import { FavoriteContext } from "./components/favorites/FavoriteButton";
+import { InfoIcon } from "./components/ui/icons";
 import { useAppControls } from "./hooks/useAppControls";
 import {
   buildTopicQuery,
@@ -290,7 +291,15 @@ export default function App() {
 
         {/* Bottom HUD bar — hidden once the panel covers the screen */}
         {!panelOpen && (
-          <div className="absolute bottom-3 left-3 z-[998] flex items-center gap-3 pointer-events-none">
+          <div className="absolute bottom-3 left-3 z-[998] flex items-center gap-1.5 pointer-events-none">
+            {/* to do! this is a placeholder for now */}
+            <button
+              type="button"
+              onClick={() => setSettingsTab("keys")}
+              className="pointer-events-auto w-9 h-9 flex items-center justify-center bg-carbon-900/90 border border-carbon-800 rounded-lg backdrop-blur-md text-carbon-300 hover:text-white transition-colors"
+            >
+              <InfoIcon className="w-5 h-5" />
+            </button>
             <div className="pointer-events-auto flex items-center gap-2.5 bg-carbon-900/90 border border-carbon-800 rounded-full py-1 pl-2 pr-2.5 sm:pl-3.5 backdrop-blur-md">
               <span className="hidden sm:inline text-2xs text-carbon-300">
                 Select a country to start monitoring
