@@ -61,11 +61,10 @@ export default function TopBar({
   meta,
   credits,
   onKeywordsClick,
-  onKeysClick,
+  onSettingsClick,
   onFavoritesClick,
   onNotesClick,
   onSavedSearchesClick,
-  onBackupClick,
 }) {
   const [input, setInput] = useState("");
 
@@ -84,8 +83,7 @@ export default function TopBar({
     { label: "Favorites", onClick: onFavoritesClick },
     { label: "Notes", onClick: onNotesClick },
     { label: "Saved", onClick: onSavedSearchesClick },
-    { label: "Backup", onClick: onBackupClick, tone: backupTone },
-    { label: "API keys", onClick: onKeysClick },
+    { label: "Settings", onClick: onSettingsClick, tone: backupTone },
   ];
 
   return (

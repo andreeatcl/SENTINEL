@@ -8,7 +8,6 @@ import {
   snoozeBackupReminder,
 } from "../../utils/storage";
 import { formatDate } from "../../utils/newsApi";
-import Modal from "../ui/Modal";
 import Button from "../ui/Button";
 
 // download the export as a plain json file that the user can keep
@@ -87,7 +86,7 @@ function StorageMeters() {
   );
 }
 
-export default function DataBackupModal({ isOpen, onClose }) {
+export default function BackupSection() {
   const fileInputRef = useRef(null);
   const [status, setStatus] = useState(null);
 
@@ -122,61 +121,53 @@ export default function DataBackupModal({ isOpen, onClose }) {
   }
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      width="sm"
-      title="Backup"
-      subtitle="API keys, favorites, saved searches and notes"
-    >
-      <div className="px-5 py-5 space-y-4">
-        <p className="text-sm text-carbon-400 leading-relaxed">
-          Everything is stored only in this browser. If you clear site data,
-          switch devices, or the browser evicts storage, it's gone unless you've
-          exported a backup.
-        </p>
+    <div className="px-5 py-5 space-y-4">
+      <p className="text-sm text-carbon-400 leading-relaxed">
+        API keys, favorites, saved searches, notes and muted sources are stored
+        only in this browser. If you clear site data, switch devices, or the
+        browser evicts storage, it's gone unless you've exported a backup.
+      </p>
 
-        <div className="flex items-center gap-2">
-          <Button variant="primary" onClick={handleExport} className="flex-1">
-            Export backup
-          </Button>
-          <Button
-            onClick={() => fileInputRef.current?.click()}
-            className="flex-1"
-          >
-            Import backup
-          </Button>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="application/json"
-            onChange={handleImportFile}
-            className="hidden"
-          />
-        </div>
-
-        {isOpen && getBackupReminder() && (
-          <button
-            type="button"
-            onClick={handleSnooze}
-            className="text-xs text-carbon-400 hover:text-white underline underline-offset-2 transition-colors"
-          >
-            Remind me later
-          </button>
-        )}
-
-        {status && (
-          <p
-            className={`text-xs ${
-              status.type === "ok" ? "text-signal-green" : "text-signal-red"
-            }`}
-          >
-            {status.message}
-          </p>
-        )}
-
-        {isOpen && <StorageMeters />}
+      <div className="flex items-center gap-2">
+        <Button variant="primary" onClick={handleExport} className="flex-1">
+          Export backup
+        </Button>
+        <Button
+          onClick={() => fileInputRef.current?.click()}
+          className="flex-1"
+        >
+          Import backup
+        </Button>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="application/json"
+          onChange={handleImportFile}
+          className="hidden"
+        />
       </div>
-    </Modal>
+
+      {getBackupReminder() && (
+        <button
+          type="button"
+          onClick={handleSnooze}
+          className="text-xs text-carbon-400 hover:text-white underline underline-offset-2 transition-colors"
+        >
+          Remind me later
+        </button>
+      )}
+
+      {status && (
+        <p
+          className={`text-xs ${
+            status.type === "ok" ? "text-signal-green" : "text-signal-red"
+          }`}
+        >
+          {status.message}
+        </p>
+      )}
+
+      <StorageMeters />
+    </div>
   );
 }

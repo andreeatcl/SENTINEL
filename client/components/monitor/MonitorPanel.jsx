@@ -29,6 +29,7 @@ export default function MonitorPanel({
   onSaveSearch,
   canSaveSearch,
   activeBuilder,
+  searchId,
   onEditKeywords,
   savedQueryActive,
   events,
@@ -106,6 +107,7 @@ export default function MonitorPanel({
           onEditKeywords={onEditKeywords}
           savedQueryActive={savedQueryActive}
           activeBuilder={activeBuilder}
+          searchId={searchId}
         />
       )}
     </div>

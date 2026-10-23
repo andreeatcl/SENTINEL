@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { getCountryKeywordOptions } from "../../utils/queryBuilder";
 import KeywordQueryModal from "./KeywordQueryModal";
 import ArticleCard, { SkeletonCard } from "./ArticleCard";
+import SourceFilter from "./SourceFilter";
 import {
   FilterCheckbox,
   FilterSection,
@@ -17,7 +18,8 @@ import { useReadItems } from "../../hooks/useReadItems";
 import { useKeywordOverrides } from "../../hooks/useKeywordOverrides";
 import { useMutedDomains } from "../../hooks/useMutedDomains";
 import { isRead, articleReadKey } from "../../utils/storage";
-import { filterMutedDomains } from "../../utils/articleFilters";
+import { getDomain } from "../../utils/url";
+import { filterMutedDomains, isMutedDomain } from "../../utils/articleFilters";
 
 const TIME_RANGES = ["48h", "7d", "30d"];
 const PAGE_SIZE = 36;
@@ -59,24 +61,40 @@ export default function ArticlesTab({
   onEditKeywords,
   savedQueryActive,
   activeBuilder,
+  searchId,
 }) {
   const queryPreview = activeBuilder?.expression || "";
   const listRef = useRef(null);
   const [hideRead, setHideRead] = useState(false);
   const [showMuted, setShowMuted] = useState(false);
+  const [hiddenSources, setHiddenSources] = useState([]);
   const readItems = useReadItems();
   const mutedDomains = useMutedDomains();
-  const shownArticles = useMemo(() => {
-    const unmuted = showMuted
-      ? articles
-      : filterMutedDomains(articles, mutedDomains);
-    return hideRead
-      ? unmuted.filter((a) => !isRead(readItems, articleReadKey(a)))
-      : unmuted;
-  }, [articles, hideRead, readItems, showMuted, mutedDomains]);
+  const unmutedArticles = useMemo(
+    () => (showMuted ? articles : filterMutedDomains(articles, mutedDomains)),
+    [articles, showMuted, mutedDomains],
+  );
+  const sourceArticles = useMemo(
+    () =>
+      hiddenSources.length
+        ? unmutedArticles.filter(
+            (a) => !hiddenSources.includes(getDomain(a.url)),
+          )
+        : unmutedArticles,
+    [unmutedArticles, hiddenSources],
+  );
+  const shownArticles = useMemo(
+    () =>
+      hideRead
+        ? sourceArticles.filter((a) => !isRead(readItems, articleReadKey(a)))
+        : sourceArticles,
+    [sourceArticles, hideRead, readItems],
+  );
+  const mutedHidden = articles.length - unmutedArticles.length;
+  const readHidden = sourceArticles.length - shownArticles.length;
   const paged = usePaged(
     shownArticles,
-    `${loading}:${articlesSortDir}:${hideRead}:${showMuted}`,
+    `${loading}:${articlesSortDir}:${hideRead}:${showMuted}:${hiddenSources}`,
     PAGE_SIZE,
   );
   const [jumpFrom, setJumpFrom] = useState(null);
@@ -106,6 +124,10 @@ export default function ArticlesTab({
     setDraftFilters({ sortBy, timeRange, includePoliticalKeywords });
   }, [sortBy, timeRange, includePoliticalKeywords]);
 
+  useEffect(() => {
+    setHiddenSources([]);
+  }, [searchId]);
+
   // reset keyword query + draft when switching countries
   useEffect(() => {
     setShowKeywordModal(false);
@@ -122,7 +144,8 @@ export default function ArticlesTab({
     (useTopSourcesOnly ? 1 : 0) +
     (englishOnly ? 1 : 0) +
     (sourcePriority ? 1 : 0) +
-    (showMuted ? 1 : 0);
+    (showMuted ? 1 : 0) +
+    (hiddenSources.length ? 1 : 0);
   const activeFilterCount = (sourcesActive ? 1 : 0) + (queryPreview ? 1 : 0);
 
   function handleApplyKeywordQuery({ expression, queryOptions }) {
@@ -195,6 +218,11 @@ export default function ArticlesTab({
               Show muted
             </Pill>
           )}
+          <SourceFilter
+            articles={unmutedArticles}
+            hidden={hiddenSources}
+            onChange={setHiddenSources}
+          />
         </FilterSection>
 
         {selectedCountry && (
@@ -302,6 +330,7 @@ export default function ArticlesTab({
               key={article.url || i}
               article={article}
               read={isRead(readItems, articleReadKey(article))}
+              muted={showMuted && isMutedDomain(article.url, mutedDomains)}
               onClick={() => onSelectArticle(article)}
             />
           ))}
@@ -313,10 +342,8 @@ export default function ArticlesTab({
         <div className="shrink-0 flex items-center justify-between gap-3 px-4 py-2.5 border-t border-carbon-800">
           <p className="text-xs text-carbon-500">
             {articles.length} loaded
-            {hideRead && shownArticles.length < articles.length
-              ? ` · ${articles.length - shownArticles.length} read hidden`
-              : ""}{" "}
-            · NewsAPI
+            {readHidden ? ` · ${readHidden} read hidden` : ""}
+            {mutedHidden ? ` · ${mutedHidden} muted hidden` : ""} · NewsAPI
           </p>
           {canLoadMore && (
             <Button

@@ -1,7 +1,6 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { getApiKeys, setApiKeys } from "../../utils/storage";
 import { testApiKey } from "../../utils/newsApi";
-import Modal from "../ui/Modal";
 import Button from "../ui/Button";
 import Badge from "../ui/Badge";
 import { Input } from "../ui/Field";
@@ -81,28 +80,15 @@ function KeyField({
   );
 }
 
-export default function ApiKeysModal({ isOpen, onClose }) {
-  const [primary, setPrimary] = useState("");
-  const [backup, setBackup] = useState("");
-  const [lastGood, setLastGood] = useState("primary");
+export default function ApiKeysSection() {
+  const [primary, setPrimary] = useState(() => getApiKeys().primary);
+  const [backup, setBackup] = useState(() => getApiKeys().backup);
+  const [lastGood] = useState(() => getApiKeys().lastGood);
   const [primaryStatus, setPrimaryStatus] = useState("idle");
   const [backupStatus, setBackupStatus] = useState("idle");
   const [primaryMessage, setPrimaryMessage] = useState("");
   const [backupMessage, setBackupMessage] = useState("");
   const [saved, setSaved] = useState(false);
-
-  useEffect(() => {
-    if (!isOpen) return;
-    const keys = getApiKeys();
-    setPrimary(keys.primary);
-    setBackup(keys.backup);
-    setLastGood(keys.lastGood);
-    setPrimaryStatus("idle");
-    setBackupStatus("idle");
-    setSaved(false);
-  }, [isOpen]);
-
-  if (!isOpen) return null;
 
   async function handleTest(key, setStatus, setMessage) {
     setStatus("testing");
@@ -119,49 +105,40 @@ export default function ApiKeysModal({ isOpen, onClose }) {
   }
 
   return (
-    <Modal
-      onClose={onClose}
-      title="API keys"
-      subtitle="Stored only on this device"
-      footer={
-        <>
-          {saved && (
-            <span className="flex items-center gap-1 text-xs text-signal-green mr-auto">
-              <CheckIcon className="w-3.5 h-3.5" />
-              Saved
-            </span>
-          )}
-          <Button variant="primary" onClick={handleSave}>
-            Save keys
-          </Button>
-        </>
-      }
-    >
-      <div className="px-5 py-5 space-y-3">
-        <KeyField
-          label="Main key"
-          hint="Used for every NewsAPI request"
-          value={primary}
-          onChange={setPrimary}
-          status={primaryStatus}
-          message={primaryMessage}
-          onTest={() =>
-            handleTest(primary, setPrimaryStatus, setPrimaryMessage)
-          }
-          active={lastGood === "primary"}
-        />
+    <div className="px-5 py-5 space-y-3">
+      <KeyField
+        label="Main key"
+        hint="Used for every NewsAPI request"
+        value={primary}
+        onChange={setPrimary}
+        status={primaryStatus}
+        message={primaryMessage}
+        onTest={() => handleTest(primary, setPrimaryStatus, setPrimaryMessage)}
+        active={lastGood === "primary"}
+      />
 
-        <KeyField
-          label="Backup key (optional)"
-          hint="Only used if the main key runs out of API calls"
-          value={backup}
-          onChange={setBackup}
-          status={backupStatus}
-          message={backupMessage}
-          onTest={() => handleTest(backup, setBackupStatus, setBackupMessage)}
-          active={lastGood === "backup"}
-        />
+      <KeyField
+        label="Backup key (optional)"
+        hint="Only used if the main key runs out of API calls"
+        value={backup}
+        onChange={setBackup}
+        status={backupStatus}
+        message={backupMessage}
+        onTest={() => handleTest(backup, setBackupStatus, setBackupMessage)}
+        active={lastGood === "backup"}
+      />
+
+      <div className="flex items-center justify-end gap-2 pt-1">
+        {saved && (
+          <span className="flex items-center gap-1 text-xs text-signal-green mr-auto">
+            <CheckIcon className="w-3.5 h-3.5" />
+            Saved
+          </span>
+        )}
+        <Button variant="primary" onClick={handleSave}>
+          Save keys
+        </Button>
       </div>
-    </Modal>
+    </div>
   );
 }

@@ -5,6 +5,7 @@ import FavoriteButton from "../favorites/FavoriteButton";
 import NoteMarker from "../notes/NoteMarker";
 import TrustBadge from "../TrustBadge";
 import Badge from "../ui/Badge";
+import { BanIcon } from "../ui/icons";
 
 export const ROW_CLASS = "relative border-b border-carbon-800 group";
 export const ROW_BUTTON_CLASS =
@@ -29,7 +30,12 @@ export function SkeletonCard() {
   );
 }
 
-export default function ArticleCard({ article, read = false, onClick }) {
+export default function ArticleCard({
+  article,
+  read = false,
+  muted = false,
+  onClick,
+}) {
   const domain = getDomain(article.url);
 
   return (
@@ -47,6 +53,7 @@ export default function ArticleCard({ article, read = false, onClick }) {
           <span className="text-xs font-medium text-carbon-300 truncate">
             {article.source?.name || domain}
           </span>
+          {muted && <BanIcon className="w-3 h-3 text-signal-red shrink-0" />}
           {article._duplicateCount > 1 && (
             <span className={`${ROW_META_CLASS} shrink-0`}>
               · {article._duplicateCount} sources

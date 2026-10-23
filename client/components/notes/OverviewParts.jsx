@@ -113,13 +113,13 @@ export const PAGES = [
   },
 ];
 
-export function PageTabs({ page, onChange, counts }) {
+export function PageTabs({ page, onChange, counts, pages = PAGES }) {
   return (
     <div
       className="flex items-center gap-5 px-5 border-b border-carbon-800"
       role="tablist"
     >
-      {PAGES.map((p) => {
+      {pages.map((p) => {
         const active = page === p.id;
         return (
           <button
@@ -133,9 +133,11 @@ export function PageTabs({ page, onChange, counts }) {
             }`}
           >
             {p.label}
-            <span className="ml-1.5 text-2xs text-carbon-500">
-              {counts[p.id]}
-            </span>
+            {counts && (
+              <span className="ml-1.5 text-2xs text-carbon-500">
+                {counts[p.id]}
+              </span>
+            )}
             {active && (
               <span className="absolute left-0 right-0 -bottom-px h-0.5 rounded-full bg-accent" />
             )}

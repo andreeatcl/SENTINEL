@@ -16,6 +16,8 @@ export function useAppControls() {
   const [sourcePriority, setSourcePriorityState] = useState(null);
   const [savedQueryActive, setSavedQueryActive] = useState(false);
   const [activeBuilder, setActiveBuilder] = useState(null);
+  // bumped on a new search, not on filter/sort changes
+  const [searchId, setSearchId] = useState(0);
   const [isMobile, setIsMobile] = useState(() =>
     typeof window !== "undefined"
       ? window.innerWidth < MOBILE_BREAKPOINT
@@ -128,6 +130,7 @@ export function useAppControls() {
 
   const handleCountryClick = useCallback(
     (countryName) => {
+      setSearchId((n) => n + 1);
       setSelectedCountry(countryName);
       setSavedQueryActive(false);
       setActiveBuilder(null);
@@ -152,6 +155,7 @@ export function useAppControls() {
   // country-less global search
   const handleGlobalSearch = useCallback(
     ({ topic, raw }) => {
+      setSearchId((n) => n + 1);
       setSelectedCountry(null);
       articlesFetchedRef.current = true;
       runSearch({ topic, raw: raw ?? true, includePoliticalKeywords: true });
@@ -194,6 +198,7 @@ export function useAppControls() {
 
   const handleExtraSearch = useCallback(
     ({ topic, extraKeywords, queryOptions = {} }) => {
+      setSearchId((n) => n + 1);
       runSearch({ topic, extraKeywords, queryOptions });
     },
     [runSearch],
@@ -238,6 +243,7 @@ export function useAppControls() {
       const { topic, extraKeywords, queryOptions, includePoliticalKeywords } =
         saved;
       const political = includePoliticalKeywords !== false;
+      setSearchId((n) => n + 1);
       setSelectedCountry(saved.raw ? null : topic);
       setIncludePoliticalKeywords(political);
       articlesFetchedRef.current = true;
@@ -316,6 +322,7 @@ export function useAppControls() {
     sourcePriority,
     savedQueryActive,
     activeBuilder,
+    searchId,
     isMobile,
     articles,
     loading,

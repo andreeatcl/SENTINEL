@@ -4,10 +4,9 @@ import CountryPicker from "./components/CountryPicker";
 import TopBar from "./components/topbar/TopBar";
 import MonitorPanel from "./components/monitor/MonitorPanel";
 import KeywordsModal from "./components/topbar/KeywordsModal";
-import ApiKeysModal from "./components/topbar/ApiKeysModal";
+import SettingsModal from "./components/topbar/SettingsModal";
 import FavoritesPanel from "./components/favorites/FavoritesPanel";
 import SavedSearchesPanel from "./components/topbar/SavedSearchesPanel";
-import DataBackupModal from "./components/topbar/DataBackupModal";
 import NotesOverview from "./components/notes/NotesOverview";
 import EventDetail from "./components/events/EventDetail";
 import ArticleDetail from "./components/articles/ArticleDetail";
@@ -22,6 +21,7 @@ import SaveSearchModal from "./components/monitor/SaveSearchModal";
 import { useApiCredits } from "./hooks/useApiCredits";
 import {
   hasAnyApiKey,
+  getBackupReminder,
   addSavedSearch,
   markRead,
   articleReadKey,
@@ -30,10 +30,11 @@ import {
 
 export default function App() {
   const [keywordsCountry, setKeywordsCountry] = useState(undefined);
-  const [showKeysModal, setShowKeysModal] = useState(() => !hasAnyApiKey());
+  const [settingsTab, setSettingsTab] = useState(() =>
+    hasAnyApiKey() ? null : "keys",
+  );
   const [showFavorites, setShowFavorites] = useState(false);
   const [showSavedSearches, setShowSavedSearches] = useState(false);
-  const [showBackup, setShowBackup] = useState(false);
   const [showNotes, setShowNotes] = useState(false);
   const [panelTab, setPanelTab] = useState("notes");
   // snapshot waiting in the Save dialog, null when closed
@@ -61,6 +62,7 @@ export default function App() {
     sourcePriority,
     savedQueryActive,
     activeBuilder,
+    searchId,
     articles,
     loading,
     loadingMore,
@@ -170,10 +172,11 @@ export default function App() {
           initialCountry={keywordsCountry}
           onClose={() => setKeywordsCountry(undefined)}
         />
-        <ApiKeysModal
-          isOpen={showKeysModal}
+        <SettingsModal
+          tab={settingsTab}
+          onTabChange={setSettingsTab}
           onClose={() => {
-            setShowKeysModal(false);
+            setSettingsTab(null);
             refreshCredits();
           }}
         />
@@ -192,10 +195,6 @@ export default function App() {
           query={pendingSave?.q}
           onSave={handleConfirmSave}
           onClose={() => setPendingSave(null)}
-        />
-        <DataBackupModal
-          isOpen={showBackup}
-          onClose={() => setShowBackup(false)}
         />
         <NotesOverview
           isOpen={showNotes}
@@ -234,11 +233,12 @@ export default function App() {
           meta={meta}
           credits={credits}
           onKeywordsClick={() => setKeywordsCountry(null)}
-          onKeysClick={() => setShowKeysModal(true)}
+          onSettingsClick={() =>
+            setSettingsTab(getBackupReminder() ? "backup" : "keys")
+          }
           onFavoritesClick={() => setShowFavorites(true)}
           onNotesClick={() => setShowNotes(true)}
           onSavedSearchesClick={() => setShowSavedSearches(true)}
-          onBackupClick={() => setShowBackup(true)}
         />
 
         {/* Events/Articles panel — near-fullscreen overlay, not a docked sidebar */}
@@ -269,6 +269,7 @@ export default function App() {
             onSaveSearch={handleSaveSearch}
             canSaveSearch={!!selectedCountry || !!activeQuery}
             activeBuilder={activeBuilder}
+            searchId={searchId}
             onEditKeywords={setKeywordsCountry}
             savedQueryActive={savedQueryActive}
             events={events}
