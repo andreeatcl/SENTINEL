@@ -4,9 +4,9 @@ import {
   importData,
   getStorageUsage,
   getLastBackup,
-  getBackupReminder,
   snoozeBackupReminder,
 } from "../../utils/storage";
+import { useBackupReminder } from "../../hooks/useBackupReminder";
 import { formatDate } from "../../utils/newsApi";
 import Button from "../ui/Button";
 
@@ -89,6 +89,7 @@ function StorageMeters() {
 export default function BackupSection() {
   const fileInputRef = useRef(null);
   const [status, setStatus] = useState(null);
+  const reminder = useBackupReminder();
 
   function handleExport() {
     downloadJson(exportData());
@@ -147,7 +148,7 @@ export default function BackupSection() {
         />
       </div>
 
-      {getBackupReminder() && (
+      {reminder && (
         <button
           type="button"
           onClick={handleSnooze}

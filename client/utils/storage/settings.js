@@ -25,6 +25,13 @@ export function hasAnyApiKey() {
   return Boolean(primary || backup);
 }
 
+const backupListeners = new Set();
+
+export function subscribeBackupReminder(listener) {
+  backupListeners.add(listener);
+  return () => backupListeners.delete(listener);
+}
+
 export function getLastBackup() {
   return read(STORAGE_KEYS.lastBackup, null);
 }
@@ -32,6 +39,7 @@ export function getLastBackup() {
 // snooze backup reminder for 5 days
 export function snoozeBackupReminder() {
   write(STORAGE_KEYS.backupSnoozed, new Date().toISOString());
+  backupListeners.forEach((listener) => listener());
 }
 
 export function getBackupReminder() {
@@ -48,6 +56,7 @@ export function getBackupReminder() {
 // export/import used to counter Safari's data wipeout
 export function exportData() {
   write(STORAGE_KEYS.lastBackup, new Date().toISOString());
+  backupListeners.forEach((listener) => listener());
   return {
     exportedAt: new Date().toISOString(),
     apiKeys: getApiKeys(),

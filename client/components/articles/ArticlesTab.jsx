@@ -17,7 +17,7 @@ import Pager, { usePaged } from "../ui/Pager";
 import { useReadItems } from "../../hooks/useReadItems";
 import { useKeywordOverrides } from "../../hooks/useKeywordOverrides";
 import { useMutedDomains } from "../../hooks/useMutedDomains";
-import { isRead, articleReadKey } from "../../utils/storage";
+import { isRead, articleReadKey, getReadItems } from "../../utils/storage";
 import { getDomain } from "../../utils/url";
 import { filterMutedDomains, isMutedDomain } from "../../utils/articleFilters";
 
@@ -65,10 +65,11 @@ export default function ArticlesTab({
 }) {
   const queryPreview = activeBuilder?.expression || "";
   const listRef = useRef(null);
-  const [hideRead, setHideRead] = useState(false);
   const [showMuted, setShowMuted] = useState(false);
   const [hiddenSources, setHiddenSources] = useState([]);
   const readItems = useReadItems();
+  const [hiddenReads, setHiddenReads] = useState(null);
+  const hideRead = hiddenReads !== null;
   const mutedDomains = useMutedDomains();
   const unmutedArticles = useMemo(
     () => (showMuted ? articles : filterMutedDomains(articles, mutedDomains)),
@@ -86,9 +87,9 @@ export default function ArticlesTab({
   const shownArticles = useMemo(
     () =>
       hideRead
-        ? sourceArticles.filter((a) => !isRead(readItems, articleReadKey(a)))
+        ? sourceArticles.filter((a) => !isRead(hiddenReads, articleReadKey(a)))
         : sourceArticles,
-    [sourceArticles, hideRead, readItems],
+    [sourceArticles, hideRead, hiddenReads],
   );
   const mutedHidden = articles.length - unmutedArticles.length;
   const readHidden = sourceArticles.length - shownArticles.length;
@@ -119,16 +120,15 @@ export default function ArticlesTab({
     [selectedCountry, keywordOverrides],
   );
 
-  // keep the draft in line with applied filters (e.g. after running a saved query)
   useEffect(() => {
     setDraftFilters({ sortBy, timeRange, includePoliticalKeywords });
   }, [sortBy, timeRange, includePoliticalKeywords]);
 
   useEffect(() => {
     setHiddenSources([]);
+    setHiddenReads((prev) => (prev ? getReadItems() : null));
   }, [searchId]);
 
-  // reset keyword query + draft when switching countries
   useEffect(() => {
     setShowKeywordModal(false);
     setDraftFilters({ sortBy, timeRange, includePoliticalKeywords });
@@ -178,7 +178,10 @@ export default function ArticlesTab({
         onChange={(value) => setDraftFilters((f) => ({ ...f, sortBy: value }))}
         onToggleDirection={onToggleArticlesSortDir}
       >
-        <FilterCheckbox checked={hideRead} onChange={setHideRead}>
+        <FilterCheckbox
+          checked={hideRead}
+          onChange={(checked) => setHiddenReads(checked ? readItems : null)}
+        >
           Hide read
         </FilterCheckbox>
       </SortControl>

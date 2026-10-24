@@ -81,7 +81,15 @@ export default function MonitorPanel({
           onLoadMoreEvents={onLoadMoreEvents}
           onSelectEvent={onSelectEvent}
         />
-      ) : (
+      ) : null}
+
+      <div
+        className={
+          showNotesTab || showEventsTab
+            ? "hidden"
+            : "flex-1 min-h-0 flex flex-col"
+        }
+      >
         <ArticlesTab
           articles={articles}
           loading={loading}
@@ -109,7 +117,7 @@ export default function MonitorPanel({
           activeBuilder={activeBuilder}
           searchId={searchId}
         />
-      )}
+      </div>
     </div>
   );
 }
