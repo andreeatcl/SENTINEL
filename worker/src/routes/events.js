@@ -3,13 +3,15 @@ import { getFipsCodes } from "../lib/countryCodes.js";
 import { decodeActor } from "../lib/gdeltActorCodes.js";
 import { decodeEventCode } from "../lib/cameoEventCodes.js";
 import { getEventsForRange } from "../lib/eventsStore.js";
-import { ingestLatestEventsFile } from "../services/gdeltEventsService.js";
 import { fetchPageMetadata } from "../lib/pageMetadata.js";
 import { isLowQualityDomain } from "../lib/lowQualitySources.js";
 import { getSourceTrustLabel, trustMultiplier } from "../lib/sourceTrust.js";
 
 const MAX_RANGE_DAYS = 30;
 const DEFAULT_LIMIT = 20;
+const MAX_LIMIT = 25;
+const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
+const INTEGER_PATTERN = /^\d+$/;
 
 const events = new Hono();
 
@@ -105,6 +107,15 @@ events.get("/events", async (c) => {
     );
   }
 
+  if (!DATE_PATTERN.test(from) || !DATE_PATTERN.test(to)) {
+    return c.json({ error: "from and to must be dates (YYYY-MM-DD)" }, 400);
+  }
+  if (!INTEGER_PATTERN.test(limit) || !INTEGER_PATTERN.test(offset)) {
+    return c.json({ error: "limit and offset must be whole numbers" }, 400);
+  }
+  const limitNum = Math.min(Math.max(Number(limit), 1), MAX_LIMIT);
+  const offsetNum = Number(offset);
+
   const fipsCodes = getFipsCodes(country);
   if (fipsCodes.length === 0) {
     return c.json({
@@ -120,6 +131,9 @@ events.get("/events", async (c) => {
   const fromDay = toDayString(from);
   const toDay = toDayString(to);
   const spanDays = (Date.parse(to) - Date.parse(from)) / 86400000;
+  if (Number.isNaN(spanDays) || spanDays < 0) {
+    return c.json({ error: "Invalid date range" }, 400);
+  }
   if (spanDays > MAX_RANGE_DAYS) {
     return c.json(
       { error: `Range too large — max ${MAX_RANGE_DAYS} days` },
@@ -161,8 +175,6 @@ events.get("/events", async (c) => {
     rankedAll = [...matching, ...rest];
   }
 
-  const offsetNum = Number(offset);
-  const limitNum = Number(limit);
   const ranked = rankedAll.slice(offsetNum, offsetNum + limitNum);
 
   const decorated = await Promise.all(
@@ -193,12 +205,6 @@ events.get("/events", async (c) => {
       hasMore: offsetNum + decorated.length < rows.length,
     },
   });
-});
-
-// temporary measure that acts as a 15 min cron job locally
-events.post("/events/_ingest-latest", async (c) => {
-  const result = await ingestLatestEventsFile(c.env);
-  return c.json(result);
 });
 
 export default events;

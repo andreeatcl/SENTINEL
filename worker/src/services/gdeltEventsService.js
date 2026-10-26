@@ -61,6 +61,7 @@ export async function fetchLatestExportFileMeta() {
 
 async function fetchAndUnzipCsv(url) {
   const response = await fetch(url);
+  if (!response.ok) return null;
   const buffer = new Uint8Array(await response.arrayBuffer());
   const files = unzipSync(buffer);
   const [csvBytes] = Object.values(files);
@@ -127,6 +128,13 @@ export async function ingestLatestEventsFile(env) {
   }
 
   const csvText = await fetchAndUnzipCsv(latest.url);
+  if (csvText === null) {
+    return {
+      ingested: false,
+      reason: "export file missing",
+      fileUrl: latest.url,
+    };
+  }
   const byDay = filterAndBucketByCountry(csvText);
 
   for (const [day, rowsByCountry] of Object.entries(byDay)) {

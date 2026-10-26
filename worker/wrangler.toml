@@ -11,3 +11,24 @@ preview_id = "REPLACE_WITH_PREVIEW_KV_NAMESPACE_ID"
 # see worker/src/scheduled.js.
 [triggers]
 crons = ["*/15 * * * *"]
+
+# per-IP request limits, see src/lib/rateLimit.js
+[[ratelimits]]
+name = "RL_KEYS_TEST"
+namespace_id = "1001"
+simple = { limit = 3, period = 60 }
+
+[[ratelimits]]
+name = "RL_NEWS"
+namespace_id = "1002"
+simple = { limit = 10, period = 60 }
+
+[[ratelimits]]
+name = "RL_EVENTS"
+namespace_id = "1003"
+simple = { limit = 20, period = 60 }
+
+[[ratelimits]]
+name = "RL_LIGHT"
+namespace_id = "1004"
+simple = { limit = 10, period = 60 }

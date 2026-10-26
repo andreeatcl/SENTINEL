@@ -111,7 +111,8 @@ export async function testApiKey(key) {
     const res = await fetch(`${BASE}/keys/test`, {
       headers: { "X-Newsapi-Key": key },
     });
-    return res.json();
+    const data = await res.json();
+    return res.status === 429 ? { valid: false, message: data.error } : data;
   } catch {
     return { valid: false, message: "Could not reach the server." };
   }
