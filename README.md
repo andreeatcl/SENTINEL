@@ -1,6 +1,6 @@
 # Sentinel - WIP
 
-A mobile-first tool for monitoring geopolitical events and news, country by country. Click a country on the map, get its news feed. Built to run as a PWA installed on a phone home screen — no backend accounts,no login, each device keeps its own API keys/favorites/searches in localStorage.
+A mobile-first tool for monitoring geopolitical events and news, country by country. Click a country on the map, get its news feed. Built to run as a PWA installed on a phone home screen — no backend accounts, passcode-protected API routes (!), each device keeps its own API keys/favorites/searches in localStorage.
 
 Originally an Express + React app; the backend has been rebuilt on Cloudflare Workers
 

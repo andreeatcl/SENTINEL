@@ -1,3 +1,5 @@
+import { apiFetch } from "./apiFetch";
+
 const BASE = "/api";
 const REQUEST_TIMEOUT_MS = 15000;
 
@@ -11,7 +13,7 @@ async function fetchWithTimeout(url, timeoutMs) {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
   try {
-    return await fetch(url, { signal: controller.signal });
+    return await apiFetch(url, { signal: controller.signal });
   } catch (err) {
     if (err?.name === "AbortError") {
       throw new Error("Request timed out. Please try again.");

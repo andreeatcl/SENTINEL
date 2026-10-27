@@ -25,6 +25,23 @@ export function hasAnyApiKey() {
   return Boolean(primary || backup);
 }
 
+// worker passcode stuff
+const passcodeListeners = new Set();
+
+export function subscribePasscode(listener) {
+  passcodeListeners.add(listener);
+  return () => passcodeListeners.delete(listener);
+}
+
+export function getPasscode() {
+  return read(STORAGE_KEYS.passcode, "");
+}
+
+export function setPasscode(passcode) {
+  write(STORAGE_KEYS.passcode, passcode);
+  passcodeListeners.forEach((listener) => listener());
+}
+
 const backupListeners = new Set();
 
 export function subscribeBackupReminder(listener) {

@@ -1,4 +1,5 @@
 import { getApiKeys, setApiKeys } from "./storage";
+import { apiFetch } from "./apiFetch";
 
 const BASE = "/api";
 const REQUEST_TIMEOUT_MS = 30000;
@@ -21,7 +22,7 @@ async function fetchWithTimeout(url, options, timeoutMs) {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
   try {
-    return await fetch(url, { ...options, signal: controller.signal });
+    return await apiFetch(url, { ...options, signal: controller.signal });
   } catch (err) {
     if (err?.name === "AbortError") {
       throw new Error("Request timed out. Please try again.");
@@ -88,7 +89,7 @@ export async function fetchKeyUsage() {
   const keys = getApiKeys();
   if (!keys.primary && !keys.backup) return null;
   try {
-    const res = await fetch(`${BASE}/keys/usage`, {
+    const res = await apiFetch(`${BASE}/keys/usage`, {
       headers: buildAuthHeaders(keys),
     });
     if (!res.ok) return null;
@@ -100,7 +101,7 @@ export async function fetchKeyUsage() {
 }
 
 export async function fetchHealth() {
-  const res = await fetch(`${BASE}/health`);
+  const res = await apiFetch(`${BASE}/health`);
   return res.json();
 }
 
@@ -108,7 +109,7 @@ export async function fetchHealth() {
 export async function testApiKey(key) {
   if (!key) return { valid: false, message: "Enter a key first." };
   try {
-    const res = await fetch(`${BASE}/keys/test`, {
+    const res = await apiFetch(`${BASE}/keys/test`, {
       headers: { "X-Newsapi-Key": key },
     });
     const data = await res.json();

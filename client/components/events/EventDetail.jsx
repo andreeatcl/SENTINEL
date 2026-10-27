@@ -12,6 +12,7 @@ import {
   getDomain,
 } from "../../utils/eventDisplay";
 import { favoriteFromEvent } from "../../utils/favorites";
+import { safeHref } from "../../utils/url";
 import FavoriteButton from "../favorites/FavoriteButton";
 import NoteSection from "../notes/NoteSection";
 import TrustBadge from "../TrustBadge";
@@ -34,7 +35,8 @@ export function SourceLinkFooter({ href, children }) {
     <div className="px-5 py-4">
       <Button
         variant="primary"
-        href={href}
+        href={safeHref(href)}
+        disabled={!safeHref(href)}
         target="_blank"
         rel="noopener noreferrer"
         className="w-full"
