@@ -103,46 +103,6 @@ body,
   display: none; /* Chrome/Safari/Chromium Edge */
 }
 
-/* Radar logo: the sweep turns once every 4s; the blip (at ~38° from 12
-   o'clock) is hit by the sweep's leading edge (starting at 75°) at ~90% of
-   the cycle, flashes, then decays until the next pass */
-@keyframes radar-sweep {
-  to {
-    transform: rotate(360deg);
-  }
-}
-@keyframes radar-blip {
-  0% {
-    opacity: 0.7;
-  }
-  55% {
-    opacity: 0.15;
-  }
-  89.5% {
-    opacity: 0.15;
-  }
-  90% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0.8;
-  }
-}
-.radar-sweep {
-  transform-box: view-box;
-  transform-origin: 12px 12px;
-  animation: radar-sweep 4s linear infinite;
-}
-.radar-blip {
-  animation: radar-blip 4s linear infinite;
-}
-@media (prefers-reduced-motion: reduce) {
-  .radar-sweep,
-  .radar-blip {
-    animation: none;
-  }
-}
-
 /* Monitor panel entrance */
 @keyframes panel-in {
   from {
