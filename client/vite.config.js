@@ -11,7 +11,11 @@ export default defineConfig({
       includeAssets: ["icons/icon-180.png", "favicon.svg"],
       manifest: pwaManifest,
       workbox: {
-        globPatterns: ["**/*.{js,css,html,woff2}"],
+        globPatterns: [
+          "**/*.{js,css,html,woff2}",
+          "assets/background-*.webp",
+          "assets/world-map-*.svg",
+        ],
       },
     }),
   ],

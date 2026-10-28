@@ -1,16 +1,69 @@
-import { useState, useSyncExternalStore } from "react";
-import { getPasscode, setPasscode, subscribePasscode } from "../utils/storage";
+import { useEffect, useState, useSyncExternalStore } from "react";
+import {
+  getLastActive,
+  getPasscode,
+  setPasscode,
+  subscribePasscode,
+  touchLastActive,
+} from "../utils/storage";
+import background from "../assets/lockscreen/background.webp";
+import worldMap from "../assets/lockscreen/world-map.svg";
+import Fingerprint from "./Fingerprint";
 import Button from "./ui/Button";
 import { Input } from "./ui/Field";
 
-// this is mostly just cosmetic and temporarily ugly
+const LOCK_AFTER_MS = 15 * 60 * 1000;
+
+const recentlyActive = () => Date.now() - getLastActive() < LOCK_AFTER_MS;
+
+// this is mostly just cosmetic
 export default function PasscodeGate({ children }) {
   const passcode = useSyncExternalStore(subscribePasscode, getPasscode);
+  const [entered, setEntered] = useState(recentlyActive);
+  const unlocked = entered && Boolean(passcode);
+
+  useEffect(() => {
+    if (!unlocked) return;
+    touchLastActive();
+    function onVisibilityChange() {
+      if (document.visibilityState === "hidden") touchLastActive();
+      else if (!recentlyActive()) setEntered(false);
+    }
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    return () =>
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+  }, [unlocked]);
+
+  if (unlocked) return children;
+
+  return (
+    <div className="relative flex h-full flex-col items-center overflow-hidden bg-black px-4">
+      <img
+        src={background}
+        alt=""
+        className="pointer-events-none absolute inset-0 h-full w-full object-cover"
+      />
+      <div className="relative mt-[18vh] w-full max-w-xs">
+        <img src={worldMap} alt="" className="w-full" />
+        <h1 className="absolute inset-0 flex items-center justify-center pl-[0.3em] font-mono text-[clamp(2rem,11vw,2.75rem)] font-semibold tracking-[0.3em] text-white">
+          SENTINEL
+        </h1>
+      </div>
+      <div className="relative mb-[14vh] mt-auto flex w-full flex-col items-center gap-3">
+        {entered ? (
+          <PasscodeForm />
+        ) : (
+          <Fingerprint onComplete={() => setEntered(true)} />
+        )}
+      </div>
+    </div>
+  );
+}
+
+function PasscodeForm() {
   const [value, setValue] = useState("");
   const [error, setError] = useState("");
   const [checking, setChecking] = useState(false);
-
-  if (passcode) return children;
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -33,21 +86,21 @@ export default function PasscodeGate({ children }) {
   return (
     <form
       onSubmit={handleSubmit}
-      className="h-full flex flex-col items-center justify-center gap-3 px-4 bg-carbon-950"
+      className="flex w-full max-w-xs flex-col items-center gap-3 animate-fade-in"
     >
       <Input
         type="password"
         value={value}
         onChange={(e) => setValue(e.target.value)}
         placeholder="Passcode"
-        className="w-full max-w-xs"
+        className="w-full"
         autoFocus
       />
       <Button
         type="submit"
         variant="primary"
         disabled={!value || checking}
-        className="w-full max-w-xs"
+        className="w-full"
       >
         Unlock
       </Button>

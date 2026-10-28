@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
-import { SearchIcon, MenuIcon, RadarIcon } from "../ui/icons";
+import { SearchIcon, MenuIcon } from "../ui/icons";
 import { useBackupReminder } from "../../hooks/useBackupReminder";
+import worldMap from "../../assets/lockscreen/world-map.svg";
 
 const HUD_SURFACE =
   "pointer-events-auto h-10 bg-carbon-900/90 border border-carbon-800 rounded-lg backdrop-blur-md shadow-pop";
@@ -89,11 +90,13 @@ export default function TopBar({
   return (
     <div className="absolute top-0 left-0 right-0 z-[1000] flex items-center gap-2 p-3 pointer-events-none">
       {/* Branding */}
-      <div className={`${HUD_SURFACE} flex items-center gap-2 px-3 shrink-0`}>
-        <RadarIcon className="w-5 h-5 text-carbon-200 shrink-0" />
-        <span className="hidden sm:inline text-sm font-semibold tracking-[0.18em] text-white">
-          SENTINEL
-        </span>
+      <div className="relative h-10 w-[110px] shrink-0">
+        <div className="absolute inset-x-0 top-1/2 -translate-y-1/2">
+          <img src={worldMap} alt="" className="w-full" />
+          <span className="absolute inset-0 flex items-center justify-center pl-[0.2em] font-mono text-base font-semibold tracking-[0.2em] text-white">
+            SENTINEL
+          </span>
+        </div>
       </div>
 
       {/* Search */}

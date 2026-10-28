@@ -42,6 +42,15 @@ export function setPasscode(passcode) {
   passcodeListeners.forEach((listener) => listener());
 }
 
+// last time the app was unlocked or in use
+export function getLastActive() {
+  return read(STORAGE_KEYS.lastActive, 0);
+}
+
+export function touchLastActive() {
+  write(STORAGE_KEYS.lastActive, Date.now());
+}
+
 const backupListeners = new Set();
 
 export function subscribeBackupReminder(listener) {

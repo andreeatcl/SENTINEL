@@ -16,6 +16,7 @@ export const STORAGE_KEYS = {
   keywordOverrides: "sentinel.keywordOverrides",
   mutedDomains: "sentinel.mutedDomains",
   passcode: "sentinel.passcode",
+  lastActive: "sentinel.lastActive",
 };
 
 const cache = new Map();
