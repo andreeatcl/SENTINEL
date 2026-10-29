@@ -20,6 +20,8 @@ import FavoritesEmptyState from "./FavoritesEmptyState";
 import FavoriteDetail from "./FavoriteDetail";
 import FavoriteGroupPicker from "./FavoriteGroupPicker";
 import GroupMembersPicker from "./GroupMembersPicker";
+import AddLinkDialog from "./AddLinkDialog";
+import { PlusIcon } from "../ui/icons";
 
 export default function FavoritesPanel({ isOpen, onClose }) {
   const store = useFavoritesStore(isOpen);
@@ -30,6 +32,7 @@ export default function FavoritesPanel({ isOpen, onClose }) {
   const [openItem, setOpenItem] = useState(null);
   const [pickerItem, setPickerItem] = useState(null);
   const [showMembersPicker, setShowMembersPicker] = useState(false);
+  const [showAddLink, setShowAddLink] = useState(false);
   const toolbarRef = useRef(null);
 
   const activeGroup = groups.find((g) => g.id === activeGroupId) || null;
@@ -103,6 +106,12 @@ export default function FavoritesPanel({ isOpen, onClose }) {
         width="mdWithSidebar"
         title="Favorites"
         subtitle={`${favorites.length} saved on this device`}
+        headerActions={
+          <Button size="sm" onClick={() => setShowAddLink(true)}>
+            <PlusIcon className="w-3.5 h-3.5" />
+            Add link
+          </Button>
+        }
         sidebar={<FavoritesSidebar {...groupNav} />}
         footer={undoFooter}
       >
@@ -157,6 +166,16 @@ export default function FavoritesPanel({ isOpen, onClose }) {
           favorites={favorites}
           onToggle={store.toggleMembership}
           onClose={() => setShowMembersPicker(false)}
+        />
+      )}
+
+      {showAddLink && (
+        <AddLinkDialog
+          onSaved={() => {
+            setShowAddLink(false);
+            store.reloadFavorites();
+          }}
+          onClose={() => setShowAddLink(false)}
         />
       )}
 

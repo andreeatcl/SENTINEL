@@ -65,6 +65,21 @@ export function favoriteFromArticle(article) {
   };
 }
 
+// external user-added links
+export function favoriteFromLink(url, title) {
+  const domain = getDomain(url);
+  return favoriteFromArticle({
+    url,
+    title: title.trim() || domain,
+    source: { name: domain },
+    _provider: "manual",
+  });
+}
+
+export function isExternal(item) {
+  return item.snapshot?._provider === "manual";
+}
+
 export function favoriteFromEvent(event) {
   if (!event.sourceUrl) return null;
   return {

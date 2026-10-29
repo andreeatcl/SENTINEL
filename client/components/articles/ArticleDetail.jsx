@@ -17,6 +17,12 @@ import {
   replaceMutedDomains,
 } from "../../utils/storage";
 
+const PROVENANCE = {
+  gdelt: "GDELT",
+  newsapi: "NewsAPI",
+  manual: "External",
+};
+
 export default function ArticleDetail({ article, onClose }) {
   const [imageFailed, setImageFailed] = useState(false);
   const mutedDomains = useMutedDomains();
@@ -33,7 +39,7 @@ export default function ArticleDetail({ article, onClose }) {
     );
   }
 
-  const isGdelt = article._provider === "gdelt";
+  const provenance = PROVENANCE[article._provider] || PROVENANCE.newsapi;
   const domain = getDomain(article.url);
   const title = article.title?.replace(
     " - " + (article.source?.name || ""),
@@ -51,8 +57,12 @@ export default function ArticleDetail({ article, onClose }) {
       title={title}
       subtitle={
         <>
-          <span>{timeAgo(article.publishedAt)}</span>
-          <span className="text-carbon-600">·</span>
+          {article.publishedAt && (
+            <>
+              <span>{timeAgo(article.publishedAt)}</span>
+              <span className="text-carbon-600">·</span>
+            </>
+          )}
           <span>{sourceName}</span>
         </>
       }
@@ -126,18 +136,13 @@ export default function ArticleDetail({ article, onClose }) {
       {/* Provenance — same visual slot as EventDetail's Tone section */}
       <DetailSection label="Provenance">
         <p className="text-sm font-medium text-white">
-          {isGdelt ? "GDELT" : "NewsAPI"}
+          {provenance}
           {hasNonEnglish && (
             <span className="text-carbon-500 font-normal text-xs">
               {" "}
               · {article.language}
             </span>
           )}
-        </p>
-        <p className="text-xs text-carbon-500 mt-1">
-          {isGdelt
-            ? "Broad global coverage, weaker metadata"
-            : "Curated English-language source"}
         </p>
       </DetailSection>
 

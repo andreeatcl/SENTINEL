@@ -1,4 +1,6 @@
 import { formatDate } from "../../utils/newsApi";
+import { isExternal } from "../../utils/favorites";
+import { safeHref } from "../../utils/url";
 import { ROW_META_CLASS, MetaDivider } from "../articles/ArticleCard";
 import TrustBadge from "../TrustBadge";
 import Badge from "../ui/Badge";
@@ -7,7 +9,11 @@ import NoteMarker from "./NoteMarker";
 function openProps(item, onOpen) {
   return item.snapshot
     ? { type: "button", onClick: () => onOpen(item) }
-    : { href: item.url, target: "_blank", rel: "noopener noreferrer" };
+    : {
+        href: safeHref(item.url),
+        target: "_blank",
+        rel: "noopener noreferrer",
+      };
 }
 
 export function NoteItemCard({ item, excerpt, onOpen }) {
@@ -39,6 +45,7 @@ export function NoteItemCard({ item, excerpt, onOpen }) {
         </span>
         <TrustBadge trust={item.trust} />
         {item.type === "event" && <Badge>Event</Badge>}
+        {isExternal(item) && <Badge>External</Badge>}
       </div>
     </Wrapper>
   );
@@ -73,6 +80,7 @@ export default function NoteItemRow({
           <TrustBadge trust={item.trust} />
           {!excerpt && <NoteMarker url={item.url} />}
           {item.type === "event" && <Badge>Event</Badge>}
+          {isExternal(item) && <Badge>External</Badge>}
           {label && (
             <span className="ml-auto pl-2 flex items-center gap-1.5 min-w-0 max-w-[40%]">
               <span className="text-2xs text-carbon-500 truncate">{label}</span>

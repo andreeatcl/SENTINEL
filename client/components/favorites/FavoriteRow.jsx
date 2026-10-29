@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { topicLabel } from "../../utils/favorites";
+import { topicLabel, isExternal } from "../../utils/favorites";
 import { formatDate } from "../../utils/newsApi";
+import { safeHref } from "../../utils/url";
 import {
   toneCategory,
   TONE_LABELS,
@@ -39,7 +40,11 @@ export default function FavoriteRow({
   const Wrapper = item.snapshot ? "button" : "a";
   const wrapperProps = item.snapshot
     ? { type: "button", onClick: onOpen }
-    : { href: item.url, target: "_blank", rel: "noopener noreferrer" };
+    : {
+        href: safeHref(item.url),
+        target: "_blank",
+        rel: "noopener noreferrer",
+      };
 
   return (
     <div className="relative border-b border-carbon-800 last:border-b-0 group">
@@ -72,6 +77,7 @@ export default function FavoriteRow({
             <TrustBadge trust={item.trust} />
             <NoteMarker url={item.url} />
             {isEvent && <Badge>Event</Badge>}
+            {isExternal(item) && <Badge>External</Badge>}
           </div>
 
           <p className="text-sm font-medium text-carbon-100 group-hover:text-white leading-snug line-clamp-2 transition-colors">
