@@ -66,11 +66,12 @@ export function favoriteFromArticle(article) {
 }
 
 // external user-added links
-export function favoriteFromLink(url, title) {
+export function favoriteFromLink(url, title, description = "") {
   const domain = getDomain(url);
   return favoriteFromArticle({
     url,
     title: title.trim() || domain,
+    description: description.trim() || null,
     source: { name: domain },
     _provider: "manual",
   });

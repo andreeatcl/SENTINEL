@@ -1,4 +1,5 @@
 import { STORAGE_KEYS, read, write } from "./core";
+import { getNotes, replaceNotes } from "./notes";
 
 /// favorites are saved article/event links
 export function getFavorites() {
@@ -81,5 +82,19 @@ export function setFavoriteGroupMembership(id, url, isMember) {
       const urls = g.urls.filter((u) => u !== url);
       return { ...g, urls: isMember ? [...urls, url] : urls };
     }),
+  );
+}
+
+// for external links
+export function updateLink(oldUrl, fields) {
+  const update = (item) =>
+    item.url === oldUrl ? { ...item, ...fields, id: fields.url } : item;
+  write(STORAGE_KEYS.favorites, getFavorites().map(update));
+  replaceNotes(getNotes().map(update));
+  updateFavoriteGroups((groups) =>
+    groups.map((g) => ({
+      ...g,
+      urls: [...new Set(g.urls.map((u) => (u === oldUrl ? fields.url : u)))],
+    })),
   );
 }

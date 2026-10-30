@@ -1,13 +1,20 @@
 import { useContext, useState } from "react";
-import { addFavorite, isFavorite } from "../../utils/storage";
+import {
+  addFavorite,
+  getNote,
+  isFavorite,
+  updateLink,
+} from "../../utils/storage";
 import { favoriteFromLink } from "../../utils/favorites";
-import { safeHref } from "../../utils/url";
+import { getDomain, safeHref } from "../../utils/url";
 import CountryPicker from "../CountryPicker";
 import Modal from "../ui/Modal";
 import Button, { IconButton } from "../ui/Button";
-import { Eyebrow, Input } from "../ui/Field";
+import { Eyebrow, FIELD, Input } from "../ui/Field";
 import { CloseIcon } from "../ui/icons";
 import { FavoriteContext } from "./FavoriteButton";
+
+const DESCRIPTION_MAX_LENGTH = 500;
 
 // add https:// to bare links
 function toUrl(text) {
@@ -16,37 +23,50 @@ function toUrl(text) {
   return safeHref(/^[a-z]+:/i.test(trimmed) ? trimmed : `https://${trimmed}`);
 }
 
-export default function AddLinkDialog({ onSaved, onClose }) {
+export default function AddLinkDialog({ link, onSaved, onClose }) {
   const context = useContext(FavoriteContext);
-  const [urlText, setUrlText] = useState("");
-  const [title, setTitle] = useState("");
+  const [urlText, setUrlText] = useState(link?.url ?? "");
+  const [title, setTitle] = useState(
+    link && link.title !== getDomain(link.url) ? link.title : "",
+  );
+  const [description, setDescription] = useState(link?.description ?? "");
   const [country, setCountry] = useState(context?.country ?? null);
 
   const url = toUrl(urlText);
-  const duplicate = url && isFavorite(url);
+  const favorited = url && url !== link?.url && isFavorite(url);
+  const noted = link && url && url !== link.url && getNote(url);
+  const duplicate = favorited || noted;
   const error =
     urlText.trim() && !url
       ? "Not a valid web link"
-      : duplicate
+      : favorited
         ? "Already in your favorites"
-        : null;
+        : noted
+          ? "Already in your notes"
+          : null;
 
   function handleSubmit(e) {
     e.preventDefault();
     if (!url || duplicate) return;
-    addFavorite({
-      ...favoriteFromLink(url, title),
+    const fields = {
+      ...favoriteFromLink(url, title, description),
       context: country ? { country, query: null } : null,
-    });
-    onSaved();
+    };
+    if (link) updateLink(link.url, fields);
+    else addFavorite(fields);
+    onSaved(fields);
   }
 
   return (
     <Modal
       onClose={onClose}
       width="sm"
-      title="Add a link"
-      subtitle="Saved to favorites, so you can note and group it"
+      title={link ? "Edit link" : "Add a link"}
+      subtitle={
+        link
+          ? "Its note and groups stay with it"
+          : "Saved to favorites, so you can note and group it"
+      }
       footer={
         <>
           <div className="mr-auto flex items-center gap-1 min-w-0">
@@ -104,6 +124,17 @@ export default function AddLinkDialog({ onSaved, onClose }) {
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Paste the headline (optional)"
             className="w-full max-sm:!text-base"
+          />
+        </label>
+        <label className="block">
+          <Eyebrow className="mb-1.5">Description</Eyebrow>
+          <textarea
+            rows={3}
+            maxLength={DESCRIPTION_MAX_LENGTH}
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="Description - Optional"
+            className={`${FIELD} w-full px-3 py-2 text-sm resize-none block max-sm:!text-base`}
           />
         </label>
       </form>

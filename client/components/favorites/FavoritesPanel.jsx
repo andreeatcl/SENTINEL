@@ -76,6 +76,7 @@ export default function FavoritesPanel({ isOpen, onClose }) {
   function handleCloseDetail() {
     setOpenItem(null);
     store.reloadFavorites();
+    store.reloadGroups();
   }
 
   const groupNav = {

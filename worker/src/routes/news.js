@@ -175,11 +175,12 @@ news.get("/news", async (c) => {
   }
 
   const gdeltResult = await gdeltPromise;
-  let articles = result.data.articles || [];
+  const articles = mergeArticles(
+    result.data.articles || [],
+    gdeltResult.articles ?? [],
+  );
   const gdeltMeta = {};
-  if (gdeltResult.articles) {
-    articles = mergeArticles(articles, gdeltResult.articles);
-  } else if (gdeltResult.error) {
+  if (gdeltResult.error) {
     gdeltMeta._gdeltError = gdeltResult.error;
   } else if (gdeltResult.skipped) {
     gdeltMeta._gdeltSkipped = gdeltResult.skipped;

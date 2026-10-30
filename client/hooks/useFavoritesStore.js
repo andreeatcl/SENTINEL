@@ -87,6 +87,7 @@ export function useFavoritesStore(isOpen) {
     groupCount,
     groupedUrls,
     reloadFavorites,
+    reloadGroups,
     remove,
     undoRemove,
     createGroup,
