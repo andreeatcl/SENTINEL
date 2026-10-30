@@ -1,4 +1,4 @@
-export { STORAGE_LIMIT_CHARS, getStorageUsage } from "./core";
+export { STORAGE_LIMIT_CHARS, getStorageUsage, wipeAllData } from "./core";
 export * from "./settings";
 export * from "./favorites";
 export * from "./searches";

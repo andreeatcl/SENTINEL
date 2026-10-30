@@ -55,6 +55,16 @@ if (typeof window !== "undefined") {
   });
 }
 
+export function wipeAllData() {
+  const keys = [];
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (key.startsWith("sentinel.")) keys.push(key);
+  }
+  keys.forEach((key) => localStorage.removeItem(key));
+  cache.clear();
+}
+
 export const STORAGE_LIMIT_CHARS = 5_000_000;
 
 export function getStorageUsage() {

@@ -5,10 +5,12 @@ import {
   getStorageUsage,
   getLastBackup,
   snoozeBackupReminder,
+  wipeAllData,
 } from "../../utils/storage";
 import { useBackupReminder } from "../../hooks/useBackupReminder";
 import { formatDate } from "../../utils/newsApi";
 import Button from "../ui/Button";
+import { Input } from "../ui/Field";
 
 // download the export as a plain json file that the user can keep
 function downloadJson(data) {
@@ -82,6 +84,80 @@ function StorageMeters() {
         value={`${formatSize(usage.used)} of ~5 MB · ${percent}%`}
         percent={percent}
       />
+    </div>
+  );
+}
+
+const CONFIRM_WORD = "theyfoundme";
+
+function DeleteAllData({ onExport }) {
+  const [confirming, setConfirming] = useState(false);
+  const [word, setWord] = useState("");
+  const confirmed = word.trim().toLowerCase() === CONFIRM_WORD;
+
+  function handleDelete() {
+    wipeAllData();
+    window.location.reload();
+  }
+
+  if (!confirming) {
+    return (
+      <div className="pt-3 border-t border-carbon-800">
+        <Button
+          variant="danger"
+          size="sm"
+          onClick={() => setConfirming(true)}
+          className="-ml-2.5"
+        >
+          Delete all data on this device
+        </Button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="pt-3 border-t border-carbon-800 space-y-3">
+      <p className="text-sm text-carbon-300 leading-relaxed">
+        This removes your favorites, groups, notes, saved searches, keywords,
+        muted sources, API keys and passcode from this device. It can't be
+        undone without a backup.
+      </p>
+      <Button size="sm" onClick={onExport}>
+        Export a backup first
+      </Button>
+      <label className="block">
+        <span className="block mb-1.5 text-xs text-carbon-400">
+          Type “{CONFIRM_WORD}” to confirm
+        </span>
+        <Input
+          autoFocus
+          autoCapitalize="none"
+          autoComplete="off"
+          autoCorrect="off"
+          value={word}
+          onChange={(e) => setWord(e.target.value)}
+          className="w-full max-sm:!text-base"
+        />
+      </label>
+      <div className="flex justify-end gap-2">
+        <Button
+          size="sm"
+          onClick={() => {
+            setConfirming(false);
+            setWord("");
+          }}
+        >
+          Cancel
+        </Button>
+        <Button
+          size="sm"
+          variant="danger"
+          disabled={!confirmed}
+          onClick={handleDelete}
+        >
+          Delete everything
+        </Button>
+      </div>
     </div>
   );
 }
@@ -169,6 +245,7 @@ export default function BackupSection() {
       )}
 
       <StorageMeters />
+      <DeleteAllData onExport={handleExport} />
     </div>
   );
 }
