@@ -123,7 +123,7 @@ events.get("/events", async (c) => {
       meta: {
         country,
         matched: 0,
-        note: "Country not recognized for GDELT lookup",
+        note: "Sorry, GDELT doesn't track this country. Try looking up articles!",
       },
     });
   }

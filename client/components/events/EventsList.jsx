@@ -99,6 +99,7 @@ export default function EventsList({
   events,
   loading,
   error,
+  note,
   readItems,
   onSelectEvent,
 }) {
@@ -115,6 +116,12 @@ export default function EventsList({
   if (error) {
     return (
       <EmptyState error title="Couldn't load events" description={error} />
+    );
+  }
+
+  if (note) {
+    return (
+      <EmptyState title="Events aren't available here" description={note} />
     );
   }
 

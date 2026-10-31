@@ -3,6 +3,7 @@ import countryKeywords from "../../../temporary/countryKeywords.json";
 const GDELT_DOC_BASE = "https://api.gdeltproject.org/api/v2/doc/doc";
 const MAX_KEYWORDS = 12; // keeps the query under GDELT's length limit
 const MAX_RECORDS = 75;
+const MIN_VARIANT_LENGTH = 3;
 const FETCH_TIMEOUT_MS = 6000;
 const MIN_REQUEST_INTERVAL_MS = 5200;
 
@@ -11,10 +12,12 @@ let lastRequestAt = 0;
 function normalizeCountryKey(value = "") {
   return value
     .toString()
-    .trim()
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
     .toLowerCase()
     .replace(/[^a-z0-9\s]/g, " ")
-    .replace(/\s+/g, " ");
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 function quotePhrase(term) {
@@ -23,12 +26,61 @@ function quotePhrase(term) {
   return clean.includes(" ") ? `"${clean}"` : clean;
 }
 
+// "u s a" => "USA"
+// "republic of serbia" => "Republic Of Serbia"
+function toDisplayVariant(key) {
+  const tokens = key.split(" ");
+  if (tokens.every((token) => token.length === 1)) {
+    return tokens.join("").toUpperCase();
+  }
+  if (tokens.length === 1 && tokens[0].length <= 3) {
+    return tokens[0].toUpperCase();
+  }
+  return tokens
+    .map((token) => token.charAt(0).toUpperCase() + token.slice(1))
+    .join(" ");
+}
+
+function containsPhrase(longer, shorter) {
+  return longer !== shorter && ` ${longer} `.includes(` ${shorter} `);
+}
+
+function buildCountryExpression(
+  countryOrTopic,
+  normalized,
+  resolvedKey,
+  aliases,
+) {
+  const aliasKeys = Object.keys(aliases).filter(
+    (key) => aliases[key] === resolvedKey && normalizeCountryKey(key) === key,
+  );
+  const keys = [
+    ...new Set([normalized, normalizeCountryKey(resolvedKey), ...aliasKeys]),
+  ];
+  if (keys.length === 1) return quotePhrase(countryOrTopic);
+
+  const variants = keys
+    .filter((key) => !keys.some((other) => containsPhrase(key, other)))
+    .map(toDisplayVariant)
+    .filter(
+      (variant) => variant.replace(/\s/g, "").length >= MIN_VARIANT_LENGTH,
+    );
+  const unique = [...new Set(variants)].map(quotePhrase);
+  if (unique.length === 0) return quotePhrase(countryOrTopic);
+  return unique.length === 1 ? unique[0] : `(${unique.join(" OR ")})`;
+}
+
 // keywordsParam: comma-separated list chosen by the client, overrides the JSON when present
 export function buildGdeltDocQuery(countryOrTopic, keywordsParam) {
   const normalized = normalizeCountryKey(countryOrTopic);
   const aliases = countryKeywords.aliases || {};
   const resolvedKey = aliases[normalized] || normalized;
-  const countryPhrase = quotePhrase(countryOrTopic);
+  const countryPhrase = buildCountryExpression(
+    countryOrTopic,
+    normalized,
+    resolvedKey,
+    aliases,
+  );
 
   const keywords =
     keywordsParam !== undefined

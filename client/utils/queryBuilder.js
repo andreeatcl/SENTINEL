@@ -7,10 +7,12 @@ export const MAX_COUNTRY_KEYWORDS = 25;
 export function normalizeCountryKey(value = "") {
   return value
     .toString()
-    .trim()
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
     .toLowerCase()
     .replace(/[^a-z0-9\s]/g, " ")
-    .replace(/\s+/g, " ");
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 // check for & resolve country key misalignments

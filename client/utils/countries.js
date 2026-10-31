@@ -69,6 +69,7 @@ const ISO2_OVERRIDES = {
   France: "FR",
   Norway: "NO",
   Kosovo: "XK",
+  Somaliland: "XS",
   Taiwan: "TW",
 };
 

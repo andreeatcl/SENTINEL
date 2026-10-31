@@ -18,6 +18,7 @@ export function useEvents() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState(null);
   const [hasMore, setHasMore] = useState(false);
+  const [note, setNote] = useState(null);
   const [filters, setFilters] = useState(DEFAULT_FILTERS);
   const countryRef = useRef(null);
 
@@ -28,10 +29,12 @@ export function useEvents() {
       countryRef.current = country;
       setLoading(true);
       setError(null);
+      setNote(null);
       try {
         const data = await fetchEvents({ country, ...merged, offset: 0 });
         if (countryRef.current !== country) return;
         setEvents(data.events || []);
+        setNote(data.meta?.note || null);
         setHasMore(!!data.meta?.hasMore);
       } catch (err) {
         if (countryRef.current !== country) return;
@@ -70,6 +73,7 @@ export function useEvents() {
     countryRef.current = null;
     setEvents([]);
     setError(null);
+    setNote(null);
     setLoading(false);
     setLoadingMore(false);
     setHasMore(false);
@@ -81,6 +85,7 @@ export function useEvents() {
     loadingMore,
     error,
     hasMore,
+    note,
     filters,
     search,
     loadMore,

@@ -37,6 +37,7 @@ export default function MonitorPanel({
   eventsLoadingMore,
   eventsError,
   eventsHasMore,
+  eventsNote,
   eventsFilters,
   onEventsFilterChange,
   onLoadMoreEvents,
@@ -76,6 +77,7 @@ export default function MonitorPanel({
           eventsLoadingMore={eventsLoadingMore}
           eventsError={eventsError}
           eventsHasMore={eventsHasMore}
+          eventsNote={eventsNote}
           eventsFilters={eventsFilters}
           onEventsFilterChange={onEventsFilterChange}
           onLoadMoreEvents={onLoadMoreEvents}

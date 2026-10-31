@@ -1,8 +1,8 @@
 // de-duplicate articles and merge
 // ordering is done via the rankArticles.js file
 
-function normalizeTitle(title = "") {
-  return title
+function normalizeTitle(title) {
+  return (title || "")
     .toLowerCase()
     .replace(/[^a-z0-9\s]/g, "")
     .replace(/\s+/g, " ")

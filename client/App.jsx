@@ -76,6 +76,7 @@ export default function App() {
     eventsLoadingMore,
     eventsError,
     eventsHasMore,
+    eventsNote,
     eventsFilters,
     handleCountryClick,
     handleGlobalSearch,
@@ -278,6 +279,7 @@ export default function App() {
             eventsLoadingMore={eventsLoadingMore}
             eventsError={eventsError}
             eventsHasMore={eventsHasMore}
+            eventsNote={eventsNote}
             eventsFilters={eventsFilters}
             onEventsFilterChange={handleEventsFilterChange}
             onLoadMoreEvents={handleLoadMoreEvents}

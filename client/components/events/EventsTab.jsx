@@ -71,6 +71,7 @@ export default function EventsTab({
   eventsLoadingMore,
   eventsError,
   eventsHasMore,
+  eventsNote,
   eventsFilters,
   onEventsFilterChange,
   onLoadMoreEvents,
@@ -243,6 +244,7 @@ export default function EventsTab({
           events={visibleEvents}
           loading={eventsLoading}
           error={eventsError}
+          note={eventsNote}
           readItems={readItems}
           onSelectEvent={onSelectEvent}
         />
