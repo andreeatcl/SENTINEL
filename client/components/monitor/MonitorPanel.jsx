@@ -46,6 +46,7 @@ export default function MonitorPanel({
   onOpenArticlesTab,
   activeTab,
   onTabChange,
+  onGlobalSearch,
 }) {
   function handleTabClick(tabId) {
     onTabChange(tabId);
@@ -68,7 +69,11 @@ export default function MonitorPanel({
       />
 
       {showNotesTab ? (
-        <CountryNotesTab key={selectedCountry} country={selectedCountry} />
+        <CountryNotesTab
+          key={selectedCountry}
+          country={selectedCountry}
+          onSearch={onGlobalSearch}
+        />
       ) : showEventsTab ? (
         <EventsTab
           selectedCountry={selectedCountry}

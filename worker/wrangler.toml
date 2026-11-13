@@ -32,3 +32,9 @@ simple = { limit = 20, period = 60 }
 name = "RL_LIGHT"
 namespace_id = "1004"
 simple = { limit = 10, period = 60 }
+
+# browsing countries fires one per country (mostly KV hits)
+[[ratelimits]]
+name = "RL_OFFICEHOLDERS"
+namespace_id = "1005"
+simple = { limit = 30, period = 60 }

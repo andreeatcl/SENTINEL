@@ -14,6 +14,8 @@ export const STORAGE_KEYS = {
   notesViewed: "sentinel.notesViewed",
   readItems: "sentinel.readItems",
   keywordOverrides: "sentinel.keywordOverrides",
+  keyPeople: "sentinel.keyPeople",
+  keyPeopleHidden: "sentinel.keyPeopleHidden",
   mutedDomains: "sentinel.mutedDomains",
   passcode: "sentinel.passcode",
   lastActive: "sentinel.lastActive",

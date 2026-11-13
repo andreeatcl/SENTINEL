@@ -9,6 +9,12 @@ import {
 } from "./notes";
 import { getKeywordOverrides, replaceKeywordOverrides } from "./keywords";
 import { getMutedDomains, replaceMutedDomains } from "./mutedDomains";
+import {
+  getKeyPeopleOverrides,
+  replaceKeyPeopleOverrides,
+  getKeyPeopleHidden,
+  replaceKeyPeopleHidden,
+} from "./keyPeople";
 
 const DEFAULT_API_KEYS = { primary: "", backup: "", lastGood: "primary" };
 
@@ -93,6 +99,8 @@ export function exportData() {
     countryNotes: getCountryNotes(),
     keywordOverrides: getKeywordOverrides(),
     mutedDomains: getMutedDomains(),
+    keyPeople: getKeyPeopleOverrides(),
+    keyPeopleHidden: getKeyPeopleHidden(),
   };
 }
 
@@ -122,4 +130,16 @@ export function importData(data) {
   )
     replaceKeywordOverrides(data.keywordOverrides);
   if (Array.isArray(data.mutedDomains)) replaceMutedDomains(data.mutedDomains);
+  if (
+    data.keyPeople &&
+    typeof data.keyPeople === "object" &&
+    !Array.isArray(data.keyPeople)
+  )
+    replaceKeyPeopleOverrides(data.keyPeople);
+  if (
+    data.keyPeopleHidden &&
+    typeof data.keyPeopleHidden === "object" &&
+    !Array.isArray(data.keyPeopleHidden)
+  )
+    replaceKeyPeopleHidden(data.keyPeopleHidden);
 }

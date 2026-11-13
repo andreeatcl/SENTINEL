@@ -288,6 +288,7 @@ export default function App() {
             onOpenArticlesTab={handleOpenArticlesTab}
             activeTab={panelTab}
             onTabChange={setPanelTab}
+            onGlobalSearch={handleGlobalSearch}
           />
         )}
 

@@ -8,12 +8,13 @@ import { formatDate } from "../../utils/newsApi";
 import { useCountryEntries, useNotes } from "../../hooks/useNotes";
 import FavoriteDetail from "../favorites/FavoriteDetail";
 import { IconButton } from "../ui/Button";
-import { Eyebrow } from "../ui/Field";
 import { PlusIcon } from "../ui/icons";
 import NoteEditor from "./NoteEditor";
 import { NoteItemCard } from "./NoteItemRow";
 import Pager, { usePaged } from "../ui/Pager";
 import { useGridColumns } from "../../hooks/useGridColumns";
+import KeyPeopleSection from "./KeyPeopleSection";
+import SectionHeader from "./SectionHeader";
 
 function entryDate(value) {
   const date = new Date(value);
@@ -94,19 +95,7 @@ const CARD_GRID =
 const WIDE_EDITOR =
   "col-span-full p-3 rounded-md border border-carbon-700 bg-carbon-850";
 
-function SectionHeader({ label, count, action }) {
-  return (
-    <div className="flex items-center justify-between gap-2 px-4 pt-5 pb-1.5 border-b border-carbon-800">
-      <Eyebrow>{label}</Eyebrow>
-      <div className="flex items-center gap-1.5">
-        <span className="text-2xs text-carbon-500">{count}</span>
-        {action}
-      </div>
-    </div>
-  );
-}
-
-export default function CountryNotesTab({ country }) {
+export default function CountryNotesTab({ country, onSearch }) {
   const entries = useCountryEntries(country);
   const notes = useNotes();
   const [editingId, setEditingId] = useState(null);
@@ -217,6 +206,8 @@ export default function CountryNotesTab({ country }) {
           <Pager paged={pagedNotes} />
         </>
       )}
+
+      <KeyPeopleSection country={country} onSearch={onSearch} />
 
       {openItem && (
         <FavoriteDetail item={openItem} onClose={() => setOpenItem(null)} />

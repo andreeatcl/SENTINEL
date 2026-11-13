@@ -5,4 +5,5 @@ export * from "./searches";
 export * from "./notes";
 export * from "./readItems";
 export * from "./keywords";
+export * from "./keyPeople";
 export * from "./mutedDomains";
