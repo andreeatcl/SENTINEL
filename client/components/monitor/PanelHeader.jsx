@@ -1,5 +1,5 @@
 import Button, { IconButton } from "../ui/Button";
-import { CloseIcon } from "../ui/icons";
+import { ChevronLeftIcon, CloseIcon } from "../ui/icons";
 import { timeAgo } from "../../utils/newsApi";
 
 const TABS = [
@@ -16,22 +16,30 @@ export default function PanelHeader({
   onSaveSearch,
   canSaveSearch,
   onClose,
+  onBack,
 }) {
   return (
     <div className="shrink-0 border-b border-carbon-800">
       <div className="flex items-start justify-between gap-3 px-4 pt-4 pb-3">
-        <div className="min-w-0">
-          <h2 className="text-lg font-semibold tracking-tight text-white truncate">
-            {selectedCountry || "Search results"}
-          </h2>
-          {meta && (
-            <p className="text-xs text-carbon-500 mt-0.5 truncate">
-              {meta.totalResults?.toLocaleString()} results
-              {meta.cached
-                ? ` · cached ${timeAgo(Date.now() - meta.cacheAge * 1000)}`
-                : ""}
-            </p>
+        <div className="flex items-start gap-1 min-w-0">
+          {onBack && (
+            <IconButton label="Back" onClick={onBack} className="-ml-1.5">
+              <ChevronLeftIcon />
+            </IconButton>
           )}
+          <div className="min-w-0">
+            <h2 className="text-lg font-semibold tracking-tight text-white truncate">
+              {selectedCountry || "Search results"}
+            </h2>
+            {meta && (
+              <p className="text-xs text-carbon-500 mt-0.5 truncate">
+                {meta.totalResults?.toLocaleString()} results
+                {meta.cached
+                  ? ` · cached ${timeAgo(Date.now() - meta.cacheAge * 1000)}`
+                  : ""}
+              </p>
+            )}
+          </div>
         </div>
 
         <div className="flex items-center gap-1 shrink-0 -mr-1.5">

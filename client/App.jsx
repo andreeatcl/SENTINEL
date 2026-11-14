@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import WorldMap from "./components/WorldMap";
 import CountryPicker from "./components/CountryPicker";
 import TopBar from "./components/topbar/TopBar";
@@ -13,6 +13,7 @@ import ArticleDetail from "./components/articles/ArticleDetail";
 import { FavoriteContext } from "./components/favorites/FavoriteButton";
 import { InfoIcon } from "./components/ui/icons";
 import { useAppControls } from "./hooks/useAppControls";
+import { useViewHistory } from "./hooks/useViewHistory";
 import {
   buildTopicQuery,
   getCountryKeywordOptions,
@@ -96,9 +97,27 @@ export default function App() {
   } = useAppControls();
 
   const { credits, refreshCredits } = useApiCredits(meta);
+  const viewHistory = useViewHistory();
+  const currentViewRef = useRef(null);
+
+  const panelOpen =
+    !!selectedCountry || loading || articles.length > 0 || !!error || !!meta;
+
+  useEffect(() => {
+    if (panelTab === "articles" && selectedCountry) handleOpenArticlesTab();
+  }, [panelTab, selectedCountry, searchId, handleOpenArticlesTab]);
+
+  function pushCurrentView() {
+    const view = currentViewRef.current;
+    if (!panelOpen || !view) return;
+    viewHistory.push(
+      view.type === "country" ? { ...view, tab: panelTab } : view,
+    );
+  }
 
   const selectCountry = useCallback(
     (countryName) => {
+      currentViewRef.current = { type: "country", country: countryName };
       setPanelTab("notes");
       handleCountryClick(countryName);
     },
@@ -106,15 +125,36 @@ export default function App() {
   );
 
   function openCountryNotes(countryName) {
+    pushCurrentView();
     setShowNotes(false);
     selectCountry(countryName);
   }
 
-  // a country selection opens the panel
-  // Events tab loads immediately
-  // Articles tab only fetches once it is opened
-  const panelOpen =
-    !!selectedCountry || loading || articles.length > 0 || !!error || !!meta;
+  function runGlobalSearch({ topic, raw }) {
+    pushCurrentView();
+    currentViewRef.current = { type: "search", topic, raw };
+    handleGlobalSearch({ topic, raw });
+  }
+
+  function goBack() {
+    const view = viewHistory.pop();
+    if (!view) return;
+    currentViewRef.current = view;
+    if (view.type === "country") {
+      setPanelTab(view.tab);
+      handleCountryClick(view.country);
+    } else if (view.type === "search") {
+      handleGlobalSearch(view);
+    } else {
+      handleRunSavedSearch(view.saved);
+      setPanelTab("articles");
+    }
+  }
+
+  function closePanel() {
+    viewHistory.clear();
+    handleClose();
+  }
 
   // recorded on each new favorite so the Favorites panel can group by it
   const favoriteContext = useMemo(
@@ -161,6 +201,8 @@ export default function App() {
   }
 
   function handleRunSaved(saved) {
+    pushCurrentView();
+    currentViewRef.current = { type: "saved", saved };
     handleRunSavedSearch(saved);
     setPanelTab("articles");
   }
@@ -230,7 +272,7 @@ export default function App() {
 
         {/* HUD: top search bar */}
         <TopBar
-          onSearch={handleGlobalSearch}
+          onSearch={runGlobalSearch}
           loading={loading}
           meta={meta}
           credits={credits}
@@ -251,7 +293,8 @@ export default function App() {
             error={error}
             meta={meta}
             selectedCountry={selectedCountry}
-            onClose={handleClose}
+            onClose={closePanel}
+            onBack={viewHistory.canGoBack ? goBack : null}
             onApplyArticleFilters={handleApplyArticleFilters}
             articlesSortDir={articlesSortDir}
             onToggleArticlesSortDir={handleArticlesSortDirToggle}
@@ -285,10 +328,9 @@ export default function App() {
             onLoadMoreEvents={handleLoadMoreEvents}
             onSelectEvent={openEvent}
             onSelectArticle={openArticle}
-            onOpenArticlesTab={handleOpenArticlesTab}
             activeTab={panelTab}
             onTabChange={setPanelTab}
-            onGlobalSearch={handleGlobalSearch}
+            onGlobalSearch={runGlobalSearch}
           />
         )}
 

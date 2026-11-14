@@ -12,6 +12,7 @@ export default function MonitorPanel({
   meta,
   selectedCountry,
   onClose,
+  onBack,
   onApplyArticleFilters,
   articlesSortDir,
   onToggleArticlesSortDir,
@@ -43,16 +44,10 @@ export default function MonitorPanel({
   onLoadMoreEvents,
   onSelectEvent,
   onSelectArticle,
-  onOpenArticlesTab,
   activeTab,
   onTabChange,
   onGlobalSearch,
 }) {
-  function handleTabClick(tabId) {
-    onTabChange(tabId);
-    if (tabId === "articles") onOpenArticlesTab();
-  }
-
   const showEventsTab = activeTab === "events" && !!selectedCountry;
   const showNotesTab = activeTab === "notes" && !!selectedCountry;
 
@@ -62,10 +57,11 @@ export default function MonitorPanel({
         selectedCountry={selectedCountry}
         meta={meta}
         activeTab={activeTab}
-        onTabClick={handleTabClick}
+        onTabClick={onTabChange}
         onSaveSearch={onSaveSearch}
         canSaveSearch={canSaveSearch}
         onClose={onClose}
+        onBack={onBack}
       />
 
       {showNotesTab ? (
