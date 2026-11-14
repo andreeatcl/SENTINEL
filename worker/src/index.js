@@ -1,5 +1,4 @@
 import { Hono } from "hono";
-import { cors } from "hono/cors";
 import news from "./routes/news.js";
 import health from "./routes/health.js";
 import events from "./routes/events.js";
@@ -10,7 +9,6 @@ import { requirePasscode } from "./lib/passcode.js";
 
 const app = new Hono();
 
-app.use("/api/*", cors());
 app.use("/api/keys/test", rateLimit("RL_KEYS_TEST"));
 app.use("/api/news", rateLimit("RL_NEWS"));
 app.use("/api/events", rateLimit("RL_EVENTS"));

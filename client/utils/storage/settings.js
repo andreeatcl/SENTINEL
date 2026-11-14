@@ -91,7 +91,6 @@ export function exportData() {
   backupListeners.forEach((listener) => listener());
   return {
     exportedAt: new Date().toISOString(),
-    apiKeys: getApiKeys(),
     favorites: getFavorites(),
     favoriteGroups: getFavoriteGroups(),
     savedSearches: getSavedSearches(),
