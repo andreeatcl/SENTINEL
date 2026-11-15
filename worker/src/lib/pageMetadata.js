@@ -1,3 +1,5 @@
+import { kvPut } from "./kvPut.js";
+
 // since the GDELT events table only provides a CAMEO category (arrest, death etc) rather than a headline or description
 // we fetch the page and pull its title + description with HTMLRewriter
 // fallback: cameo category
@@ -122,7 +124,7 @@ export async function fetchPageMetadata(env, url) {
   if (cached !== null) return JSON.parse(cached);
 
   const result = await fetchPageMetadataUncached(url);
-  await env.CACHE.put(cacheKey, JSON.stringify(result), {
+  await kvPut(env, cacheKey, JSON.stringify(result), {
     expirationTtl: result ? SUCCESS_TTL_SECONDS : FAILURE_TTL_SECONDS,
   });
   return result;

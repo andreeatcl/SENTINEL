@@ -1,6 +1,4 @@
 export const CAMEO_ROOT_CATEGORIES = [
-  { code: "01", label: "Statement" },
-  { code: "02", label: "Appeal" },
   { code: "03", label: "Intent to Cooperate" },
   { code: "04", label: "Consult" },
   { code: "05", label: "Diplomatic Cooperation" },

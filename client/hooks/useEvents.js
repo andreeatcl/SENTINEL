@@ -7,7 +7,7 @@ const DEFAULT_FILTERS = {
   timeRange: "7d",
   category: CAMEO_ROOT_CATEGORIES.map((c) => c.code),
   tone: Object.keys(TONE_LABELS),
-  sortBy: "significance",
+  sortBy: "date",
   sortDir: "desc",
   sourcePriority: null,
 };
@@ -21,6 +21,7 @@ export function useEvents() {
   const [note, setNote] = useState(null);
   const [filters, setFilters] = useState(DEFAULT_FILTERS);
   const countryRef = useRef(null);
+  const nextOffsetRef = useRef(0);
 
   const search = useCallback(
     async (country, patch = {}) => {
@@ -34,6 +35,7 @@ export function useEvents() {
         const data = await fetchEvents({ country, ...merged, offset: 0 });
         if (countryRef.current !== country) return;
         setEvents(data.events || []);
+        nextOffsetRef.current = data.meta?.nextOffset ?? 0;
         setNote(data.meta?.note || null);
         setHasMore(!!data.meta?.hasMore);
       } catch (err) {
@@ -56,10 +58,11 @@ export function useEvents() {
       const data = await fetchEvents({
         country,
         ...filters,
-        offset: events.length,
+        offset: nextOffsetRef.current,
       });
       if (countryRef.current !== country) return;
       setEvents((prev) => [...prev, ...(data.events || [])]);
+      nextOffsetRef.current = data.meta?.nextOffset ?? nextOffsetRef.current;
       setHasMore(!!data.meta?.hasMore);
     } catch (err) {
       if (countryRef.current !== country) return;
@@ -67,7 +70,7 @@ export function useEvents() {
     } finally {
       if (countryRef.current === country) setLoadingMore(false);
     }
-  }, [events.length, loading, loadingMore, filters]);
+  }, [loading, loadingMore, filters]);
 
   const clear = useCallback(() => {
     countryRef.current = null;

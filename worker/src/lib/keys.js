@@ -1,3 +1,5 @@
+import { kvPut } from "./kvPut.js";
+
 export const DAILY_LIMIT = 100; // NewsAPI free-tier daily cap
 
 export async function hashKey(key) {
@@ -40,7 +42,7 @@ export async function trackUsage(env, keyHash) {
   const kvKey = usageKvKey(keyHash);
   const next = (await getUsage(env, keyHash)) + 1;
   // expires after 2 days so old counters clean themselves up
-  await env.CACHE.put(kvKey, String(next), { expirationTtl: 60 * 60 * 48 });
+  await kvPut(env, kvKey, String(next), { expirationTtl: 60 * 60 * 48 });
   return next;
 }
 

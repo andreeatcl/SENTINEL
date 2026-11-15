@@ -3,7 +3,13 @@ import { apiFetch } from "./apiFetch";
 const BASE = "/api";
 const REQUEST_TIMEOUT_MS = 15000;
 
-const EVENTS_RANGE_DAYS = { "48h": 2, "7d": 7, "30d": 30 };
+const EVENTS_RANGE_HOURS = {
+  "6h": 6,
+  "24h": 24,
+  "48h": 48,
+  "7d": 168,
+  "30d": 720,
+};
 
 function toDateOnly(date) {
   return date.toISOString().slice(0, 10);
@@ -30,18 +36,20 @@ export async function fetchEvents({
   offset = 0,
   category = [],
   tone = [],
-  sortBy = "significance",
+  sortBy = "date",
   sortDir = "desc",
   sourcePriority = null,
 }) {
-  const days = EVENTS_RANGE_DAYS[timeRange] ?? 7;
+  const hours = EVENTS_RANGE_HOURS[timeRange] ?? 168;
+  const since = new Date(Date.now() - hours * 3600000);
   const to = toDateOnly(new Date());
-  const from = toDateOnly(new Date(Date.now() - days * 86400000));
+  const from = toDateOnly(new Date(since.getTime() - 86400000));
 
   const params = new URLSearchParams({
     country,
     from,
     to,
+    since: since.toISOString(),
     offset,
     sortBy,
     sortDir,

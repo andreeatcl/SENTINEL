@@ -16,11 +16,11 @@ import { Input } from "../ui/Field";
 import { useReadItems } from "../../hooks/useReadItems";
 import { isRead, eventReadKey } from "../../utils/storage";
 
-const TIME_RANGES = ["48h", "7d", "30d"];
+const TIME_RANGES = ["6h", "24h", "48h", "7d", "30d"];
 
 const EVENT_SORT_OPTIONS = [
-  { value: "significance", label: "Significance" },
   { value: "date", label: "Date" },
+  { value: "significance", label: "Significance" },
   { value: "coverage", label: "Coverage" },
 ];
 

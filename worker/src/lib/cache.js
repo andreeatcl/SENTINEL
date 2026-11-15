@@ -1,4 +1,4 @@
-// we use Key-Value caching so that data survives a restart
+import { kvPut } from "./kvPut.js";
 
 export function getCacheKey(params) {
   const sorted = Object.keys(params)
@@ -20,9 +20,7 @@ export async function getCached(env, cacheKey) {
 }
 
 export async function setCached(env, cacheKey, data, ttlSeconds) {
-  await env.CACHE.put(
-    cacheKey,
-    JSON.stringify({ data, timestamp: Date.now() }),
-    { expirationTtl: ttlSeconds },
-  );
+  await kvPut(env, cacheKey, JSON.stringify({ data, timestamp: Date.now() }), {
+    expirationTtl: ttlSeconds,
+  });
 }

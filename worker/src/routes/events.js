@@ -5,11 +5,13 @@ import { decodeEventCode } from "../lib/cameoEventCodes.js";
 import { getEventsForRange } from "../lib/eventsStore.js";
 import { fetchPageMetadata } from "../lib/pageMetadata.js";
 import { isLowQualityDomain } from "../lib/lowQualitySources.js";
-import { getSourceTrustLabel, trustMultiplier } from "../lib/sourceTrust.js";
+import { getSourceTrustLabel } from "../lib/sourceTrust.js";
+import { clusterEvents, EXCLUDED_ROOT_CODES } from "../lib/eventClusters.js";
 
-const MAX_RANGE_DAYS = 30;
+const MAX_RANGE_DAYS = 31; // 30d range + one day back for late-dated rows
 const DEFAULT_LIMIT = 20;
 const MAX_LIMIT = 25;
+const MAX_SCAN = 25; // page-title lookups per request; each new URL is a KV write
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 const INTEGER_PATTERN = /^\d+$/;
 
@@ -37,22 +39,6 @@ function dedupeBySourceUrl(rows) {
   return [...bestByUrl.values(), ...noUrl];
 }
 
-// use GDELT's own classification system and add tone magnitude logic
-// so that we don't get served 10 articles in a row about the "Top 5 things tourists MUST KNOW before visiting Narnia!!"
-const QUAD_CLASS_WEIGHT = { 1: 0.5, 2: 0.6, 3: 1.2, 4: 1.6 };
-
-function significanceScore(row) {
-  const quadWeight = QUAD_CLASS_WEIGHT[row.quadClass] || 0.5;
-  const toneMagnitude = Math.abs(row.goldstein) || 0;
-  const mentionSignal = Math.log(1 + Math.max(0, row.numMentions));
-  return (
-    quadWeight *
-    (1 + toneMagnitude) *
-    (1 + mentionSignal) *
-    trustMultiplier(row._trustLabel)
-  );
-}
-
 function toneCategoryForRow(goldstein) {
   if (goldstein > 1) return "positive";
   if (goldstein < -1) return "negative";
@@ -73,14 +59,21 @@ function dateAddedTimestamp(row) {
   );
 }
 
+function reportedDay(row) {
+  return row.dateAdded
+    ? row.dateAdded.slice(0, 10).replaceAll("-", "")
+    : row.day;
+}
+
 function coverageScore(row) {
   return row.numSources * 1000 + row.numMentions;
 }
 
 const SORTERS = {
-  significance: (a, b) => significanceScore(b) - significanceScore(a),
-  date: (a, b) => dateAddedTimestamp(b) - dateAddedTimestamp(a),
-  coverage: (a, b) => coverageScore(b) - coverageScore(a),
+  significance: (dir) => (a, b) => dir * (b._score - a._score),
+  date: (dir) => (a, b) =>
+    dir * reportedDay(b).localeCompare(reportedDay(a)) || b._score - a._score,
+  coverage: (dir) => (a, b) => dir * (coverageScore(b) - coverageScore(a)),
 };
 
 events.get("/events", async (c) => {
@@ -92,9 +85,10 @@ events.get("/events", async (c) => {
     offset = "0",
     category = "",
     tone = "",
-    sortBy = "significance",
+    sortBy = "date",
     sortDir = "desc",
     sourcePriority = "",
+    since = "",
   } = c.req.query();
 
   if (!country) {
@@ -142,10 +136,18 @@ events.get("/events", async (c) => {
   }
 
   const rawRows = await getEventsForRange(c.env, fipsCodes, fromDay, toDay);
+  const sinceMs = since ? Date.parse(since) : NaN;
   let rows = dedupeBySourceUrl(rawRows);
 
   rows = rows
-    .filter((row) => hasStateActor(row) && !isLowQualityDomain(row.sourceUrl))
+    .filter(
+      (row) =>
+        row.sourceUrl &&
+        hasStateActor(row) &&
+        !EXCLUDED_ROOT_CODES.has(row.eventRootCode) &&
+        !isLowQualityDomain(row.sourceUrl) &&
+        (Number.isNaN(sinceMs) || dateAddedTimestamp(row) >= sinceMs),
+    )
     .map((row) => ({
       ...row,
       _trustLabel: getSourceTrustLabel({ url: row.sourceUrl }),
@@ -162,8 +164,9 @@ events.get("/events", async (c) => {
     );
   }
 
-  let rankedAll = [...rows].sort(SORTERS[sortBy] || SORTERS.significance);
-  if (sortDir === "asc") rankedAll.reverse();
+  const clusters = clusterEvents(rows);
+  const sorter = SORTERS[sortBy] || SORTERS.date;
+  let rankedAll = clusters.sort(sorter(sortDir === "asc" ? -1 : 1));
 
   if (sourcePriority) {
     const matching = rankedAll.filter(
@@ -175,34 +178,43 @@ events.get("/events", async (c) => {
     rankedAll = [...matching, ...rest];
   }
 
-  const ranked = rankedAll.slice(offsetNum, offsetNum + limitNum);
-
-  const decorated = await Promise.all(
-    ranked.map(async (row) => {
-      const pageMeta = row.sourceUrl
-        ? await fetchPageMetadata(c.env, row.sourceUrl)
-        : null;
-
-      return {
-        ...row,
-        actor1: decodeActor(row.actor1Code),
-        actor2: decodeActor(row.actor2Code),
-        eventTypeLabel: decodeEventCode(row.eventCode, row.eventRootCode),
-        headline: pageMeta?.title || null,
-        preview: pageMeta?.description || null,
-        image: pageMeta?.image || null,
-      };
-    }),
-  );
+  // skip events whose page gives no title
+  const decorated = [];
+  let cursor = offsetNum;
+  const scanEnd = Math.min(rankedAll.length, offsetNum + MAX_SCAN);
+  while (decorated.length < limitNum && cursor < scanEnd) {
+    const batch = rankedAll.slice(
+      cursor,
+      Math.min(scanEnd, cursor + limitNum - decorated.length),
+    );
+    cursor += batch.length;
+    const results = await Promise.all(
+      batch.map(async (row) => {
+        const pageMeta = await fetchPageMetadata(c.env, row.sourceUrl);
+        if (!pageMeta?.title) return null;
+        return {
+          ...row,
+          actor1: decodeActor(row.actor1Code),
+          actor2: decodeActor(row.actor2Code),
+          eventTypeLabel: decodeEventCode(row.eventCode, row.eventRootCode),
+          headline: pageMeta.title,
+          preview: pageMeta.description || null,
+          image: pageMeta.image || null,
+        };
+      }),
+    );
+    decorated.push(...results.filter(Boolean));
+  }
 
   return c.json({
     events: decorated,
     meta: {
       country,
-      matched: rows.length,
+      matched: rankedAll.length,
       returned: decorated.length,
       offset: offsetNum,
-      hasMore: offsetNum + decorated.length < rows.length,
+      nextOffset: cursor,
+      hasMore: cursor < rankedAll.length,
     },
   });
 });

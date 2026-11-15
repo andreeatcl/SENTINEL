@@ -1,23 +1,7 @@
-// Stores GDELT events bucketed by day, one KV key per day holding every
-// tracked country's rows for that day: { [fipsCode]: [...rows] }.
-// One key per day (not per country) deliberately keeps writes to a single
-// KV op per ingestion tick — Cloudflare KV's free tier caps daily writes,
-// and a 15-minute cron ticking 96x/day would blow past that if it wrote
-// once per country instead of once per day touched.
-
-const CURSOR_KEY = "gdelt:cursor";
-const DAY_TTL_SECONDS = 60 * 60 * 24 * 45; // keep ~45 days, then self-clean
+const DAY_TTL_SECONDS = 60 * 60 * 24 * 32; // longest range (30d) + margin
 
 function dayKey(day) {
   return `gdelt:events:${day}`;
-}
-
-export async function getCursor(env) {
-  return (await env.CACHE.get(CURSOR_KEY)) || null;
-}
-
-export async function setCursor(env, cursor) {
-  await env.CACHE.put(CURSOR_KEY, cursor);
 }
 
 export async function getDayBucket(env, day) {
@@ -25,10 +9,14 @@ export async function getDayBucket(env, day) {
   return raw ? JSON.parse(raw) : {};
 }
 
-// Merges newRowsByCountry ({ fipsCode: [...rows] }) into whatever's already
-// stored for `day`, appending rather than overwriting.
-export async function mergeDayBucket(env, day, newRowsByCountry) {
-  const existing = await getDayBucket(env, day);
+export async function mergeDayBucket(
+  env,
+  day,
+  existing,
+  newRowsByCountry,
+  cursor,
+) {
+  existing._cursor = cursor;
 
   for (const [fipsCode, rows] of Object.entries(newRowsByCountry)) {
     existing[fipsCode] = [...(existing[fipsCode] || []), ...rows];

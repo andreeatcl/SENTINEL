@@ -1,6 +1,7 @@
 import { unzipSync } from "fflate";
 import { getAllTrackedFipsCodes } from "../lib/countryCodes.js";
-import { getCursor, setCursor, mergeDayBucket } from "../lib/eventsStore.js";
+import { getDayBucket, mergeDayBucket } from "../lib/eventsStore.js";
+import { EXCLUDED_ROOT_CODES } from "../lib/eventClusters.js";
 
 const LAST_UPDATE_URL = "http://data.gdeltproject.org/gdeltv2/lastupdate.txt";
 
@@ -11,6 +12,7 @@ const COL = {
   DAY: 1,
   ACTOR1_CODE: 5,
   ACTOR2_CODE: 15,
+  IS_ROOT_EVENT: 25,
   EVENT_CODE: 26,
   EVENT_ROOT_CODE: 28,
   QUAD_CLASS: 29,
@@ -59,6 +61,19 @@ export async function fetchLatestExportFileMeta() {
   return { url, cursor: match[1] };
 }
 
+// "YYYYMMDD" minus n days
+function daysBefore(day, n) {
+  const date = Date.UTC(
+    +day.slice(0, 4),
+    +day.slice(4, 6) - 1,
+    +day.slice(6, 8),
+  );
+  return new Date(date - n * 86400000)
+    .toISOString()
+    .slice(0, 10)
+    .replaceAll("-", "");
+}
+
 async function fetchAndUnzipCsv(url) {
   const response = await fetch(url);
   if (!response.ok) return null;
@@ -90,12 +105,9 @@ function normalizeRow(cols) {
   };
 }
 
-// parses the raw file, filters to countries we track, and buckets by day/country
-// so that eventsStore can merge it straight into KV
-
-function filterAndBucketByCountry(csvText) {
+function filterAndGroupByCountry(csvText, oldestDay) {
   const trackedCodes = getAllTrackedFipsCodes();
-  const byDay = {};
+  const byCountry = {};
 
   for (const line of csvText.split("\n")) {
     if (!line) continue;
@@ -104,26 +116,28 @@ function filterAndBucketByCountry(csvText) {
 
     const fipsCode = cols[COL.ACTION_GEO_COUNTRY_CODE];
     if (!fipsCode || !trackedCodes.has(fipsCode)) continue;
+    if (cols[COL.IS_ROOT_EVENT] !== "1") continue;
+    if (EXCLUDED_ROOT_CODES.has(cols[COL.EVENT_ROOT_CODE])) continue;
+    if (cols[COL.DAY] < oldestDay) continue; // old event re-mentioned, not news
 
-    const day = cols[COL.DAY];
-    if (!byDay[day]) byDay[day] = {};
-    if (!byDay[day][fipsCode]) byDay[day][fipsCode] = [];
-    byDay[day][fipsCode].push(normalizeRow(cols));
+    if (!byCountry[fipsCode]) byCountry[fipsCode] = [];
+    byCountry[fipsCode].push(normalizeRow(cols));
   }
 
-  return byDay;
+  return byCountry;
 }
 
 export async function ingestLatestEventsFile(env) {
   const latest = await fetchLatestExportFileMeta();
   if (!latest) return { ingested: false, reason: "no export file found" };
 
-  const lastCursor = await getCursor(env);
-  if (lastCursor === latest.cursor) {
+  const reportDay = latest.cursor.slice(0, 8);
+  const bucket = await getDayBucket(env, reportDay);
+  if (bucket._cursor === latest.cursor) {
     return {
       ingested: false,
       reason: "already up to date",
-      cursor: lastCursor,
+      cursor: latest.cursor,
     };
   }
 
@@ -135,18 +149,12 @@ export async function ingestLatestEventsFile(env) {
       fileUrl: latest.url,
     };
   }
-  const byDay = filterAndBucketByCountry(csvText);
-
-  for (const [day, rowsByCountry] of Object.entries(byDay)) {
-    await mergeDayBucket(env, day, rowsByCountry);
-  }
-
-  await setCursor(env, latest.cursor);
+  const byCountry = filterAndGroupByCountry(csvText, daysBefore(reportDay, 2));
+  await mergeDayBucket(env, reportDay, bucket, byCountry, latest.cursor);
 
   return {
     ingested: true,
     cursor: latest.cursor,
     fileUrl: latest.url,
-    daysTouched: Object.keys(byDay),
   };
 }
