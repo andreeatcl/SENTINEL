@@ -1,67 +1,73 @@
-const DAY_TTL_SECONDS = 60 * 60 * 24 * 32; // longest range (30d) + margin
+const RETENTION_DAYS = 32; // 30d + margin
+const ROWS_PER_INSERT = 49; // D1 caps bound params at 100 - 2 shared + 2 per row
 
-function dayKey(day) {
-  return `gdelt:events:${day}`;
+async function getState(env, key) {
+  const row = await env.DB.prepare(
+    "SELECT value FROM ingest_state WHERE key = ?",
+  )
+    .bind(key)
+    .first();
+  return row?.value ?? null;
 }
 
-export async function getDayBucket(env, day) {
-  const raw = await env.CACHE.get(dayKey(day));
-  return raw ? JSON.parse(raw) : {};
+function setStateStatement(env, key, value) {
+  return env.DB.prepare(
+    "INSERT INTO ingest_state (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value",
+  ).bind(key, value);
 }
 
-export async function mergeDayBucket(
-  env,
-  day,
-  existing,
-  newRowsByCountry,
-  cursor,
-) {
-  existing._cursor = cursor;
-
-  for (const [fipsCode, rows] of Object.entries(newRowsByCountry)) {
-    existing[fipsCode] = [...(existing[fipsCode] || []), ...rows];
-  }
-
-  await env.CACHE.put(dayKey(day), JSON.stringify(existing), {
-    expirationTtl: DAY_TTL_SECONDS,
-  });
+export function getLastCursor(env) {
+  return getState(env, "cursor");
 }
 
-// Reads every day in [fromDay, toDay] (inclusive, "YYYYMMDD" strings) and
-// returns the concatenated rows matching any of fipsCodes.
-export async function getEventsForRange(env, fipsCodes, fromDay, toDay) {
-  const days = listDaysBetween(fromDay, toDay);
-  const buckets = await Promise.all(days.map((day) => getDayBucket(env, day)));
+// transaction - write one row per country + cursor
+export async function saveBatch(env, day, cursor, rowsByCountry) {
+  const entries = Object.entries(rowsByCountry);
+  const statements = [];
+  let storedChars = 0;
 
-  const results = [];
-  for (const bucket of buckets) {
-    for (const code of fipsCodes) {
-      if (bucket[code]) results.push(...bucket[code]);
-    }
-  }
-  return results;
-}
-
-function listDaysBetween(fromDay, toDay) {
-  const parse = (d) =>
-    new Date(
-      Date.UTC(
-        Number(d.slice(0, 4)),
-        Number(d.slice(4, 6)) - 1,
-        Number(d.slice(6, 8)),
-      ),
+  for (let i = 0; i < entries.length; i += ROWS_PER_INSERT) {
+    const chunk = entries.slice(i, i + ROWS_PER_INSERT);
+    const tuples = chunk.map(
+      (_, j) => `(?${j * 2 + 3}, ?1, ?2, ?${j * 2 + 4})`,
     );
-  const format = (date) => date.toISOString().slice(0, 10).replace(/-/g, "");
-
-  const start = parse(fromDay);
-  const end = parse(toDay);
-  const days = [];
-  for (
-    let cursor = start;
-    cursor <= end;
-    cursor = new Date(cursor.getTime() + 86400000)
-  ) {
-    days.push(format(cursor));
+    const params = [day, cursor];
+    for (const [country, rows] of chunk) {
+      const json = JSON.stringify(rows);
+      storedChars += json.length;
+      params.push(country, json);
+    }
+    statements.push(
+      env.DB.prepare(
+        `INSERT OR IGNORE INTO event_batches (country, day, cursor, rows) VALUES ${tuples.join(", ")}`,
+      ).bind(...params),
+    );
   }
-  return days;
+  statements.push(setStateStatement(env, "cursor", cursor));
+
+  await env.DB.batch(statements);
+  return storedChars;
+}
+
+// delete old events
+export async function pruneOldDays(env, today, daysBefore) {
+  if ((await getState(env, "pruned")) === today) return;
+  await env.DB.batch([
+    env.DB.prepare("DELETE FROM event_batches WHERE day < ?").bind(
+      daysBefore(today, RETENTION_DAYS),
+    ),
+    setStateStatement(env, "pruned", today),
+  ]);
+}
+
+// Rows for any of fipsCodes reported in [fromDay, toDay] ("YYYYMMDD", inclusive).
+export async function getEventsForRange(env, fipsCodes, fromDay, toDay) {
+  const placeholders = fipsCodes.map(() => "?").join(", ");
+  const { results } = await env.DB.prepare(
+    `SELECT rows FROM event_batches WHERE country IN (${placeholders}) AND day BETWEEN ? AND ?`,
+  )
+    .bind(...fipsCodes, fromDay, toDay)
+    .all();
+
+  return results.flatMap((r) => JSON.parse(r.rows));
 }

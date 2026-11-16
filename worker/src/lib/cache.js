@@ -1,6 +1,7 @@
 import { kvPut } from "./kvPut.js";
 
-export function getCacheKey(params) {
+// ensure that long queries dont go past KV 512b limit
+export async function getCacheKey(params) {
   const sorted = Object.keys(params)
     .filter(
       (k) => params[k] !== undefined && params[k] !== null && params[k] !== "",
@@ -10,13 +11,22 @@ export function getCacheKey(params) {
       acc[k] = params[k];
       return acc;
     }, {});
-  return `cache:${JSON.stringify(sorted)}`;
+  const bytes = new TextEncoder().encode(JSON.stringify(sorted));
+  const digest = await crypto.subtle.digest("SHA-256", bytes);
+  const hex = [...new Uint8Array(digest)]
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+  return `cache:v2:${hex}`;
 }
 
 export async function getCached(env, cacheKey) {
-  const raw = await env.CACHE.get(cacheKey);
-  if (!raw) return null;
-  return JSON.parse(raw);
+  try {
+    const raw = await env.CACHE.get(cacheKey);
+    return raw ? JSON.parse(raw) : null;
+  } catch (err) {
+    console.warn(`KV read skipped for ${cacheKey}: ${err.message}`);
+    return null;
+  }
 }
 
 export async function setCached(env, cacheKey, data, ttlSeconds) {

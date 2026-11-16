@@ -18,14 +18,12 @@ import {
 } from "../services/gdeltDocService.js";
 import { mergeArticles } from "../lib/mergeArticles.js";
 import { rankArticles } from "../lib/rankArticles.js";
-import { fetchPageMetadata } from "../lib/pageMetadata.js";
+import { openTitleStore } from "../lib/titleStore.js";
 import { isLowQualityDomain } from "../lib/lowQualitySources.js";
 
 // NewsAPI offers news with a 24h delay so refetching more than a few times a day will just be useless & burn our daily quota
 // testing 1h cache - consider caching for longer if necessary
 const CACHE_TTL_SECONDS = 60 * 60;
-
-// const GDELT_FAILURE_CACHE_TTL_SECONDS = 60 * 5;
 
 const GDELT_BACKFILL_LIMIT = 12;
 
@@ -39,7 +37,7 @@ function floorToHour(iso) {
   return new Date(ms - (ms % 3600000)).toISOString();
 }
 
-async function backfillGdeltDescriptions(env, articles) {
+async function backfillGdeltDescriptions(env, scope, articles) {
   const targets = [];
   for (const article of articles) {
     if (targets.length >= GDELT_BACKFILL_LIMIT) break;
@@ -49,13 +47,18 @@ async function backfillGdeltDescriptions(env, articles) {
   }
   if (targets.length === 0) return articles;
 
+  const titles = await openTitleStore(
+    env,
+    `news:${scope.trim().toLowerCase()}`,
+  );
   const metaByUrl = new Map();
   await Promise.all(
     targets.map(async (article) => {
-      const meta = await fetchPageMetadata(env, article.url);
-      if (meta) metaByUrl.set(article.url, meta);
+      const meta = await titles.get(article.url);
+      if (meta.title) metaByUrl.set(article.url, meta);
     }),
   );
+  await titles.save();
   if (metaByUrl.size === 0) return articles;
 
   return articles.map((article) => {
@@ -134,7 +137,7 @@ news.get("/news", async (c) => {
     page,
     searchIn,
   };
-  const cacheKey = getCacheKey(params);
+  const cacheKey = await getCacheKey(params);
 
   const cached = await getCached(c.env, cacheKey);
   if (cached) {
@@ -187,7 +190,7 @@ news.get("/news", async (c) => {
   }
 
   const ranked = rankArticles(articles, { sortBy });
-  const backfilled = await backfillGdeltDescriptions(c.env, ranked);
+  const backfilled = await backfillGdeltDescriptions(c.env, topic || q, ranked);
 
   const finalData = {
     ...result.data,
@@ -195,18 +198,6 @@ news.get("/news", async (c) => {
     totalResults: backfilled.length,
     ...gdeltMeta,
   };
-
-  // i am having issues with this damn api
-  // this piece of code is technically meant to help cache newsapi results for only 5 mins
-  // in case gdelt failed. but gdelt always fails.......
-  // maybe we will fix this. maybe not. who knows
-
-  // const gdeltFailedOrThrottled =
-  //   Boolean(gdeltMeta._gdeltError) ||
-  //   gdeltMeta._gdeltSkipped === "rate-limited";
-  // const cacheTtl = gdeltFailedOrThrottled
-  //   /? GDELT_FAILURE_CACHE_TTL_SECONDS
-  //   : CACHE_TTL_SECONDS;
 
   await setCached(c.env, cacheKey, finalData, CACHE_TTL_SECONDS);
 

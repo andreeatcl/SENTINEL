@@ -11,9 +11,17 @@ run_worker_first = ["/api/*"]
 binding = "CACHE"
 id = "b9aea1eccd2841ec9824d83558a80529"
 
+[[d1_databases]]
+binding = "DB"
+database_name = "sentinel-events"
+database_id = "09319af0-04a2-4d18-8eb7-6ab5c6262673"
+
+[observability]
+enabled = true
+
 # see worker/src/scheduled.js.
 [triggers]
-crons = ["*/15 * * * *"]
+crons = ["5-59/15 * * * *"] # :05/:20/:35/:50, after GDELT publishes
 
 # per-IP request limits, see src/lib/rateLimit.js
 [[ratelimits]]

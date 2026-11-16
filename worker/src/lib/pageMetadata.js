@@ -1,14 +1,8 @@
-import { kvPut } from "./kvPut.js";
-
 // since the GDELT events table only provides a CAMEO category (arrest, death etc) rather than a headline or description
 // we fetch the page and pull its title + description with HTMLRewriter
 // fallback: cameo category
 
 const FETCH_TIMEOUT_MS = 6000;
-const SUCCESS_TTL_SECONDS = 60 * 60 * 24 * 30; // articles don't change; cache long
-const FAILURE_TTL_SECONDS = 60 * 60 * 6; // retry failures sooner (transient blocks)
-
-const CACHE_VERSION = "v3";
 
 const NAMED_ENTITIES = {
   amp: "&",
@@ -31,15 +25,6 @@ function decodeEntities(str) {
     }
     return NAMED_ENTITIES[entity.toLowerCase()] || match;
   });
-}
-
-async function hashUrl(url) {
-  const bytes = new TextEncoder().encode(url);
-  const digest = await crypto.subtle.digest("SHA-256", bytes);
-  return [...new Uint8Array(digest)]
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("")
-    .slice(0, 24);
 }
 
 function extractFrom(response, pageUrl) {
@@ -95,7 +80,8 @@ function extractFrom(response, pageUrl) {
   };
 }
 
-async function fetchPageMetadataUncached(url) {
+// this is NOT cached. callers save the results using titleStore.js
+export async function fetchPageMetadata(url) {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
   try {
@@ -116,16 +102,4 @@ async function fetchPageMetadataUncached(url) {
   } finally {
     clearTimeout(timeoutId);
   }
-}
-
-export async function fetchPageMetadata(env, url) {
-  const cacheKey = `pagemeta:${CACHE_VERSION}:${await hashUrl(url)}`;
-  const cached = await env.CACHE.get(cacheKey);
-  if (cached !== null) return JSON.parse(cached);
-
-  const result = await fetchPageMetadataUncached(url);
-  await kvPut(env, cacheKey, JSON.stringify(result), {
-    expirationTtl: result ? SUCCESS_TTL_SECONDS : FAILURE_TTL_SECONDS,
-  });
-  return result;
 }

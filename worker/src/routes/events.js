@@ -3,15 +3,14 @@ import { getFipsCodes } from "../lib/countryCodes.js";
 import { decodeActor } from "../lib/gdeltActorCodes.js";
 import { decodeEventCode } from "../lib/cameoEventCodes.js";
 import { getEventsForRange } from "../lib/eventsStore.js";
-import { fetchPageMetadata } from "../lib/pageMetadata.js";
-import { isLowQualityDomain } from "../lib/lowQualitySources.js";
+import { openTitleStore } from "../lib/titleStore.js";
 import { getSourceTrustLabel } from "../lib/sourceTrust.js";
-import { clusterEvents, EXCLUDED_ROOT_CODES } from "../lib/eventClusters.js";
+import { clusterEvents } from "../lib/eventClusters.js";
 
 const MAX_RANGE_DAYS = 31; // 30d range + one day back for late-dated rows
 const DEFAULT_LIMIT = 20;
 const MAX_LIMIT = 25;
-const MAX_SCAN = 25; // page-title lookups per request; each new URL is a KV write
+const MAX_SCAN = 40;
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 const INTEGER_PATTERN = /^\d+$/;
 
@@ -23,32 +22,19 @@ function toDayString(isoDate) {
 
 function dedupeBySourceUrl(rows) {
   const bestByUrl = new Map();
-  const noUrl = [];
-
   for (const row of rows) {
-    if (!row.sourceUrl) {
-      noUrl.push(row);
-      continue;
-    }
     const existing = bestByUrl.get(row.sourceUrl);
     if (!existing || row.numMentions > existing.numMentions) {
       bestByUrl.set(row.sourceUrl, row);
     }
   }
-
-  return [...bestByUrl.values(), ...noUrl];
+  return [...bestByUrl.values()];
 }
 
 function toneCategoryForRow(goldstein) {
   if (goldstein > 1) return "positive";
   if (goldstein < -1) return "negative";
   return "neutral";
-}
-
-function hasStateActor(row) {
-  return !!(
-    decodeActor(row.actor1Code)?.country || decodeActor(row.actor2Code)?.country
-  );
 }
 
 function dateAddedTimestamp(row) {
@@ -141,12 +127,7 @@ events.get("/events", async (c) => {
 
   rows = rows
     .filter(
-      (row) =>
-        row.sourceUrl &&
-        hasStateActor(row) &&
-        !EXCLUDED_ROOT_CODES.has(row.eventRootCode) &&
-        !isLowQualityDomain(row.sourceUrl) &&
-        (Number.isNaN(sinceMs) || dateAddedTimestamp(row) >= sinceMs),
+      (row) => Number.isNaN(sinceMs) || dateAddedTimestamp(row) >= sinceMs,
     )
     .map((row) => ({
       ...row,
@@ -179,6 +160,7 @@ events.get("/events", async (c) => {
   }
 
   // skip events whose page gives no title
+  const titles = await openTitleStore(c.env, `events:${[...fipsCodes].sort()}`);
   const decorated = [];
   let cursor = offsetNum;
   const scanEnd = Math.min(rankedAll.length, offsetNum + MAX_SCAN);
@@ -190,8 +172,8 @@ events.get("/events", async (c) => {
     cursor += batch.length;
     const results = await Promise.all(
       batch.map(async (row) => {
-        const pageMeta = await fetchPageMetadata(c.env, row.sourceUrl);
-        if (!pageMeta?.title) return null;
+        const pageMeta = await titles.get(row.sourceUrl);
+        if (!pageMeta.title) return null;
         return {
           ...row,
           actor1: decodeActor(row.actor1Code),
@@ -205,6 +187,7 @@ events.get("/events", async (c) => {
     );
     decorated.push(...results.filter(Boolean));
   }
+  await titles.save();
 
   return c.json({
     events: decorated,

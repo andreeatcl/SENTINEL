@@ -1,12 +1,12 @@
 import { unzipSync } from "fflate";
 import { getAllTrackedFipsCodes } from "../lib/countryCodes.js";
-import { getDayBucket, mergeDayBucket } from "../lib/eventsStore.js";
+import { getLastCursor, saveBatch, pruneOldDays } from "../lib/eventsStore.js";
 import { EXCLUDED_ROOT_CODES } from "../lib/eventClusters.js";
+import { decodeActor } from "../lib/gdeltActorCodes.js";
+import { isLowQualityDomain } from "../lib/lowQualitySources.js";
 
 const LAST_UPDATE_URL = "http://data.gdeltproject.org/gdeltv2/lastupdate.txt";
 
-// GDELT 2.0 Event export schema, 0-indexed column positions.
-// Confirmed against GDELT's own codebook
 const COL = {
   GLOBAL_EVENT_ID: 0,
   DAY: 1,
@@ -15,12 +15,9 @@ const COL = {
   IS_ROOT_EVENT: 25,
   EVENT_CODE: 26,
   EVENT_ROOT_CODE: 28,
-  QUAD_CLASS: 29,
   GOLDSTEIN: 30,
   NUM_MENTIONS: 31,
   NUM_SOURCES: 32,
-  NUM_ARTICLES: 33,
-  AVG_TONE: 34,
   ACTION_GEO_FULLNAME: 52,
   ACTION_GEO_COUNTRY_CODE: 53,
   ACTION_GEO_LAT: 56,
@@ -41,9 +38,7 @@ function dateAddedToIso(raw) {
   return `${y}-${mo}-${d}T${h}:${mi}:${s}Z`;
 }
 
-// Reads lastupdate.txt and returns the events file's URL + a cursor value
-// (the file's embedded timestamp) used to detect "is this new since last ingestion tick".
-export async function fetchLatestExportFileMeta() {
+async function fetchLatestExportFileMeta() {
   const response = await fetch(LAST_UPDATE_URL);
   const text = await response.text();
 
@@ -92,25 +87,24 @@ function normalizeRow(cols) {
     actor2Code: cols[COL.ACTOR2_CODE] || null,
     eventCode: cols[COL.EVENT_CODE],
     eventRootCode: cols[COL.EVENT_ROOT_CODE],
-    quadClass: Number(cols[COL.QUAD_CLASS]),
     goldstein: Number(cols[COL.GOLDSTEIN]),
     numMentions: Number(cols[COL.NUM_MENTIONS]),
     numSources: Number(cols[COL.NUM_SOURCES]),
-    numArticles: Number(cols[COL.NUM_ARTICLES]),
-    avgTone: Number(cols[COL.AVG_TONE]),
     location: cols[COL.ACTION_GEO_FULLNAME] || null,
     lat: Number(cols[COL.ACTION_GEO_LAT]) || null,
     lon: Number(cols[COL.ACTION_GEO_LONG]) || null,
-    sourceUrl: cols[COL.SOURCE_URL] || null,
+    sourceUrl: cols[COL.SOURCE_URL],
   };
 }
 
 function filterAndGroupByCountry(csvText, oldestDay) {
   const trackedCodes = getAllTrackedFipsCodes();
   const byCountry = {};
+  let rowsInFile = 0;
 
   for (const line of csvText.split("\n")) {
     if (!line) continue;
+    rowsInFile++;
     const cols = line.split("\t");
     if (cols.length < EXPECTED_COLUMN_COUNT) continue;
 
@@ -118,13 +112,27 @@ function filterAndGroupByCountry(csvText, oldestDay) {
     if (!fipsCode || !trackedCodes.has(fipsCode)) continue;
     if (cols[COL.IS_ROOT_EVENT] !== "1") continue;
     if (EXCLUDED_ROOT_CODES.has(cols[COL.EVENT_ROOT_CODE])) continue;
-    if (cols[COL.DAY] < oldestDay) continue; // old event re-mentioned, not news
+    if (cols[COL.DAY] < oldestDay) continue;
+    const sourceUrl = cols[COL.SOURCE_URL];
+    if (!sourceUrl || isLowQualityDomain(sourceUrl)) continue;
+    if (
+      !decodeActor(cols[COL.ACTOR1_CODE] || null)?.country &&
+      !decodeActor(cols[COL.ACTOR2_CODE] || null)?.country
+    )
+      continue;
 
-    if (!byCountry[fipsCode]) byCountry[fipsCode] = [];
-    byCountry[fipsCode].push(normalizeRow(cols));
+    if (!byCountry[fipsCode]) byCountry[fipsCode] = new Map();
+    const byUrl = byCountry[fipsCode];
+    const row = normalizeRow(cols);
+    const existing = byUrl.get(sourceUrl);
+    if (!existing || row.numMentions > existing.numMentions)
+      byUrl.set(sourceUrl, row);
   }
 
-  return byCountry;
+  for (const code of Object.keys(byCountry)) {
+    byCountry[code] = [...byCountry[code].values()];
+  }
+  return { byCountry, rowsInFile };
 }
 
 export async function ingestLatestEventsFile(env) {
@@ -132,8 +140,7 @@ export async function ingestLatestEventsFile(env) {
   if (!latest) return { ingested: false, reason: "no export file found" };
 
   const reportDay = latest.cursor.slice(0, 8);
-  const bucket = await getDayBucket(env, reportDay);
-  if (bucket._cursor === latest.cursor) {
+  if ((await getLastCursor(env)) === latest.cursor) {
     return {
       ingested: false,
       reason: "already up to date",
@@ -149,8 +156,20 @@ export async function ingestLatestEventsFile(env) {
       fileUrl: latest.url,
     };
   }
-  const byCountry = filterAndGroupByCountry(csvText, daysBefore(reportDay, 2));
-  await mergeDayBucket(env, reportDay, bucket, byCountry, latest.cursor);
+  const { byCountry, rowsInFile } = filterAndGroupByCountry(
+    csvText,
+    daysBefore(reportDay, 2),
+  );
+  const storedChars = await saveBatch(env, reportDay, latest.cursor, byCountry);
+  await pruneOldDays(env, reportDay, daysBefore);
+
+  const rowsKept = Object.values(byCountry).reduce(
+    (n, rows) => n + rows.length,
+    0,
+  );
+  console.log(
+    `GDELT ingest ${latest.cursor}: kept ${rowsKept}/${rowsInFile} rows in ${Object.keys(byCountry).length} country batches, ${(storedChars / 1e3).toFixed(0)}K chars`,
+  );
 
   return {
     ingested: true,

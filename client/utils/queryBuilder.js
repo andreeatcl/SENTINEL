@@ -207,10 +207,10 @@ function buildCountryExpression(
   const variants = [];
 
   const addVariant = (value) => {
-    const normalized = normalizeCountryKey(value);
-    if (!normalized || seen.has(normalized)) return;
-    seen.add(normalized);
-    variants.push(toDisplayVariant(value));
+    const display = toDisplayVariant(value);
+    if (!display || seen.has(display)) return;
+    seen.add(display);
+    variants.push(display);
   };
 
   addVariant(countryOrTopic);
