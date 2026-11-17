@@ -11,21 +11,12 @@ import {
   trackUsage,
 } from "../lib/keys.js";
 import { withKeyFailover } from "../lib/withKeyFailover.js";
-import {
-  buildGdeltDocQuery,
-  fetchGdeltDoc,
-  normalizeGdeltArticle,
-} from "../services/gdeltDocService.js";
 import { mergeArticles } from "../lib/mergeArticles.js";
 import { rankArticles } from "../lib/rankArticles.js";
-import { openTitleStore } from "../lib/titleStore.js";
-import { isLowQualityDomain } from "../lib/lowQualitySources.js";
 
 // NewsAPI offers news with a 24h delay so refetching more than a few times a day will just be useless & burn our daily quota
 // testing 1h cache - consider caching for longer if necessary
 const CACHE_TTL_SECONDS = 60 * 60;
-
-const GDELT_BACKFILL_LIMIT = 12;
 
 const news = new Hono();
 
@@ -37,74 +28,9 @@ function floorToHour(iso) {
   return new Date(ms - (ms % 3600000)).toISOString();
 }
 
-async function backfillGdeltDescriptions(env, scope, articles) {
-  const targets = [];
-  for (const article of articles) {
-    if (targets.length >= GDELT_BACKFILL_LIMIT) break;
-    if (article._provider === "gdelt" && !article.description) {
-      targets.push(article);
-    }
-  }
-  if (targets.length === 0) return articles;
-
-  const titles = await openTitleStore(
-    env,
-    `news:${scope.trim().toLowerCase()}`,
-  );
-  const metaByUrl = new Map();
-  await Promise.all(
-    targets.map(async (article) => {
-      const meta = await titles.get(article.url);
-      if (meta.title) metaByUrl.set(article.url, meta);
-    }),
-  );
-  await titles.save();
-  if (metaByUrl.size === 0) return articles;
-
-  return articles.map((article) => {
-    const meta = metaByUrl.get(article.url);
-    if (!meta) return article;
-    return {
-      ...article,
-      title: article.title || meta.title,
-      description: meta.description || article.description,
-      urlToImage: article.urlToImage || meta.image || null,
-    };
-  });
-}
-
-async function fetchGdeltForMerge({ topic, gdeltKeywords, from, page }) {
-  if (!topic) return { articles: null };
-  if (page !== "1") return { articles: null, skipped: "pagination" };
-
-  try {
-    const query = buildGdeltDocQuery(topic, gdeltKeywords);
-    const { articles: gdeltRaw, error } = await fetchGdeltDoc({ query, from });
-    if (error?.startsWith("skipped:")) {
-      return { articles: null, skipped: "rate-limited" };
-    }
-    if (error) {
-      console.error(
-        `GDELT fetch failed for topic "${topic}" (query: ${query}): ${error}`,
-      );
-      return { articles: null, error };
-    }
-    const filtered = gdeltRaw.filter((a) => !isLowQualityDomain(a.url));
-    return { articles: filtered.map(normalizeGdeltArticle) };
-  } catch (err) {
-    console.error(
-      `GDELT fetch threw for topic "${topic}":`,
-      err?.message || err,
-    );
-    return { articles: null, error: err?.message || "unknown error" };
-  }
-}
-
 news.get("/news", async (c) => {
   const {
     q,
-    topic,
-    keywords: gdeltKeywords,
     sortBy = "relevancy",
     from: rawFrom,
     language,
@@ -128,8 +54,6 @@ news.get("/news", async (c) => {
   const from = rawFrom && floorToHour(rawFrom);
   const params = {
     q,
-    topic,
-    gdeltKeywords,
     sortBy,
     from,
     language,
@@ -153,13 +77,6 @@ news.get("/news", async (c) => {
     });
   }
 
-  const gdeltPromise = fetchGdeltForMerge({
-    topic,
-    gdeltKeywords,
-    from,
-    page,
-  });
-
   const result = await withKeyFailover(c.env, keys, (apiKey) =>
     fetchEverything({
       apiKey,
@@ -177,26 +94,13 @@ news.get("/news", async (c) => {
     return c.json({ error: result.error.message }, result.error.status);
   }
 
-  const gdeltResult = await gdeltPromise;
-  const articles = mergeArticles(
-    result.data.articles || [],
-    gdeltResult.articles ?? [],
-  );
-  const gdeltMeta = {};
-  if (gdeltResult.error) {
-    gdeltMeta._gdeltError = gdeltResult.error;
-  } else if (gdeltResult.skipped) {
-    gdeltMeta._gdeltSkipped = gdeltResult.skipped;
-  }
-
-  const ranked = rankArticles(articles, { sortBy });
-  const backfilled = await backfillGdeltDescriptions(c.env, topic || q, ranked);
-
+  const articles = rankArticles(mergeArticles(result.data.articles || []), {
+    sortBy,
+  });
   const finalData = {
     ...result.data,
-    articles: backfilled,
-    totalResults: backfilled.length,
-    ...gdeltMeta,
+    articles,
+    totalResults: articles.length,
   };
 
   await setCached(c.env, cacheKey, finalData, CACHE_TTL_SECONDS);

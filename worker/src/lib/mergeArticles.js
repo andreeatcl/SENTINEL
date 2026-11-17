@@ -1,5 +1,4 @@
-// de-duplicate articles and merge
-// ordering is done via the rankArticles.js file
+// dedupe articles, ordering is done in rankArticles.js
 
 function normalizeTitle(title) {
   return (title || "")
@@ -9,14 +8,11 @@ function normalizeTitle(title) {
     .trim();
 }
 
-export function mergeArticles(newsApiArticles = [], gdeltArticles = []) {
-  const tagged = [
-    ...newsApiArticles.map((a) => ({
-      ...a,
-      _provider: a._provider || "newsapi",
-    })),
-    ...gdeltArticles,
-  ];
+export function mergeArticles(newsApiArticles = []) {
+  const tagged = newsApiArticles.map((a) => ({
+    ...a,
+    _provider: a._provider || "newsapi",
+  }));
 
   const seenUrls = new Map(); // url -> index into deduped
   const seenTitles = new Map(); // normalized title -> index into deduped

@@ -36,8 +36,6 @@ async function fetchWithTimeout(url, options, timeoutMs) {
 // fetch /api/news, add params and headers
 export async function fetchNews({
   q,
-  topic,
-  gdeltKeywords,
   sortBy = "relevancy",
   timeRange = "7d",
   language,
@@ -48,14 +46,6 @@ export async function fetchNews({
   const params = new URLSearchParams({ q, sortBy, pageSize, page, searchIn });
   if (language) {
     params.set("language", language);
-  }
-  // server uses the plain topic (not the NewsAPI-specific `q` string) to
-  // build a separate GDELT DOC query and merge results
-  if (topic) {
-    params.set("topic", topic);
-  }
-  if (topic && gdeltKeywords !== undefined) {
-    params.set("keywords", gdeltKeywords);
   }
   params.set("from", buildTimeRangeFilter(timeRange));
 

@@ -1,4 +1,4 @@
-import { unzipSync } from "fflate";
+import { unzipFirstFileAsText } from "../lib/unzip.js";
 import { getAllTrackedFipsCodes } from "../lib/countryCodes.js";
 import { getLastCursor, saveBatch, pruneOldDays } from "../lib/eventsStore.js";
 import { EXCLUDED_ROOT_CODES } from "../lib/eventClusters.js";
@@ -72,10 +72,7 @@ function daysBefore(day, n) {
 async function fetchAndUnzipCsv(url) {
   const response = await fetch(url);
   if (!response.ok) return null;
-  const buffer = new Uint8Array(await response.arrayBuffer());
-  const files = unzipSync(buffer);
-  const [csvBytes] = Object.values(files);
-  return new TextDecoder("utf-8").decode(csvBytes);
+  return unzipFirstFileAsText(new Uint8Array(await response.arrayBuffer()));
 }
 
 function normalizeRow(cols) {

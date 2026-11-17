@@ -3,8 +3,6 @@ import { getSourceTrustLabel, trustMultiplier } from "./sourceTrust.js";
 const RECENCY_HALF_LIFE_HOURS = 36;
 const RECENCY_FLOOR = 0.05;
 
-const PROVIDER_MULTIPLIER = { newsapi: 1.25, gdelt: 1 };
-
 const NON_ENGLISH_PENALTY = 0.8;
 
 const GEO_KEYWORDS = [
@@ -192,10 +190,6 @@ function corroborationMultiplier(article) {
   return 1 + CORROBORATION_WEIGHT * Math.log(count);
 }
 
-function providerMultiplier(article) {
-  return PROVIDER_MULTIPLIER[article?._provider] ?? PROVIDER_MULTIPLIER.newsapi;
-}
-
 function languageMultiplier(article) {
   const language = article?.language;
   if (!language) return 1;
@@ -205,7 +199,6 @@ function languageMultiplier(article) {
 function relevanceScore(article) {
   return (
     recencyScore(article.publishedAt) *
-    providerMultiplier(article) *
     languageMultiplier(article) *
     geoRelevanceMultiplier(article) *
     corroborationMultiplier(article) *
@@ -216,7 +209,6 @@ function relevanceScore(article) {
 function popularityScore(article) {
   return (
     corroborationMultiplier(article) *
-    providerMultiplier(article) *
     languageMultiplier(article) *
     trustMultiplier(article._trustLabel) *
     (0.5 + 0.5 * recencyScore(article.publishedAt))
