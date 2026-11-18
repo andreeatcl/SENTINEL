@@ -14,11 +14,7 @@ import { FavoriteContext } from "./components/favorites/FavoriteButton";
 import { InfoIcon } from "./components/ui/icons";
 import { useAppControls } from "./hooks/useAppControls";
 import { useViewHistory } from "./hooks/useViewHistory";
-import {
-  buildTopicQuery,
-  getCountryKeywordOptions,
-  getGdeltKeywordsParam,
-} from "./utils/queryBuilder";
+import { buildTopicQuery } from "./utils/queryBuilder";
 import SaveSearchModal from "./components/monitor/SaveSearchModal";
 import { useApiCredits } from "./hooks/useApiCredits";
 import {
@@ -60,7 +56,6 @@ export default function App() {
     timeRange,
     includePoliticalKeywords,
     useTopSourcesOnly,
-    englishOnly,
     sourcePriority,
     savedQueryActive,
     activeBuilder,
@@ -90,7 +85,6 @@ export default function App() {
     handleClose,
     handleLoadMore,
     handleTopSourcesToggle,
-    handleEnglishOnlyToggle,
     handleSourcePriorityToggle,
     handleRunSavedSearch,
     getCurrentSearch,
@@ -190,21 +184,7 @@ export default function App() {
             current.queryOptions,
           )
       : current.q;
-    let gdeltKeywords = fresh
-      ? getGdeltKeywordsParam(
-          current.topic,
-          current.includePoliticalKeywords,
-          current.queryOptions,
-        )
-      : current.gdeltKeywords;
-    if (!current.raw && gdeltKeywords === undefined) {
-      gdeltKeywords = getCountryKeywordOptions(current.topic).join(",");
-    }
-    setPendingSave({
-      ...current,
-      q,
-      gdeltKeywords: current.raw ? undefined : gdeltKeywords,
-    });
+    setPendingSave({ ...current, q });
   }
 
   function handleConfirmSave(label) {
@@ -331,8 +311,6 @@ export default function App() {
             timeRange={timeRange}
             useTopSourcesOnly={useTopSourcesOnly}
             onTopSourcesToggle={handleTopSourcesToggle}
-            englishOnly={englishOnly}
-            onEnglishOnlyToggle={handleEnglishOnlyToggle}
             sourcePriority={sourcePriority}
             onSourcePriorityToggle={handleSourcePriorityToggle}
             onSaveSearch={handleSaveSearch}

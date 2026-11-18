@@ -1,10 +1,9 @@
 import { useState, useCallback, useRef } from "react";
 import { fetchNews } from "../utils/newsApi";
-import { buildTopicQuery, getGdeltKeywordsParam } from "../utils/queryBuilder";
+import { buildTopicQuery } from "../utils/queryBuilder";
 import {
   sanitizeArticles,
   filterTopSources as filterToTopSources,
-  filterEnglishOnly as filterToEnglishOnly,
   prioritizeTier,
 } from "../utils/articleFilters";
 
@@ -22,7 +21,6 @@ export function useNews() {
   const includePoliticalKeywordsRef = useRef(true);
   const queryOptionsRef = useRef({});
   const useTopSourcesOnlyRef = useRef(false);
-  const englishOnlyRef = useRef(false);
   const sourcePriorityRef = useRef(null);
   const pageRef = useRef(1);
   const lastRequestRef = useRef({});
@@ -31,7 +29,6 @@ export function useNews() {
   function applyClientFilters(inputArticles) {
     let result = inputArticles;
     if (useTopSourcesOnlyRef.current) result = filterToTopSources(result);
-    if (englishOnlyRef.current) result = filterToEnglishOnly(result);
     if (sourcePriorityRef.current)
       result = prioritizeTier(result, sourcePriorityRef.current);
     return result;
@@ -47,7 +44,6 @@ export function useNews() {
       includePoliticalKeywords = true,
       queryOptions = {},
       useTopSourcesOnly = false,
-      englishOnly = false,
       sourcePriority = null,
       page = 1,
       append = false,
@@ -59,7 +55,6 @@ export function useNews() {
       includePoliticalKeywordsRef.current = includePoliticalKeywords;
       queryOptionsRef.current = queryOptions;
       useTopSourcesOnlyRef.current = useTopSourcesOnly;
-      englishOnlyRef.current = englishOnly;
       sourcePriorityRef.current = sourcePriority;
 
       pageRef.current = page;
@@ -75,16 +70,7 @@ export function useNews() {
               includePoliticalKeywords,
               queryOptions,
             );
-      const gdeltKeywords = raw
-        ? undefined
-        : fixed
-          ? fixed.gdeltKeywords
-          : getGdeltKeywordsParam(
-              topic,
-              includePoliticalKeywords,
-              queryOptions,
-            );
-      lastRequestRef.current = { q, gdeltKeywords, lastTopic: topic };
+      lastRequestRef.current = { q, lastTopic: topic };
       if (append) {
         setLoadingMore(true);
       } else {
@@ -95,8 +81,6 @@ export function useNews() {
       try {
         const data = await fetchNews({
           q,
-          topic: raw ? undefined : topic,
-          gdeltKeywords,
           sortBy,
           timeRange,
           page,
@@ -146,7 +130,6 @@ export function useNews() {
         includePoliticalKeywords: includePoliticalKeywordsRef.current,
         queryOptions: queryOptionsRef.current,
         useTopSourcesOnly: useTopSourcesOnlyRef.current,
-        englishOnly: englishOnlyRef.current,
         sourcePriority: sourcePriorityRef.current,
         page: 1,
         append: false,
@@ -168,7 +151,6 @@ export function useNews() {
         includePoliticalKeywords: includePoliticalKeywordsRef.current,
         queryOptions: queryOptionsRef.current,
         useTopSourcesOnly: useTopSourcesOnlyRef.current,
-        englishOnly: englishOnlyRef.current,
         sourcePriority: sourcePriorityRef.current,
         page: nextPage,
         append: true,
@@ -189,7 +171,6 @@ export function useNews() {
     includePoliticalKeywordsRef.current = true;
     queryOptionsRef.current = {};
     useTopSourcesOnlyRef.current = false;
-    englishOnlyRef.current = false;
     sourcePriorityRef.current = null;
     pageRef.current = 1;
     lastRequestRef.current = {};
@@ -198,14 +179,6 @@ export function useNews() {
   const setTopSourcesOnly = useCallback(
     (enabled) => {
       useTopSourcesOnlyRef.current = enabled;
-      setArticles(applyClientFilters(allArticles));
-    },
-    [allArticles],
-  );
-
-  const setEnglishOnly = useCallback(
-    (enabled) => {
-      englishOnlyRef.current = enabled;
       setArticles(applyClientFilters(allArticles));
     },
     [allArticles],
@@ -238,7 +211,6 @@ export function useNews() {
     resort,
     loadMore,
     setTopSourcesOnly,
-    setEnglishOnly,
     setSourcePriority,
     clear,
   };

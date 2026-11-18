@@ -23,8 +23,6 @@ export default function MonitorPanel({
   timeRange,
   useTopSourcesOnly,
   onTopSourcesToggle,
-  englishOnly,
-  onEnglishOnlyToggle,
   sourcePriority,
   onSourcePriorityToggle,
   onSaveSearch,
@@ -108,8 +106,6 @@ export default function MonitorPanel({
           onApplyArticleFilters={onApplyArticleFilters}
           useTopSourcesOnly={useTopSourcesOnly}
           onTopSourcesToggle={onTopSourcesToggle}
-          englishOnly={englishOnly}
-          onEnglishOnlyToggle={onEnglishOnlyToggle}
           sourcePriority={sourcePriority}
           onSourcePriorityToggle={onSourcePriorityToggle}
           onExtraSearch={onExtraSearch}

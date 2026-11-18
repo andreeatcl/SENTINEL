@@ -4,7 +4,6 @@ import { favoriteFromArticle } from "../../utils/favorites";
 import FavoriteButton from "../favorites/FavoriteButton";
 import NoteMarker from "../notes/NoteMarker";
 import TrustBadge from "../TrustBadge";
-import Badge from "../ui/Badge";
 import { BanIcon } from "../ui/icons";
 
 export const ROW_CLASS = "relative border-b border-carbon-800 group";
@@ -61,10 +60,6 @@ export default function ArticleCard({
           )}
           <TrustBadge trust={article._trustLabel} />
           <NoteMarker url={article.url} />
-          {article._provider === "gdelt" && <Badge>GDELT</Badge>}
-          {article.language && !/^english$/i.test(article.language) && (
-            <Badge>{article.language}</Badge>
-          )}
         </div>
 
         {/* Title */}

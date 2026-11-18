@@ -150,35 +150,6 @@ export function saveCountryKeywords(country, keywords) {
   );
 }
 
-export function resetCountryKeywords(country) {
-  setKeywordOverride(countryDataKey(country), null);
-}
-
-// keywords for the GDELT query
-export function getGdeltKeywordsParam(
-  country,
-  includePoliticalKeywords = true,
-  queryOptions = {},
-) {
-  const toParam = (list) =>
-    list.map((k) => k.replace(/,/g, " ").replace(/\s+/g, " ").trim()).join(",");
-  if (Array.isArray(queryOptions.gdeltTerms)) {
-    return toParam(queryOptions.gdeltTerms);
-  }
-  if (!includePoliticalKeywords || queryOptions.overrideCountryKeywords) {
-    return "";
-  }
-  const override = getKeywordOverrides()[countryDataKey(country)];
-  if (!override) return undefined;
-  // added keywords first so they fall within GDELT's keyword cap
-  const added = new Set(override.add.map(normalizeCountryKey));
-  const keywords = getCountryKeywordOptions(country);
-  return toParam([
-    ...keywords.filter((k) => added.has(normalizeCountryKey(k))),
-    ...keywords.filter((k) => !added.has(normalizeCountryKey(k))),
-  ]);
-}
-
 function hasBooleanOperator(text) {
   return text.includes("OR") || text.includes("AND") || text.includes("NOT");
 }

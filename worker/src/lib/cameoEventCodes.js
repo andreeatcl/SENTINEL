@@ -325,7 +325,3 @@ export function decodeEventCode(eventCode, eventRootCode) {
     `Type ${eventCode}`
   );
 }
-
-export function decodeEventRootCode(rootCode) {
-  return ROOT_CODE_LABELS[rootCode] || `Type ${rootCode}`;
-}

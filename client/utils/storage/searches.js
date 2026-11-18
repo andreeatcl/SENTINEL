@@ -13,11 +13,9 @@ function toSavedFields({
   queryOptions,
   includePoliticalKeywords,
   q,
-  gdeltKeywords,
   sortBy,
   timeRange,
   useTopSourcesOnly,
-  englishOnly,
   sourcePriority,
 }) {
   // eslint-disable-next-line no-unused-vars
@@ -30,11 +28,9 @@ function toSavedFields({
     queryOptions: builderOptions,
     includePoliticalKeywords: includePoliticalKeywords !== false,
     q,
-    gdeltKeywords,
     sortBy,
     timeRange,
     useTopSourcesOnly: !!useTopSourcesOnly,
-    englishOnly: !!englishOnly,
     sourcePriority: sourcePriority || null,
   };
 }

@@ -16,7 +16,6 @@ import {
   saveCountryKeywords,
 } from "../../utils/queryBuilder";
 
-const GDELT_KEYWORD_COUNT = 12;
 const MAX_KEYWORD_LENGTH = 40;
 
 function sameList(a, b) {

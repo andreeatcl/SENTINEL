@@ -44,11 +44,19 @@ export function SourceLinkFooter({ href, children }) {
         Read source article
         <ExternalIcon className="w-3.5 h-3.5" />
       </Button>
-      {children && (
-        <div className="flex flex-wrap items-center justify-center gap-1.5 text-xs text-carbon-500 mt-2.5">
-          {children}
-        </div>
-      )}
+      <div className="flex flex-wrap items-center justify-center gap-1.5 text-xs text-carbon-500 mt-2.5">
+        {children}
+        {safeHref(href) && (
+          <a
+            href={`https://translate.google.com/translate?sl=auto&tl=en&u=${encodeURIComponent(href)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-carbon-300 underline underline-offset-2 hover:text-white"
+          >
+            {children ? "· " : ""}Translate to English
+          </a>
+        )}
+      </div>
     </div>
   );
 }

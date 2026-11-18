@@ -90,11 +90,6 @@ export async function fetchKeyUsage() {
   }
 }
 
-export async function fetchHealth() {
-  const res = await apiFetch(`${BASE}/health`);
-  return res.json();
-}
-
 // check for valid key in the settings screen
 export async function testApiKey(key) {
   if (!key) return { valid: false, message: "Enter a key first." };

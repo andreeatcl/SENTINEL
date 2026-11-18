@@ -20,7 +20,6 @@ import {
 } from "../../utils/storage";
 
 const PROVENANCE = {
-  gdelt: "GDELT",
   newsapi: "NewsAPI",
   manual: "External",
 };
@@ -53,8 +52,6 @@ export default function ArticleDetail({ article: original, onClose }) {
     "",
   );
   const sourceName = article.source?.name || domain;
-  const hasNonEnglish =
-    article.language && !/^english$/i.test(article.language);
   const favorite = favoriteFromArticle(article);
 
   return (
@@ -152,15 +149,7 @@ export default function ArticleDetail({ article: original, onClose }) {
 
         {/* provenance */}
         <DetailSection label="Provenance">
-          <p className="text-sm font-medium text-white">
-            {provenance}
-            {hasNonEnglish && (
-              <span className="text-carbon-500 font-normal text-xs">
-                {" "}
-                · {article.language}
-              </span>
-            )}
-          </p>
+          <p className="text-sm font-medium text-white">{provenance}</p>
         </DetailSection>
 
         {article.url && <NoteSection item={favorite} />}

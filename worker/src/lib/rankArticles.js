@@ -3,8 +3,6 @@ import { getSourceTrustLabel, trustMultiplier } from "./sourceTrust.js";
 const RECENCY_HALF_LIFE_HOURS = 36;
 const RECENCY_FLOOR = 0.05;
 
-const NON_ENGLISH_PENALTY = 0.8;
-
 const GEO_KEYWORDS = [
   // war / military / armed conflict
   "war",
@@ -190,16 +188,9 @@ function corroborationMultiplier(article) {
   return 1 + CORROBORATION_WEIGHT * Math.log(count);
 }
 
-function languageMultiplier(article) {
-  const language = article?.language;
-  if (!language) return 1;
-  return language.toLowerCase().includes("english") ? 1 : NON_ENGLISH_PENALTY;
-}
-
 function relevanceScore(article) {
   return (
     recencyScore(article.publishedAt) *
-    languageMultiplier(article) *
     geoRelevanceMultiplier(article) *
     corroborationMultiplier(article) *
     trustMultiplier(article._trustLabel)
@@ -209,7 +200,6 @@ function relevanceScore(article) {
 function popularityScore(article) {
   return (
     corroborationMultiplier(article) *
-    languageMultiplier(article) *
     trustMultiplier(article._trustLabel) *
     (0.5 + 0.5 * recencyScore(article.publishedAt))
   );

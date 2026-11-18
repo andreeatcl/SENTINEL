@@ -12,7 +12,6 @@ export function useAppControls() {
   const [includePoliticalKeywords, setIncludePoliticalKeywords] =
     useState(true);
   const [useTopSourcesOnly, setUseTopSourcesOnly] = useState(false);
-  const [englishOnly, setEnglishOnlyState] = useState(false);
   const [sourcePriority, setSourcePriorityState] = useState(null);
   const [savedQueryActive, setSavedQueryActive] = useState(false);
   const [activeBuilder, setActiveBuilder] = useState(null);
@@ -55,7 +54,6 @@ export function useAppControls() {
     getLastRequest,
     loadMore,
     setTopSourcesOnly: applyTopSourcesFilter,
-    setEnglishOnly: applyEnglishOnlyFilter,
     setSourcePriority: applySourcePriorityFilter,
     clear,
   } = useNews();
@@ -93,7 +91,6 @@ export function useAppControls() {
       sortBy: sortByOverride = sortBy,
       timeRange: timeRangeOverride = timeRange,
       useTopSourcesOnly: topSourcesOverride = useTopSourcesOnly,
-      englishOnly: englishOnlyOverride = englishOnly,
       sourcePriority: sourcePriorityOverride = sourcePriority,
     }) => {
       setSavedQueryActive(Boolean(queryOptions.fixed));
@@ -112,7 +109,6 @@ export function useAppControls() {
         timeRange: timeRangeOverride,
         includePoliticalKeywords: political,
         useTopSourcesOnly: topSourcesOverride,
-        englishOnly: englishOnlyOverride,
         sourcePriority: sourcePriorityOverride,
         page: 1,
         append: false,
@@ -124,7 +120,6 @@ export function useAppControls() {
       timeRange,
       includePoliticalKeywords,
       useTopSourcesOnly,
-      englishOnly,
       sourcePriority,
     ],
   );
@@ -223,12 +218,6 @@ export function useAppControls() {
     applyTopSourcesFilter(newState);
   }, [useTopSourcesOnly, applyTopSourcesFilter]);
 
-  const handleEnglishOnlyToggle = useCallback(() => {
-    const newState = !englishOnly;
-    setEnglishOnlyState(newState);
-    applyEnglishOnlyFilter(newState);
-  }, [englishOnly, applyEnglishOnlyFilter]);
-
   const handleSourcePriorityToggle = useCallback(
     (tier) => {
       const newState = sourcePriority === tier ? null : tier;
@@ -262,20 +251,18 @@ export function useAppControls() {
         sortBy: saved.sortBy || "relevancy",
         timeRange: saved.timeRange || "7d",
         useTopSourcesOnly: !!saved.useTopSourcesOnly,
-        englishOnly: !!saved.englishOnly,
         sourcePriority: saved.sourcePriority || null,
       };
       setSortBy(filters.sortBy);
       setTimeRange(filters.timeRange);
       setUseTopSourcesOnly(filters.useTopSourcesOnly);
-      setEnglishOnlyState(filters.englishOnly);
       setSourcePriorityState(filters.sourcePriority);
       runSearch({
         topic,
         extraKeywords,
         queryOptions: {
           ...queryOptions,
-          fixed: { q: saved.q, gdeltKeywords: saved.gdeltKeywords },
+          fixed: { q: saved.q },
         },
         includePoliticalKeywords: political,
         raw: !!saved.raw,
@@ -298,7 +285,6 @@ export function useAppControls() {
       sortBy,
       timeRange,
       useTopSourcesOnly,
-      englishOnly,
       sourcePriority,
     }),
     [
@@ -307,7 +293,6 @@ export function useAppControls() {
       sortBy,
       timeRange,
       useTopSourcesOnly,
-      englishOnly,
       sourcePriority,
     ],
   );
@@ -319,7 +304,6 @@ export function useAppControls() {
     timeRange,
     includePoliticalKeywords,
     useTopSourcesOnly,
-    englishOnly,
     sourcePriority,
     savedQueryActive,
     activeBuilder,
@@ -350,7 +334,6 @@ export function useAppControls() {
     handleClose,
     handleLoadMore,
     handleTopSourcesToggle,
-    handleEnglishOnlyToggle,
     handleSourcePriorityToggle,
     handleRunSavedSearch,
     getCurrentSearch,

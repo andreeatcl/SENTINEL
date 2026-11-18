@@ -51,8 +51,6 @@ export default function ArticlesTab({
   onApplyArticleFilters,
   useTopSourcesOnly,
   onTopSourcesToggle,
-  englishOnly,
-  onEnglishOnlyToggle,
   sourcePriority,
   onSourcePriorityToggle,
   onExtraSearch,
@@ -142,7 +140,6 @@ export default function ArticlesTab({
 
   const sourcesActive =
     (useTopSourcesOnly ? 1 : 0) +
-    (englishOnly ? 1 : 0) +
     (sourcePriority ? 1 : 0) +
     (showMuted ? 1 : 0) +
     (hiddenSources.length ? 1 : 0);
@@ -203,9 +200,6 @@ export default function ArticlesTab({
         <FilterSection title="Sources" activeCount={sourcesActive}>
           <Pill active={useTopSourcesOnly} onClick={onTopSourcesToggle}>
             Top sources only
-          </Pill>
-          <Pill active={englishOnly} onClick={onEnglishOnlyToggle}>
-            English only
           </Pill>
           {SOURCE_PRIORITY_OPTIONS.map(({ tier, label }) => (
             <Pill

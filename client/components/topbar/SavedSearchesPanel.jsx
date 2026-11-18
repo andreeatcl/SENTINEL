@@ -22,7 +22,6 @@ function savedMeta(item) {
     item.timeRange,
     SORT_LABELS[item.sortBy],
     item.useTopSourcesOnly && "Top sources",
-    item.englishOnly && "English",
     item.sourcePriority === "trusted" && "Trusted first",
     item.sourcePriority === "state-affiliated" && "State media first",
   ]
