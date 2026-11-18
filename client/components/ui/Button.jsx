@@ -12,8 +12,8 @@ const VARIANTS = {
 };
 
 const SIZES = {
-  sm: "h-7 px-2.5 text-xs",
-  md: "h-9 px-3.5 text-sm",
+  sm: "h-9 md:h-7 px-2.5 text-xs",
+  md: "h-10 md:h-9 px-3.5 text-sm",
 };
 
 export function buttonClass({
@@ -55,7 +55,8 @@ export function IconButton({
   children,
   ...rest
 }) {
-  const dim = size === "sm" ? "w-7 h-7" : "w-9 h-9";
+  const dim =
+    size === "sm" ? "w-9 h-9 md:w-7 md:h-7" : "w-10 h-10 md:w-9 md:h-9";
   return (
     <button
       type="button"

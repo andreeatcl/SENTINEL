@@ -48,14 +48,14 @@ export default function Modal({
 
   return createPortal(
     <div
-      className={`fixed inset-0 ${zIndex} flex items-center justify-center bg-black/70 backdrop-blur-sm px-3 animate-fade-in`}
+      className={`fixed inset-0 ${zIndex} flex items-center justify-center bg-black/70 backdrop-blur-sm px-3 pt-16 pb-3 animate-fade-in`}
       onClick={onClose}
     >
       <div
         role="dialog"
         aria-modal="true"
         className={`w-full ${WIDTHS[width]} ${
-          sidebar ? "h-[min(85vh,44rem)]" : "max-h-[85vh]"
+          sidebar ? "h-[min(85dvh,44rem,100%)]" : "max-h-[min(85dvh,100%)]"
         } flex flex-col bg-carbon-900 border border-carbon-800 rounded-xl shadow-panel animate-pop-in`}
         onClick={(e) => e.stopPropagation()}
       >

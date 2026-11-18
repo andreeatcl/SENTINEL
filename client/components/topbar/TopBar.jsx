@@ -11,7 +11,7 @@ const REMINDER_TONE = {
   overdue: "text-signal-red",
 };
 
-function NavMenu({ items, tone }) {
+function NavMenu({ items, tone, footer }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
 
@@ -45,11 +45,14 @@ function NavMenu({ items, tone }) {
                 setOpen(false);
                 item.onClick();
               }}
-              className={`w-full h-9 px-3 flex items-center rounded-md text-sm hover:bg-carbon-800 hover:text-white transition-colors ${item.tone ?? "text-carbon-200"}`}
+              className={`w-full h-11 px-3 flex items-center rounded-md text-sm hover:bg-carbon-800 hover:text-white transition-colors ${item.tone ?? "text-carbon-200"}`}
             >
               {item.label}
             </button>
           ))}
+          <div className="mt-1 px-3 pt-2 pb-1.5 border-t border-carbon-800 text-xs text-carbon-400">
+            {footer}
+          </div>
         </div>
       )}
     </div>
@@ -88,7 +91,7 @@ export default function TopBar({
   ];
 
   return (
-    <div className="absolute top-0 left-0 right-0 z-[1000] flex items-center gap-2 p-3 pointer-events-none">
+    <div className="absolute top-0 left-0 right-0 z-[3000] flex items-center gap-2 p-3 pointer-events-none">
       {/* Branding */}
       <div className="relative h-10 w-[110px] shrink-0">
         <div className="absolute inset-x-0 top-1/2 -translate-y-1/2">
@@ -154,7 +157,19 @@ export default function TopBar({
           </button>
         ))}
       </nav>
-      <NavMenu items={navItems} tone={backupTone} />
+      <NavMenu
+        items={navItems}
+        tone={backupTone}
+        footer={
+          <>
+            Credits{" "}
+            <span className="font-mono text-carbon-100">{remaining}/100</span>
+            {credits?.keyUsed === "backup" && (
+              <span className="text-signal-amber"> · Backup key</span>
+            )}
+          </>
+        }
+      />
     </div>
   );
 }

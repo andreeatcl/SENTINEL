@@ -131,7 +131,7 @@ export default function WorldMap({
     <div className="relative w-full h-full">
       <MapContainer
         center={[20, 10]}
-        zoom={2.5}
+        zoom={window.innerWidth < 768 ? 2 : 2.5}
         minZoom={2}
         maxZoom={10}
         style={{ width: "100%", height: "100%" }}

@@ -130,7 +130,18 @@ export default function App() {
     selectCountry(countryName);
   }
 
+  // Top bar sits above modals, so a nav click or search replaces the open one
+  function closeMenuModals() {
+    setKeywordsCountry(undefined);
+    if (settingsTab) refreshCredits();
+    setSettingsTab(null);
+    setShowFavorites(false);
+    setShowSavedSearches(false);
+    setShowNotes(false);
+  }
+
   function runGlobalSearch({ topic, raw }) {
+    closeMenuModals();
     pushCurrentView();
     currentViewRef.current = { type: "search", topic, raw };
     handleGlobalSearch({ topic, raw });
@@ -276,13 +287,26 @@ export default function App() {
           loading={loading}
           meta={meta}
           credits={credits}
-          onKeywordsClick={() => setKeywordsCountry(null)}
-          onSettingsClick={() =>
-            setSettingsTab(getBackupReminder() ? "backup" : "keys")
-          }
-          onFavoritesClick={() => setShowFavorites(true)}
-          onNotesClick={() => setShowNotes(true)}
-          onSavedSearchesClick={() => setShowSavedSearches(true)}
+          onKeywordsClick={() => {
+            closeMenuModals();
+            setKeywordsCountry(null);
+          }}
+          onSettingsClick={() => {
+            closeMenuModals();
+            setSettingsTab(getBackupReminder() ? "backup" : "keys");
+          }}
+          onFavoritesClick={() => {
+            closeMenuModals();
+            setShowFavorites(true);
+          }}
+          onNotesClick={() => {
+            closeMenuModals();
+            setShowNotes(true);
+          }}
+          onSavedSearchesClick={() => {
+            closeMenuModals();
+            setShowSavedSearches(true);
+          }}
         />
 
         {/* Events/Articles panel — near-fullscreen overlay, not a docked sidebar */}
