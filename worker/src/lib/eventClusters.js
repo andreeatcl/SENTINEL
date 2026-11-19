@@ -1,9 +1,6 @@
 import { decodeActor } from "./gdeltActorCodes.js";
 import { trustMultiplier } from "./sourceTrust.js";
 
-// 01 statements and 02 appeals
-export const EXCLUDED_ROOT_CODES = new Set(["01", "02"]);
-
 const CATEGORY_WEIGHT = {
   "03": 0.6,
   "04": 0.7,

@@ -71,3 +71,7 @@ export async function getEventsForRange(env, fipsCodes, fromDay, toDay) {
 
   return results.flatMap((r) => JSON.parse(r.rows));
 }
+
+export function setLastCursor(env, cursor) {
+  return setStateStatement(env, "cursor", cursor).run();
+}

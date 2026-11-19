@@ -1,4 +1,4 @@
-import sources from "../../../client/utils/sources.json";
+import sources from "../../../client/utils/sources.json" with { type: "json" };
 
 const NON_POLITICAL_CATEGORIES = new Set([
   "entertainment",

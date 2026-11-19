@@ -1,3 +1,6 @@
+// 01 statements and 02 appeals
+export const EXCLUDED_ROOT_CODES = new Set(["01", "02"]);
+
 const ROOT_CODE_LABELS = {
   "01": "Make Public Statement",
   "02": "Appeal",

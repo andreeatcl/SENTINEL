@@ -1,7 +1,7 @@
 import { unzipFirstFileAsText } from "../lib/unzip.js";
 import { getAllTrackedFipsCodes } from "../lib/countryCodes.js";
 import { getLastCursor, saveBatch, pruneOldDays } from "../lib/eventsStore.js";
-import { EXCLUDED_ROOT_CODES } from "../lib/eventClusters.js";
+import { EXCLUDED_ROOT_CODES } from "../lib/cameoEventCodes.js";
 import { decodeActor } from "../lib/gdeltActorCodes.js";
 import { isLowQualityDomain } from "../lib/lowQualitySources.js";
 
@@ -38,7 +38,7 @@ function dateAddedToIso(raw) {
   return `${y}-${mo}-${d}T${h}:${mi}:${s}Z`;
 }
 
-async function fetchLatestExportFileMeta() {
+export async function fetchLatestExportFileMeta() {
   const response = await fetch(LAST_UPDATE_URL);
   const text = await response.text();
 
@@ -57,7 +57,7 @@ async function fetchLatestExportFileMeta() {
 }
 
 // "YYYYMMDD" minus n days
-function daysBefore(day, n) {
+export function daysBefore(day, n) {
   const date = Date.UTC(
     +day.slice(0, 4),
     +day.slice(4, 6) - 1,
@@ -132,11 +132,32 @@ function filterAndGroupByCountry(csvText, oldestDay) {
   return { byCountry, rowsInFile };
 }
 
+// download, filter and store one export file; null if it isn't published (yet)
+export async function ingestExportFile(env, url, cursor) {
+  const csvText = await fetchAndUnzipCsv(url);
+  if (csvText === null) return null;
+
+  const reportDay = cursor.slice(0, 8);
+  const { byCountry, rowsInFile } = filterAndGroupByCountry(
+    csvText,
+    daysBefore(reportDay, 2),
+  );
+  const storedChars = await saveBatch(env, reportDay, cursor, byCountry);
+
+  const rowsKept = Object.values(byCountry).reduce(
+    (n, rows) => n + rows.length,
+    0,
+  );
+  console.log(
+    `GDELT ingest ${cursor}: kept ${rowsKept}/${rowsInFile} rows in ${Object.keys(byCountry).length} country batches, ${(storedChars / 1e3).toFixed(0)}K chars`,
+  );
+  return { rowsKept, rowsInFile };
+}
+
 export async function ingestLatestEventsFile(env) {
   const latest = await fetchLatestExportFileMeta();
   if (!latest) return { ingested: false, reason: "no export file found" };
 
-  const reportDay = latest.cursor.slice(0, 8);
   if ((await getLastCursor(env)) === latest.cursor) {
     return {
       ingested: false,
@@ -145,28 +166,14 @@ export async function ingestLatestEventsFile(env) {
     };
   }
 
-  const csvText = await fetchAndUnzipCsv(latest.url);
-  if (csvText === null) {
+  if (!(await ingestExportFile(env, latest.url, latest.cursor))) {
     return {
       ingested: false,
       reason: "export file missing",
       fileUrl: latest.url,
     };
   }
-  const { byCountry, rowsInFile } = filterAndGroupByCountry(
-    csvText,
-    daysBefore(reportDay, 2),
-  );
-  const storedChars = await saveBatch(env, reportDay, latest.cursor, byCountry);
-  await pruneOldDays(env, reportDay, daysBefore);
-
-  const rowsKept = Object.values(byCountry).reduce(
-    (n, rows) => n + rows.length,
-    0,
-  );
-  console.log(
-    `GDELT ingest ${latest.cursor}: kept ${rowsKept}/${rowsInFile} rows in ${Object.keys(byCountry).length} country batches, ${(storedChars / 1e3).toFixed(0)}K chars`,
-  );
+  await pruneOldDays(env, latest.cursor.slice(0, 8), daysBefore);
 
   return {
     ingested: true,

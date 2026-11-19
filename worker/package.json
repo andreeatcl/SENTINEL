@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "wrangler dev --test-scheduled",
-    "deploy": "wrangler deploy"
+    "deploy": "wrangler deploy",
+    "import-events": "node scripts/importEvents.js"
   },
   "dependencies": {
     "hono": "^4.6.0"
