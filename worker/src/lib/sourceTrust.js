@@ -1,4 +1,4 @@
-import sourceTrustLabels from "../../../temporary/sourceTrustLabels.json";
+import sourceTrustLabels from "../../../data/sourceTrustLabels.json";
 
 function hostnameOf(url) {
   try {

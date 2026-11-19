@@ -1,0 +1,482 @@
+{
+  "domains": {
+    "reuters.com": {
+      "tier": "trusted",
+      "country": "gb"
+    },
+    "apnews.com": {
+      "tier": "trusted",
+      "country": "us"
+    },
+    "bbc.com": {
+      "tier": "trusted",
+      "country": "gb"
+    },
+    "bbc.co.uk": {
+      "tier": "trusted",
+      "country": "gb"
+    },
+    "afp.com": {
+      "tier": "trusted",
+      "country": "fr"
+    },
+    "aljazeera.com": {
+      "tier": "trusted",
+      "country": "qa"
+    },
+    "dw.com": {
+      "tier": "trusted",
+      "country": "de"
+    },
+    "france24.com": {
+      "tier": "trusted",
+      "country": "fr"
+    },
+    "theguardian.com": {
+      "tier": "trusted",
+      "country": "gb"
+    },
+    "npr.org": {
+      "tier": "trusted",
+      "country": "us"
+    },
+    "nytimes.com": {
+      "tier": "trusted",
+      "country": "us"
+    },
+    "washingtonpost.com": {
+      "tier": "trusted",
+      "country": "us"
+    },
+    "axios.com": {
+      "tier": "trusted",
+      "country": "us"
+    },
+    "yahoo.com": {
+      "tier": "trusted",
+      "country": "us"
+    },
+    "businessinsider.com": {
+      "tier": "trusted",
+      "country": "us"
+    },
+    "abcnews.com": {
+      "tier": "trusted",
+      "country": "us"
+    },
+    "gizmodo.com": {
+      "tier": "trusted",
+      "country": "us"
+    },
+    "theatlantic.com": {
+      "tier": "trusted",
+      "country": "us"
+    },
+    "newyorker.com": {
+      "tier": "trusted",
+      "country": "us"
+    },
+    "wired.com": {
+      "tier": "trusted",
+      "country": "us"
+    },
+    "vox.com": {
+      "tier": "trusted",
+      "country": "us"
+    },
+    "cnn.com": {
+      "tier": "trusted",
+      "country": "us"
+    },
+    "cbsnews.com": {
+      "tier": "trusted",
+      "country": "us"
+    },
+    "deadline.com": {
+      "tier": "trusted",
+      "country": "us"
+    },
+    "pbs.org": {
+      "tier": "trusted",
+      "country": "us"
+    },
+    "cjr.org": {
+      "tier": "trusted",
+      "country": "us"
+    },
+    "foreignpolicy.com": {
+      "tier": "trusted",
+      "country": "us"
+    },
+    "cfr.org": {
+      "tier": "trusted",
+      "country": "us"
+    },
+    "newsnationnow.com": {
+      "tier": "trusted",
+      "country": "us"
+    },
+    "politico.com": {
+      "tier": "trusted",
+      "country": "us"
+    },
+    "politico.eu": {
+      "tier": "trusted",
+      "country": "be"
+    },
+    "rawstory.com": {
+      "tier": "trusted",
+      "country": "us"
+    },
+    "cbc.ca": {
+      "tier": "trusted",
+      "country": "ca"
+    },
+    "zeit.de": {
+      "tier": "trusted",
+      "country": "de"
+    },
+    "telepolis.de": {
+      "tier": "trusted",
+      "country": "de"
+    },
+    "welt.de": {
+      "tier": "trusted",
+      "country": "de"
+    },
+    "tagesschau.de": {
+      "tier": "trusted",
+      "country": "de"
+    },
+    "tagesspiegel.de": {
+      "tier": "trusted",
+      "country": "de"
+    },
+    "abc.net.au": {
+      "tier": "trusted",
+      "country": "au"
+    },
+    "theconversation.com": {
+      "tier": "trusted",
+      "country": "au"
+    },
+    "channelnewsasia.com": {
+      "tier": "trusted",
+      "country": "sg"
+    },
+    "hurriyetdailynews.com": {
+      "tier": "trusted",
+      "country": "tr"
+    },
+    "index.hu": {
+      "tier": "trusted",
+      "country": "hu"
+    },
+    "digi24.ro": {
+      "tier": "trusted",
+      "country": "ro"
+    },
+    "mediafax.ro": {
+      "tier": "trusted",
+      "country": "ro"
+    },
+    "internazionale.it": {
+      "tier": "trusted",
+      "country": "it"
+    },
+    "rte.ie": {
+      "tier": "trusted",
+      "country": "ie"
+    },
+    "irishtimes.com": {
+      "tier": "trusted",
+      "country": "ie"
+    },
+    "timesofindia.indiatimes.com": {
+      "tier": "trusted",
+      "country": "in"
+    },
+    "huffingtonpost.fr": {
+      "tier": "trusted",
+      "country": "fr"
+    },
+    "20minutes.fr": {
+      "tier": "trusted",
+      "country": "fr"
+    },
+    "mediapart.fr": {
+      "tier": "trusted",
+      "country": "fr"
+    },
+    "repubblica.it": {
+      "tier": "trusted",
+      "country": "it"
+    },
+    "ansa.it": {
+      "tier": "trusted",
+      "country": "it"
+    },
+    "ilsole24ore.com": {
+      "tier": "trusted",
+      "country": "it"
+    },
+    "uk.news.yahoo.com": {
+      "tier": "trusted",
+      "country": "gb"
+    },
+    "fortune.com": {
+      "tier": "trusted",
+      "country": "us"
+    },
+    "forbes.com": {
+      "tier": "trusted",
+      "country": "us"
+    },
+    "aftenposten.no": {
+      "tier": "trusted",
+      "country": "no"
+    },
+    "citizenlab.ca": {
+      "tier": "trusted",
+      "country": "ca"
+    },
+    "nbcnews.com": {
+      "tier": "trusted",
+      "country": "us"
+    },
+    "thejournal.ie": {
+      "tier": "trusted",
+      "country": "ie"
+    },
+    "naftemporiki.gr": {
+      "tier": "trusted",
+      "country": "gr"
+    },
+    "thelocal.de": {
+      "tier": "trusted",
+      "country": "de"
+    },
+    "biztoc.com": {
+      "tier": "trusted"
+    },
+    "economictimes.indiatimes.com": {
+      "tier": "trusted",
+      "country": "in"
+    },
+    "euronews.com": {
+      "tier": "trusted",
+      "country": "fr"
+    },
+    "econotimes.com": {
+      "tier": "trusted"
+    },
+    "middleeasteye.net": {
+      "tier": "trusted",
+      "country": "gb"
+    },
+    "straitstimes.com": {
+      "tier": "trusted",
+      "country": "sg"
+    },
+    "msf.org": {
+      "tier": "trusted",
+      "country": "ch"
+    },
+    "jpost.com": {
+      "tier": "trusted",
+      "country": "il"
+    },
+    "aol.com": {
+      "tier": "trusted",
+      "country": "us"
+    },
+    "haaretz.com": {
+      "tier": "trusted",
+      "country": "il"
+    },
+    "thediplomat.ro": {
+      "tier": "trusted",
+      "country": "ro"
+    },
+    "stiripesurse.ro": {
+      "tier": "trusted",
+      "country": "ro"
+    },
+    "theverge.com": {
+      "tier": "trusted",
+      "country": "us"
+    },
+    "independent.co.uk": {
+      "tier": "trusted",
+      "country": "gb"
+    },
+    "manilatimes.net": {
+      "tier": "trusted",
+      "country": "ph"
+    },
+    "defensenews.com": {
+      "tier": "trusted",
+      "country": "us"
+    },
+    "rt.com": {
+      "tier": "state-affiliated",
+      "country": "ru",
+      "note": "Russian state-funded broadcaster"
+    },
+    "sputnikglobe.com": {
+      "tier": "state-affiliated",
+      "country": "ru",
+      "note": "Russian state-funded news agency"
+    },
+    "tass.com": {
+      "tier": "state-affiliated",
+      "country": "ru",
+      "note": "Russian state-owned news agency"
+    },
+    "xinhuanet.com": {
+      "tier": "state-affiliated",
+      "country": "cn",
+      "note": "Chinese state-run news agency"
+    },
+    "news.cgtn.com": {
+      "tier": "state-affiliated",
+      "country": "cn",
+      "note": "Chinese state-run broadcaster"
+    },
+    "presstv.ir": {
+      "tier": "state-affiliated",
+      "country": "ir",
+      "note": "Iranian state-funded broadcaster"
+    },
+    "cctv.com": {
+      "tier": "state-affiliated",
+      "country": "cn",
+      "note": "Chinese state-run broadcaster"
+    },
+    "rferl.org": {
+      "tier": "state-affiliated",
+      "country": "us",
+      "note": "US government-funded broadcaster"
+    },
+    "agerpres.ro": {
+      "tier": "state-affiliated",
+      "country": "ro",
+      "note": "Romanian state news agency"
+    },
+    "rt-english.com": {
+      "tier": "state-affiliated",
+      "country": "ru",
+      "note": "Russian state-funded broadcaster"
+    },
+    "actualidad-rt.com": {
+      "tier": "state-affiliated",
+      "country": "ru",
+      "note": "Russian state-funded broadcaster"
+    },
+    "rfa.org": {
+      "tier": "state-affiliated",
+      "country": "us",
+      "note": "US government-funded broadcaster"
+    },
+    "rri.ro": {
+      "tier": "state-affiliated",
+      "country": "ro",
+      "note": "Romanian state public radio, international service"
+    },
+    "english.news.cn": {
+      "tier": "state-affiliated",
+      "country": "cn",
+      "note": "Chinese state-run news agency"
+    },
+    "cgtn.com": {
+      "tier": "state-affiliated",
+      "country": "cn",
+      "note": "Chinese state-run broadcaster"
+    },
+    "globaltimes.cn": {
+      "tier": "state-affiliated",
+      "country": "cn",
+      "note": "Chinese state-run tabloid"
+    },
+    "aa.com.tr": {
+      "tier": "state-affiliated",
+      "country": "tr",
+      "note": "Turkish state-run news agency"
+    },
+    "breitbart.com": {
+      "tier": "unreliable",
+      "country": "us",
+      "note": "Documented history of misleading or unsubstantiated reporting"
+    },
+    "dailycaller.com": {
+      "tier": "unreliable",
+      "country": "us",
+      "note": "Documented history of misleading or unsubstantiated reporting"
+    },
+    "naturalnews.com": {
+      "tier": "unreliable",
+      "country": "us",
+      "note": "Known for health misinformation and conspiracy content"
+    },
+    "globalresearch.ca": {
+      "tier": "unreliable",
+      "country": "ca",
+      "note": "Frequently cited by fact-checkers for conspiracy theories and pro-Kremlin disinformation"
+    },
+    "dailymail.co.uk": {
+      "tier": "unreliable",
+      "country": "gb",
+      "note": "Documented pattern of sensationalized or inaccurate reporting"
+    },
+    "dailymail.com": {
+      "tier": "unreliable",
+      "country": "gb",
+      "note": "Documented pattern of sensationalized or inaccurate reporting"
+    },
+    "express.co.uk": {
+      "tier": "unreliable",
+      "country": "gb",
+      "note": "UK tabloid with documented pattern of sensationalized reporting"
+    },
+    "nypost.com": {
+      "tier": "unreliable",
+      "country": "us",
+      "note": "Tabloid with documented pattern of sensationalized or inaccurate reporting"
+    },
+    "wnd.com": {
+      "tier": "unreliable",
+      "country": "us",
+      "note": "Known for publishing conspiracy theories and false claims"
+    },
+    "israelnationalnews.com": {
+      "tier": "unreliable",
+      "country": "il",
+      "note": "Documented history of misleading or unsubstantiated reporting"
+    },
+    "thegatewaypundit.com": {
+      "tier": "unreliable",
+      "country": "us",
+      "note": "Known for publishing conspiracy theories and false claims"
+    },
+    "iltalehti.fi": {
+      "tier": "unreliable",
+      "country": "fi",
+      "note": "Tabloid with documented pattern of sensationalized or inaccurate reporting"
+    },
+    "foxnews.com": {
+      "tier": "unreliable",
+      "country": "us",
+      "note": "Documented history of misleading or unsubstantiated reporting"
+    },
+    "dailystar.co.uk": {
+      "tier": "unreliable",
+      "country": "gb",
+      "note": "Tabloid with documented pattern of sensationalized or inaccurate reporting"
+    },
+    "dailysabah.com": {
+      "tier": "unreliable",
+      "country": "tr",
+      "note": "Pro-government outlet with documented pattern of partisan or misleading reporting"
+    }
+  }
+}

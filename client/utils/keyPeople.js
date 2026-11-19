@@ -1,4 +1,4 @@
-import keyPeople from "../../temporary/keyPeople.json";
+import keyPeople from "../../data/keyPeople.json";
 import { normalizeCountryKey } from "./queryBuilder";
 import {
   getKeyPeopleHidden,

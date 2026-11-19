@@ -1,4 +1,4 @@
-import countryKeywords from "../../temporary/countryKeywords.json";
+import countryKeywords from "../../data/countryKeywords.json";
 import { getKeywordOverrides, setKeywordOverride } from "./storage";
 
 export const MAX_COUNTRY_KEYWORDS = 25;

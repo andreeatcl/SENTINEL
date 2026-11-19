@@ -1,0 +1,900 @@
+{
+  "US": {
+    "name": "United States of America",
+    "entries": [
+      { "name": "White House", "role": "Executive", "category": "government" },
+      { "name": "Pentagon", "role": "Defense Dept.", "category": "military" },
+      {
+        "name": "US Congress",
+        "role": "Legislature",
+        "category": "government"
+      },
+      {
+        "name": "State Department",
+        "role": "Foreign ministry",
+        "category": "government"
+      },
+      { "name": "CIA", "role": "Intelligence", "category": "military" },
+      {
+        "name": "NSA",
+        "role": "Signals intel",
+        "category": "military",
+        "query": "NSA intelligence"
+      },
+      {
+        "name": "Federal Reserve",
+        "role": "Central bank",
+        "category": "economy"
+      }
+    ]
+  },
+  "CA": {
+    "name": "Canada",
+    "entries": [
+      {
+        "name": "Pierre Poilievre",
+        "role": "Conservative leader",
+        "category": "opposition"
+      },
+      {
+        "name": "Conservative Party of Canada",
+        "role": "Party",
+        "category": "opposition"
+      },
+      {
+        "name": "CSIS",
+        "role": "Intelligence",
+        "category": "military",
+        "query": "CSIS Canada"
+      },
+      { "name": "RCMP", "role": "Federal police", "category": "military" },
+      {
+        "name": "Bank of Canada",
+        "role": "Central bank",
+        "category": "economy"
+      }
+    ]
+  },
+
+  "GB": {
+    "name": "United Kingdom",
+    "entries": [
+      {
+        "name": "Downing Street",
+        "role": "Executive",
+        "category": "government"
+      },
+      {
+        "name": "Nigel Farage",
+        "role": "Reform UK leader",
+        "category": "opposition"
+      },
+      { "name": "Reform UK", "role": "Party", "category": "opposition" },
+      { "name": "MI6", "role": "Foreign intel", "category": "military" },
+      { "name": "MI5", "role": "Domestic intel", "category": "military" },
+      { "name": "GCHQ", "role": "Signals intel", "category": "military" },
+      {
+        "name": "Bank of England",
+        "role": "Central bank",
+        "category": "economy"
+      }
+    ]
+  },
+  "FR": {
+    "name": "France",
+    "entries": [
+      { "name": "Élysée", "role": "Presidency", "category": "government" },
+      {
+        "name": "Marine Le Pen",
+        "role": "RN figurehead",
+        "category": "opposition"
+      },
+      {
+        "name": "Jordan Bardella",
+        "role": "RN president",
+        "category": "opposition"
+      },
+      { "name": "National Rally", "role": "Party", "category": "opposition" },
+      {
+        "name": "La France Insoumise",
+        "role": "Party",
+        "category": "opposition"
+      },
+      {
+        "name": "Renaissance",
+        "role": "Party",
+        "category": "government",
+        "query": "Renaissance party France"
+      },
+      { "name": "DGSE", "role": "Foreign intel", "category": "military" }
+    ]
+  },
+  "DE": {
+    "name": "Germany",
+    "entries": [
+      { "name": "Bundestag", "role": "Parliament", "category": "government" },
+      { "name": "CDU", "role": "Party", "category": "government" },
+      { "name": "SPD", "role": "Party", "category": "government" },
+      { "name": "AfD", "role": "Party", "category": "opposition" },
+      { "name": "Bundeswehr", "role": "Armed forces", "category": "military" },
+      { "name": "BND", "role": "Foreign intel", "category": "military" },
+      { "name": "Bundesbank", "role": "Central bank", "category": "economy" }
+    ]
+  },
+  "PL": {
+    "name": "Poland",
+    "entries": [
+      { "name": "Sejm", "role": "Parliament", "category": "government" },
+      { "name": "Civic Coalition", "role": "Party", "category": "government" },
+      {
+        "name": "Jarosław Kaczyński",
+        "role": "PiS leader",
+        "category": "opposition"
+      },
+      { "name": "PiS", "role": "Party", "category": "opposition" },
+      { "name": "Konfederacja", "role": "Party", "category": "opposition" },
+      { "name": "Orlen", "role": "State energy", "category": "economy" }
+    ]
+  },
+  "RO": {
+    "name": "Romania",
+    "entries": [
+      { "name": "Cotroceni", "role": "Presidency", "category": "government" },
+      {
+        "name": "George Simion",
+        "role": "AUR leader",
+        "category": "opposition"
+      },
+      {
+        "name": "AUR",
+        "role": "Party",
+        "category": "opposition",
+        "query": "AUR Romania"
+      },
+      {
+        "name": "PSD",
+        "role": "Party",
+        "category": "government",
+        "query": "PSD Romania"
+      },
+      {
+        "name": "BNR",
+        "role": "Central bank",
+        "category": "economy",
+        "query": "National Bank of Romania"
+      }
+    ]
+  },
+  "MD": {
+    "name": "Moldova",
+    "entries": [
+      {
+        "name": "PAS",
+        "role": "Ruling party",
+        "category": "government",
+        "query": "PAS Moldova"
+      },
+      {
+        "name": "Transnistria",
+        "role": "Breakaway region",
+        "category": "military"
+      },
+      {
+        "name": "Gagauzia",
+        "role": "Autonomous region",
+        "category": "opposition"
+      },
+      {
+        "name": "SIS",
+        "role": "Intelligence",
+        "category": "military",
+        "query": "SIS Moldova"
+      }
+    ]
+  },
+  "UA": {
+    "name": "Ukraine",
+    "entries": [
+      {
+        "name": "Verkhovna Rada",
+        "role": "Parliament",
+        "category": "government"
+      },
+      {
+        "name": "Armed Forces of Ukraine",
+        "role": "Armed forces",
+        "category": "military"
+      },
+      { "name": "SBU", "role": "Security service", "category": "military" },
+      {
+        "name": "HUR",
+        "role": "Military intel",
+        "category": "military",
+        "query": "Ukraine military intelligence"
+      },
+      { "name": "Naftogaz", "role": "State energy", "category": "economy" }
+    ]
+  },
+  "RU": {
+    "name": "Russia",
+    "entries": [
+      { "name": "Kremlin", "role": "Presidency", "category": "government" },
+      {
+        "name": "Valery Gerasimov",
+        "role": "Chief of General Staff",
+        "category": "military"
+      },
+      { "name": "FSB", "role": "Security service", "category": "military" },
+      { "name": "GRU", "role": "Military intel", "category": "military" },
+      { "name": "SVR", "role": "Foreign intel", "category": "military" },
+      { "name": "Wagner Group", "role": "Mercenaries", "category": "military" },
+      {
+        "name": "Africa Corps",
+        "role": "Wagner successor",
+        "category": "military"
+      },
+      { "name": "Gazprom", "role": "State energy", "category": "economy" },
+      { "name": "Rosneft", "role": "State oil", "category": "economy" }
+    ]
+  },
+  "HU": {
+    "name": "Hungary",
+    "entries": [
+      {
+        "name": "Viktor Orbán",
+        "role": "Fidesz leader",
+        "category": "government"
+      },
+      { "name": "Fidesz", "role": "Party", "category": "government" },
+      {
+        "name": "Péter Magyar",
+        "role": "Tisza leader",
+        "category": "opposition"
+      },
+      {
+        "name": "Tisza",
+        "role": "Party",
+        "category": "opposition",
+        "query": "Tisza party"
+      },
+      { "name": "MOL Group", "role": "Energy", "category": "economy" },
+      {
+        "name": "MNB",
+        "role": "Central bank",
+        "category": "economy",
+        "query": "Hungarian National Bank"
+      }
+    ]
+  },
+  "RS": {
+    "name": "Republic of Serbia",
+    "entries": [
+      {
+        "name": "SNS",
+        "role": "Ruling party",
+        "category": "government",
+        "query": "SNS Serbia"
+      },
+      {
+        "name": "Student List",
+        "role": "Party",
+        "category": "opposition",
+        "query": "Student List"
+      },
+      {
+        "name": "BIA",
+        "role": "Intelligence",
+        "category": "military",
+        "query": "BIA Serbia"
+      },
+      { "name": "KFOR", "role": "NATO in Kosovo", "category": "military" }
+    ]
+  },
+  "BG": {
+    "name": "Bulgaria",
+    "entries": [
+      {
+        "name": "Boyko Borissov",
+        "role": "GERB leader",
+        "category": "government"
+      },
+      { "name": "GERB", "role": "Party", "category": "government" },
+      {
+        "name": "DPS",
+        "role": "Party",
+        "category": "opposition",
+        "query": "DPS Bulgaria"
+      },
+      { "name": "Vazrazhdane", "role": "Party", "category": "opposition" },
+      {
+        "name": "DANS",
+        "role": "Security agency",
+        "category": "military",
+        "query": "DANS Bulgaria"
+      },
+      { "name": "Bulgargaz", "role": "State gas", "category": "economy" }
+    ]
+  },
+  "TR": {
+    "name": "Turkey",
+    "entries": [
+      { "name": "AKP", "role": "Ruling party", "category": "government" },
+      {
+        "name": "Ekrem İmamoğlu",
+        "role": "Jailed CHP figure",
+        "category": "opposition"
+      },
+      { "name": "CHP", "role": "Main opposition", "category": "opposition" },
+      {
+        "name": "MIT",
+        "role": "Intelligence",
+        "category": "military",
+        "query": "MIT Turkey"
+      },
+      { "name": "Baykar", "role": "Drone maker", "category": "military" },
+      { "name": "BOTAŞ", "role": "State gas", "category": "economy" }
+    ]
+  },
+
+  "IL": {
+    "name": "Israel",
+    "entries": [
+      { "name": "Knesset", "role": "Parliament", "category": "government" },
+      { "name": "IDF", "role": "Armed forces", "category": "military" },
+      { "name": "Likud", "role": "Party", "category": "government" },
+      {
+        "name": "Itamar Ben-Gvir",
+        "role": "Otzma Yehudit leader",
+        "category": "government"
+      },
+      {
+        "name": "Yair Lapid",
+        "role": "Yesh Atid leader",
+        "category": "opposition"
+      },
+      {
+        "name": "Naftali Bennett",
+        "role": "Former PM",
+        "category": "opposition"
+      },
+      { "name": "Mossad", "role": "Foreign intel", "category": "military" },
+      { "name": "Shin Bet", "role": "Domestic intel", "category": "military" }
+    ]
+  },
+  "PS": {
+    "name": "Palestine",
+    "entries": [
+      { "name": "Hamas", "role": "Armed group", "category": "military" },
+      {
+        "name": "Palestinian Authority",
+        "role": "Government",
+        "category": "government"
+      },
+      { "name": "Fatah", "role": "Party", "category": "government" },
+      {
+        "name": "Al-Qassam Brigades",
+        "role": "Hamas armed wing",
+        "category": "military"
+      },
+      {
+        "name": "Palestinian Islamic Jihad",
+        "role": "Armed group",
+        "category": "military"
+      },
+      { "name": "PFLP", "role": "Armed group", "category": "military" }
+    ]
+  },
+  "LB": {
+    "name": "Lebanon",
+    "entries": [
+      {
+        "name": "Hezbollah",
+        "role": "Armed group / party",
+        "category": "military"
+      },
+      {
+        "name": "Naim Qassem",
+        "role": "Hezbollah leader",
+        "category": "military"
+      },
+      { "name": "Amal Movement", "role": "Party", "category": "opposition" },
+      {
+        "name": "Lebanese Armed Forces",
+        "role": "Armed forces",
+        "category": "military"
+      },
+      { "name": "UNIFIL", "role": "UN mission", "category": "military" }
+    ]
+  },
+  "SY": {
+    "name": "Syria",
+    "entries": [
+      {
+        "name": "SDF",
+        "role": "Kurdish-led forces",
+        "category": "military",
+        "query": "Syrian Democratic Forces"
+      },
+      {
+        "name": "Mazloum Abdi",
+        "role": "SDF commander",
+        "category": "military"
+      },
+      {
+        "name": "HTS",
+        "role": "Former ruling faction",
+        "category": "government",
+        "query": "Hayat Tahrir al-Sham"
+      }
+    ]
+  },
+  "IR": {
+    "name": "Iran",
+    "entries": [
+      { "name": "IRGC", "role": "Revolutionary Guard", "category": "military" },
+      {
+        "name": "Quds Force",
+        "role": "IRGC external ops",
+        "category": "military"
+      },
+      {
+        "name": "MOIS",
+        "role": "Intelligence",
+        "category": "military",
+        "query": "Iran intelligence ministry"
+      },
+      { "name": "NIOC", "role": "State oil", "category": "economy" }
+    ]
+  },
+  "SA": {
+    "name": "Saudi Arabia",
+    "entries": [
+      { "name": "Aramco", "role": "State oil", "category": "economy" },
+      {
+        "name": "PIF",
+        "role": "Sovereign fund",
+        "category": "economy",
+        "query": "Public Investment Fund"
+      },
+      {
+        "name": "GIP",
+        "role": "Intelligence",
+        "category": "military",
+        "query": "Saudi General Intelligence Presidency"
+      }
+    ]
+  },
+  "AE": {
+    "name": "United Arab Emirates",
+    "entries": [
+      {
+        "name": "Tahnoun bin Zayed",
+        "role": "Security adviser",
+        "category": "government"
+      },
+      { "name": "EDGE Group", "role": "Defence maker", "category": "military" },
+      { "name": "ADNOC", "role": "State oil", "category": "economy" },
+      { "name": "Mubadala", "role": "Sovereign fund", "category": "economy" },
+      { "name": "ADIA", "role": "Sovereign fund", "category": "economy" }
+    ]
+  },
+  "QA": {
+    "name": "Qatar",
+    "entries": [
+      {
+        "name": "QIA",
+        "role": "Sovereign fund",
+        "category": "economy",
+        "query": "Qatar Investment Authority"
+      },
+      { "name": "QatarEnergy", "role": "State energy", "category": "economy" }
+    ]
+  },
+  "YE": {
+    "name": "Yemen",
+    "entries": [
+      { "name": "Houthis", "role": "Ansar Allah", "category": "military" },
+      {
+        "name": "Southern Transitional Council",
+        "role": "Southern separatists",
+        "category": "opposition"
+      },
+      { "name": "AQAP", "role": "Al-Qaeda branch", "category": "military" }
+    ]
+  },
+  "EG": {
+    "name": "Egypt",
+    "entries": [
+      {
+        "name": "Muslim Brotherhood",
+        "role": "Banned movement",
+        "category": "opposition"
+      },
+      {
+        "name": "GIS",
+        "role": "Intelligence",
+        "category": "military",
+        "query": "Egypt General Intelligence"
+      },
+      {
+        "name": "Suez Canal Authority",
+        "role": "Canal operator",
+        "category": "economy"
+      }
+    ]
+  },
+
+  "CN": {
+    "name": "China",
+    "entries": [
+      { "name": "CCP", "role": "Ruling party", "category": "government" },
+      { "name": "PLA", "role": "Armed forces", "category": "military" },
+      {
+        "name": "Central Military Commission",
+        "role": "Military command",
+        "category": "military"
+      },
+      {
+        "name": "MSS",
+        "role": "Intelligence",
+        "category": "military",
+        "query": "Ministry of State Security"
+      },
+      { "name": "PBOC", "role": "Central bank", "category": "economy" }
+    ]
+  },
+  "IN": {
+    "name": "India",
+    "entries": [
+      { "name": "BJP", "role": "Ruling party", "category": "government" },
+      { "name": "Lok Sabha", "role": "Parliament", "category": "government" },
+      {
+        "name": "Rahul Gandhi",
+        "role": "Opposition leader",
+        "category": "opposition"
+      },
+      {
+        "name": "Indian National Congress",
+        "role": "Party",
+        "category": "opposition"
+      },
+      {
+        "name": "RAW",
+        "role": "Foreign intel",
+        "category": "military",
+        "query": "RAW India intelligence"
+      },
+      { "name": "Adani Group", "role": "Conglomerate", "category": "economy" }
+    ]
+  },
+  "JP": {
+    "name": "Japan",
+    "entries": [
+      {
+        "name": "Diet",
+        "role": "Parliament",
+        "category": "government",
+        "query": "Diet Japan"
+      },
+      {
+        "name": "LDP",
+        "role": "Ruling party",
+        "category": "government",
+        "query": "LDP Japan"
+      },
+      {
+        "name": "Self-Defense Forces",
+        "role": "Armed forces",
+        "category": "military",
+        "query": "Japan Self-Defense Forces"
+      },
+      { "name": "Bank of Japan", "role": "Central bank", "category": "economy" }
+    ]
+  },
+  "KR": {
+    "name": "South Korea",
+    "entries": [
+      {
+        "name": "National Assembly",
+        "role": "Parliament",
+        "category": "government",
+        "query": "National Assembly Korea"
+      },
+      {
+        "name": "Democratic Party",
+        "role": "Party",
+        "category": "government",
+        "query": "Democratic Party Korea"
+      },
+      {
+        "name": "People Power Party",
+        "role": "Party",
+        "category": "opposition"
+      },
+      {
+        "name": "NIS",
+        "role": "Intelligence",
+        "category": "military",
+        "query": "NIS South Korea"
+      },
+      {
+        "name": "Hanwha Aerospace",
+        "role": "Defence maker",
+        "category": "military"
+      }
+    ]
+  },
+  "KP": {
+    "name": "North Korea",
+    "entries": [
+      {
+        "name": "Kim Yo Jong",
+        "role": "Senior official",
+        "category": "government"
+      },
+      {
+        "name": "Workers' Party of Korea",
+        "role": "Ruling party",
+        "category": "government"
+      },
+      {
+        "name": "KPA",
+        "role": "Armed forces",
+        "category": "military",
+        "query": "Korean People's Army"
+      }
+    ]
+  },
+  "PK": {
+    "name": "Pakistan",
+    "entries": [
+      { "name": "Asim Munir", "role": "Army chief", "category": "military" },
+      {
+        "name": "Imran Khan",
+        "role": "Jailed PTI founder",
+        "category": "opposition"
+      },
+      {
+        "name": "PTI",
+        "role": "Party",
+        "category": "opposition",
+        "query": "PTI Pakistan"
+      },
+      { "name": "PML-N", "role": "Ruling party", "category": "government" },
+      {
+        "name": "ISI",
+        "role": "Intelligence",
+        "category": "military",
+        "query": "ISI Pakistan"
+      },
+      {
+        "name": "TTP",
+        "role": "Pakistani Taliban",
+        "category": "military",
+        "query": "Tehrik-i-Taliban Pakistan"
+      }
+    ]
+  },
+  "AF": {
+    "name": "Afghanistan",
+    "entries": [
+      {
+        "name": "Taliban",
+        "role": "Ruling movement",
+        "category": "government"
+      },
+      {
+        "name": "Sirajuddin Haqqani",
+        "role": "Interior minister",
+        "category": "government"
+      },
+      {
+        "name": "Haqqani Network",
+        "role": "Armed faction",
+        "category": "military"
+      },
+      { "name": "ISIS-K", "role": "Armed group", "category": "military" },
+      {
+        "name": "National Resistance Front",
+        "role": "Armed opposition",
+        "category": "opposition"
+      }
+    ]
+  },
+  "MM": {
+    "name": "Myanmar",
+    "entries": [
+      { "name": "Tatmadaw", "role": "Military", "category": "military" },
+      {
+        "name": "Arakan Army",
+        "role": "Ethnic armed group",
+        "category": "military"
+      },
+      {
+        "name": "People's Defence Force",
+        "role": "Resistance militias",
+        "category": "opposition"
+      },
+      {
+        "name": "National Unity Government",
+        "role": "Exile government",
+        "category": "opposition"
+      },
+      {
+        "name": "Aung San Suu Kyi",
+        "role": "Detained leader",
+        "category": "opposition"
+      }
+    ]
+  },
+  "AZ": {
+    "name": "Azerbaijan",
+    "entries": [
+      {
+        "name": "New Azerbaijan Party",
+        "role": "Ruling party",
+        "category": "government"
+      },
+      { "name": "SOCAR", "role": "State energy", "category": "economy" }
+    ]
+  },
+  "KZ": {
+    "name": "Kazakhstan",
+    "entries": [
+      {
+        "name": "KNB",
+        "role": "Security service",
+        "category": "military",
+        "query": "KNB Kazakhstan"
+      },
+      { "name": "KazMunayGas", "role": "State energy", "category": "economy" }
+    ]
+  },
+  "BR": {
+    "name": "Brazil",
+    "entries": [
+      {
+        "name": "Jair Bolsonaro",
+        "role": "Former president",
+        "category": "opposition"
+      },
+      {
+        "name": "Workers' Party",
+        "role": "Party",
+        "category": "government",
+        "query": "Workers' Party Brazil"
+      },
+      {
+        "name": "Itamaraty",
+        "role": "Foreign ministry",
+        "category": "government"
+      },
+      {
+        "name": "Alexandre de Moraes",
+        "role": "Supreme Court justice",
+        "category": "government"
+      },
+      { "name": "ABIN", "role": "Intelligence", "category": "military" },
+      { "name": "Petrobras", "role": "State oil", "category": "economy" }
+    ]
+  },
+  "ZA": {
+    "name": "South Africa",
+    "entries": [
+      { "name": "ANC", "role": "Party", "category": "government" },
+      {
+        "name": "Democratic Alliance",
+        "role": "Party",
+        "category": "government",
+        "query": "Democratic Alliance South Africa"
+      },
+      {
+        "name": "Julius Malema",
+        "role": "EFF leader",
+        "category": "opposition"
+      },
+      {
+        "name": "EFF",
+        "role": "Party",
+        "category": "opposition",
+        "query": "Economic Freedom Fighters"
+      },
+      {
+        "name": "Jacob Zuma",
+        "role": "MK Party leader",
+        "category": "opposition"
+      },
+      { "name": "SAPS", "role": "Police", "category": "military" },
+      { "name": "Eskom", "role": "State power", "category": "economy" }
+    ]
+  },
+  "SD": {
+    "name": "Sudan",
+    "entries": [
+      {
+        "name": "Rapid Support Forces",
+        "role": "Paramilitary",
+        "category": "military"
+      },
+      { "name": "Hemedti", "role": "RSF commander", "category": "military" },
+      {
+        "name": "Sudanese Armed Forces",
+        "role": "Army",
+        "category": "military"
+      },
+      {
+        "name": "Abdel Fattah al-Burhan",
+        "role": "SAF commander",
+        "category": "military"
+      }
+    ]
+  },
+  "ML": {
+    "name": "Mali",
+    "entries": [
+      { "name": "JNIM", "role": "Al-Qaeda affiliate", "category": "military" },
+      {
+        "name": "FAMa",
+        "role": "Armed forces",
+        "category": "military",
+        "query": "Malian army"
+      },
+      {
+        "name": "Africa Corps",
+        "role": "Russian forces",
+        "category": "military"
+      },
+      {
+        "name": "IS Sahel",
+        "role": "Islamic State branch",
+        "category": "military",
+        "query": "Islamic State Sahel"
+      },
+      {
+        "name": "FLA",
+        "role": "Azawad rebels",
+        "category": "opposition",
+        "query": "Azawad Liberation Front"
+      }
+    ]
+  },
+  "NE": {
+    "name": "Niger",
+    "entries": [
+      {
+        "name": "CNSP",
+        "role": "Military junta",
+        "category": "government",
+        "query": "CNSP Niger"
+      },
+      { "name": "Boko Haram", "role": "Armed group", "category": "military" },
+      {
+        "name": "IS Sahel",
+        "role": "Islamic State branch",
+        "category": "military",
+        "query": "Islamic State Sahel"
+      }
+    ]
+  },
+  "SO": {
+    "name": "Somalia",
+    "entries": [
+      { "name": "Al-Shabaab", "role": "Armed group", "category": "military" },
+      {
+        "name": "Somali National Army",
+        "role": "Army",
+        "category": "military"
+      },
+      { "name": "AUSSOM", "role": "AU mission", "category": "military" }
+    ]
+  },
+  "CD": {
+    "name": "Democratic Republic of the Congo",
+    "entries": [
+      { "name": "M23", "role": "Rebel group", "category": "military" },
+      { "name": "FARDC", "role": "Armed forces", "category": "military" },
+      { "name": "FDLR", "role": "Armed group", "category": "military" },
+      { "name": "MONUSCO", "role": "UN mission", "category": "military" }
+    ]
+  }
+}

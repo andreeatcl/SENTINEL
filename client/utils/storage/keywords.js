@@ -1,6 +1,6 @@
 import { STORAGE_KEYS, read, write } from "./core";
 
-// { "<country key>": { add: [...], remove: [...] } } layered over countryKeywords.json
+// { "<country key>": { add: [...], remove: [...] } } layered over data/countryKeywords.json
 const keywordListeners = new Set();
 
 export function subscribeKeywordOverrides(listener) {

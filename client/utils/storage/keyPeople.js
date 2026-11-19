@@ -1,6 +1,6 @@
 import { STORAGE_KEYS, read, write } from "./core";
 
-// overrides: { "<country key>": [entries] }, each list replaces that country's keyPeople.json list
+// overrides: { "<country key>": [entries] }, each list replaces that country's data/keyPeople.json list
 // hidden: { "<country key>": [Wikidata ids] }, live officeholders the user removed
 const keyPeopleListeners = new Set();
 

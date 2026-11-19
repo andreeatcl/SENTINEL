@@ -1,4 +1,4 @@
-import countryKeywords from "../../../temporary/countryKeywords.json";
+import countryKeywords from "../../../data/countryKeywords.json";
 
 // GDELT's Geo_CountryCode fields (where an event physically happened) use
 // FIPS 10-4 two-letter codes, not ISO
