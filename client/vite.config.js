@@ -20,6 +20,11 @@ export default defineConfig({
       },
     }),
   ],
+  build: {
+    // flags load as separate files, not inlined into the main bundle
+    assetsInlineLimit: (filePath) =>
+      filePath.includes("/assets/flags/") ? false : undefined,
+  },
   server: {
     host: "localhost",
     port: 5173,
