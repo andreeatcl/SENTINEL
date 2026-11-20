@@ -1,6 +1,6 @@
 import { unzipFirstFileAsText } from "../lib/unzip.js";
 import { getAllTrackedFipsCodes } from "../lib/countryCodes.js";
-import { getLastCursor, saveBatch, pruneOldDays } from "../lib/eventsStore.js";
+import { saveBatch } from "../lib/eventsStore.js";
 import { EXCLUDED_ROOT_CODES } from "../lib/cameoEventCodes.js";
 import { decodeActor } from "../lib/gdeltActorCodes.js";
 import { isLowQualityDomain } from "../lib/lowQualitySources.js";
@@ -152,32 +152,4 @@ export async function ingestExportFile(env, url, cursor) {
     `GDELT ingest ${cursor}: kept ${rowsKept}/${rowsInFile} rows in ${Object.keys(byCountry).length} country batches, ${(storedChars / 1e3).toFixed(0)}K chars`,
   );
   return { rowsKept, rowsInFile };
-}
-
-export async function ingestLatestEventsFile(env) {
-  const latest = await fetchLatestExportFileMeta();
-  if (!latest) return { ingested: false, reason: "no export file found" };
-
-  if ((await getLastCursor(env)) === latest.cursor) {
-    return {
-      ingested: false,
-      reason: "already up to date",
-      cursor: latest.cursor,
-    };
-  }
-
-  if (!(await ingestExportFile(env, latest.url, latest.cursor))) {
-    return {
-      ingested: false,
-      reason: "export file missing",
-      fileUrl: latest.url,
-    };
-  }
-  await pruneOldDays(env, latest.cursor.slice(0, 8), daysBefore);
-
-  return {
-    ingested: true,
-    cursor: latest.cursor,
-    fileUrl: latest.url,
-  };
 }

@@ -19,9 +19,9 @@ database_id = "09319af0-04a2-4d18-8eb7-6ab5c6262673"
 [observability]
 enabled = true
 
-# see worker/src/scheduled.js.
+# starts the GitHub Actions events import, see worker/src/scheduled.js
 [triggers]
-crons = ["5-59/15 * * * *"] # :05/:20/:35/:50, after GDELT publishes
+crons = ["5-59/15 * * * *"] # :05/:20/:35/:50
 
 # per-IP request limits, see src/lib/rateLimit.js
 [[ratelimits]]
