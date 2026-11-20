@@ -98,7 +98,7 @@ export default function SavedSearchesPanel({ isOpen, onClose, onRun }) {
                     }
                   }}
                   aria-label="Search name"
-                  className="w-full max-sm:!text-base"
+                  className="w-full"
                 />
               </form>
             ) : (

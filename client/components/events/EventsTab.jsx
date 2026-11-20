@@ -13,14 +13,19 @@ import EventsList from "./EventsList";
 import { SOURCE_PRIORITY_OPTIONS } from "../articles/ArticlesTab";
 import Button from "../ui/Button";
 import { Input } from "../ui/Field";
+import {
+  EVENTS_MAX_DAYS_BACK,
+  daysAgo,
+  toDateOnly,
+} from "../../utils/eventsApi";
 import { useReadItems } from "../../hooks/useReadItems";
 import { isRead, eventReadKey } from "../../utils/storage";
 
-const TIME_RANGES = ["6h", "24h", "48h", "7d", "30d"];
+const TIME_RANGES = ["6h", "24h", "48h", "7d"];
 
 const EVENT_SORT_OPTIONS = [
-  { value: "date", label: "Date" },
   { value: "significance", label: "Significance" },
+  { value: "date", label: "Date" },
   { value: "coverage", label: "Coverage" },
 ];
 
@@ -41,6 +46,8 @@ function sameSet(a, b) {
 function filtersEqual(a, b) {
   return (
     a.timeRange === b.timeRange &&
+    a.customFrom === b.customFrom &&
+    a.customTo === b.customTo &&
     a.sortBy === b.sortBy &&
     a.sortDir === b.sortDir &&
     a.sourcePriority === b.sourcePriority &&
@@ -144,6 +151,50 @@ export default function EventsTab({
               {t}
             </Pill>
           ))}
+          <Pill
+            active={draftFilters.timeRange === "custom"}
+            onClick={() =>
+              setDraftFilters((f) => ({
+                ...f,
+                timeRange: "custom",
+                customFrom: f.customFrom || daysAgo(7),
+                customTo: f.customTo || toDateOnly(new Date()),
+              }))
+            }
+          >
+            Custom
+          </Pill>
+          {draftFilters.timeRange === "custom" && (
+            <div className="w-full flex items-center gap-2 mt-1">
+              <Input
+                size="sm"
+                type="date"
+                aria-label="From"
+                min={daysAgo(EVENTS_MAX_DAYS_BACK)}
+                max={draftFilters.customTo}
+                value={draftFilters.customFrom}
+                onChange={(e) =>
+                  e.target.value &&
+                  setDraftFilters((f) => ({ ...f, customFrom: e.target.value }))
+                }
+                className="flex-1"
+              />
+              <span className="text-xs text-carbon-500">to</span>
+              <Input
+                size="sm"
+                type="date"
+                aria-label="To"
+                min={draftFilters.customFrom}
+                max={toDateOnly(new Date())}
+                value={draftFilters.customTo}
+                onChange={(e) =>
+                  e.target.value &&
+                  setDraftFilters((f) => ({ ...f, customTo: e.target.value }))
+                }
+                className="flex-1"
+              />
+            </div>
+          )}
         </FilterSection>
 
         <FilterSection

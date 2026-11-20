@@ -26,17 +26,24 @@ export async function openTitleStore(env, scope) {
   const raw = await env.CACHE.get(key);
   const titles = raw ? JSON.parse(raw) : {};
   let changed = false;
+  let fetched = 0;
 
   return {
     async get(url) {
       const cached = titles[url];
       if (cached && isFresh(cached, Date.now())) return cached;
-      const fetched = await fetchPageMetadata(url);
-      const entry = { ...(fetched || {}), at: Date.now() };
+      fetched++;
+      const meta = await fetchPageMetadata(url);
+      const entry = { ...(meta || {}), at: Date.now() };
       titles[url] = entry;
       changed = true;
       return entry;
     },
+    stats: () => ({
+      cachedChars: raw?.length ?? 0,
+      cachedEntries: Object.keys(titles).length,
+      fetched,
+    }),
     async save() {
       if (!changed) return;
       const now = Date.now();

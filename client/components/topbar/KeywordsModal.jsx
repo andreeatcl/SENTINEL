@@ -149,6 +149,7 @@ export default function KeywordsModal({ isOpen, initialCountry, onClose }) {
       isOpen={isOpen}
       onClose={handleClose}
       title="Country keywords"
+      topOnPhones
       subtitle={
         <CountryPicker
           value={country}
@@ -228,7 +229,7 @@ export default function KeywordsModal({ isOpen, initialCountry, onClose }) {
               disabled={atLimit}
               placeholder={atLimit ? "Keyword limit reached" : "Add a keyword…"}
               aria-label="New keyword"
-              className="flex-1 max-sm:!text-base"
+              className="flex-1"
             />
             <Button type="submit" disabled={atLimit || !input.trim()}>
               <PlusIcon className="w-3.5 h-3.5" />

@@ -136,7 +136,7 @@ function DeleteAllData({ onExport }) {
           autoCorrect="off"
           value={word}
           onChange={(e) => setWord(e.target.value)}
-          className="w-full max-sm:!text-base"
+          className="w-full"
         />
       </label>
       <div className="flex justify-end gap-2">

@@ -8,11 +8,31 @@ const EVENTS_RANGE_HOURS = {
   "24h": 24,
   "48h": 48,
   "7d": 168,
-  "30d": 720,
 };
 
-function toDateOnly(date) {
+export const EVENTS_MAX_DAYS_BACK = 7;
+
+export function toDateOnly(date) {
   return date.toISOString().slice(0, 10);
+}
+
+export function daysAgo(days) {
+  return toDateOnly(new Date(Date.now() - days * 86400000));
+}
+
+function customRangeParams(customFrom, customTo) {
+  const [from, to] = [customFrom, customTo].sort();
+  return { from, to };
+}
+
+function relativeRangeParams(timeRange) {
+  const hours = EVENTS_RANGE_HOURS[timeRange] ?? 168;
+  const since = new Date(Date.now() - hours * 3600000);
+  return {
+    from: toDateOnly(new Date(since.getTime() - 86400000)),
+    to: toDateOnly(new Date()),
+    since: since.toISOString(),
+  };
 }
 
 async function fetchWithTimeout(url, timeoutMs) {
@@ -36,20 +56,20 @@ export async function fetchEvents({
   offset = 0,
   category = [],
   tone = [],
-  sortBy = "date",
+  sortBy = "significance",
   sortDir = "desc",
   sourcePriority = null,
+  customFrom = null,
+  customTo = null,
 }) {
-  const hours = EVENTS_RANGE_HOURS[timeRange] ?? 168;
-  const since = new Date(Date.now() - hours * 3600000);
-  const to = toDateOnly(new Date());
-  const from = toDateOnly(new Date(since.getTime() - 86400000));
+  const range =
+    timeRange === "custom" && customFrom && customTo
+      ? customRangeParams(customFrom, customTo)
+      : relativeRangeParams(timeRange);
 
   const params = new URLSearchParams({
     country,
-    from,
-    to,
-    since: since.toISOString(),
+    ...range,
     offset,
     sortBy,
     sortDir,

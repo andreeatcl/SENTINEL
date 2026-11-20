@@ -72,7 +72,7 @@ function EntryForm({ initial, onSave, onCancel }) {
           placeholder="e.g. Donald Tusk"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="w-full max-sm:!text-base"
+          className="w-full"
         />
       </label>
       <label className="block">
@@ -81,16 +81,12 @@ function EntryForm({ initial, onSave, onCancel }) {
           placeholder="e.g. PM, Party"
           value={role}
           onChange={(e) => setRole(e.target.value)}
-          className="w-full max-sm:!text-base"
+          className="w-full"
         />
       </label>
       <label className="block">
         <Eyebrow className="mb-1.5">Category</Eyebrow>
-        <Select
-          value={category}
-          onChange={(e) => setCategory(e.target.value)}
-          className="max-sm:[&_select]:!text-base"
-        >
+        <Select value={category} onChange={(e) => setCategory(e.target.value)}>
           {KEY_PEOPLE_CATEGORIES.map((c) => (
             <option key={c.id} value={c.id}>
               {c.label}
@@ -104,7 +100,7 @@ function EntryForm({ initial, onSave, onCancel }) {
           placeholder="Defaults to the name"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          className="w-full max-sm:!text-base"
+          className="w-full"
         />
       </label>
       <div className="sm:col-span-2 flex justify-end gap-2">

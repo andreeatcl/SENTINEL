@@ -113,7 +113,7 @@ export default function AddLinkDialog({ link, onSaved, onClose }) {
             value={urlText}
             onChange={(e) => setUrlText(e.target.value)}
             placeholder="https://…"
-            className="w-full max-sm:!text-base"
+            className="w-full"
           />
           {error && <p className="mt-1.5 text-xs text-signal-red">{error}</p>}
         </label>
@@ -123,7 +123,7 @@ export default function AddLinkDialog({ link, onSaved, onClose }) {
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Paste the headline (optional)"
-            className="w-full max-sm:!text-base"
+            className="w-full"
           />
         </label>
         <label className="block">
@@ -134,7 +134,7 @@ export default function AddLinkDialog({ link, onSaved, onClose }) {
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Description - Optional"
-            className={`${FIELD} w-full px-3 py-2 text-sm resize-none block max-sm:!text-base`}
+            className={`${FIELD} w-full px-3 py-2 text-sm resize-none block`}
           />
         </label>
       </form>

@@ -32,6 +32,7 @@ function extractFrom(response, pageUrl) {
   let ogTitle = "";
   let description = "";
   let ogImage = "";
+  let inBody = false;
 
   const rewriter = new HTMLRewriter()
     .on("title", {
@@ -53,6 +54,11 @@ function extractFrom(response, pageUrl) {
       element(el) {
         ogImage = ogImage || el.getAttribute("content") || "";
       },
+    })
+    .on("body", {
+      element() {
+        inBody = true;
+      },
     });
 
   const TITLE_MAX_LEN = 200;
@@ -61,6 +67,7 @@ function extractFrom(response, pageUrl) {
 
   return {
     stream: rewriter.transform(response),
+    reachedBody: () => inBody,
     getResult: () => {
       let image = null;
       const rawImage = decodeEntities(ogImage.trim());
@@ -91,8 +98,14 @@ export async function fetchPageMetadata(url) {
     });
     if (!response.ok) return null;
 
-    const { stream, getResult } = extractFrom(response, url);
-    await stream.text();
+    const { stream, reachedBody, getResult } = extractFrom(response, url);
+    // everything we need is in head - so we stop reading once body starts
+    const reader = stream.body.getReader();
+    while (!reachedBody()) {
+      const { done } = await reader.read();
+      if (done) break;
+    }
+    await reader.cancel().catch(() => {});
 
     const { title, description, image } = getResult();
     if (!title) return null;

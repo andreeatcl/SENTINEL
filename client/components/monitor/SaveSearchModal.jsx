@@ -55,7 +55,7 @@ export default function SaveSearchModal({
             onChange={(e) => setLabel(e.target.value)}
             maxLength={80}
             aria-label="Search name"
-            className="w-full max-sm:!text-base"
+            className="w-full"
           />
         </div>
         {query && (

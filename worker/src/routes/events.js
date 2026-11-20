@@ -7,7 +7,7 @@ import { openTitleStore } from "../lib/titleStore.js";
 import { getSourceTrustLabel } from "../lib/sourceTrust.js";
 import { clusterEvents } from "../lib/eventClusters.js";
 
-const MAX_RANGE_DAYS = 31; // 30d range + one day back for late-dated rows
+const MAX_RANGE_DAYS = 8; // 7d range + one day back for late-dated rows
 const DEFAULT_LIMIT = 20;
 const MAX_LIMIT = 25;
 const MAX_SCAN = 40;
@@ -45,12 +45,6 @@ function dateAddedTimestamp(row) {
   );
 }
 
-function reportedDay(row) {
-  return row.dateAdded
-    ? row.dateAdded.slice(0, 10).replaceAll("-", "")
-    : row.day;
-}
-
 function coverageScore(row) {
   return row.numSources * 1000 + row.numMentions;
 }
@@ -58,7 +52,8 @@ function coverageScore(row) {
 const SORTERS = {
   significance: (dir) => (a, b) => dir * (b._score - a._score),
   date: (dir) => (a, b) =>
-    dir * reportedDay(b).localeCompare(reportedDay(a)) || b._score - a._score,
+    dir * (dateAddedTimestamp(b) - dateAddedTimestamp(a)) ||
+    b._score - a._score,
   coverage: (dir) => (a, b) => dir * (coverageScore(b) - coverageScore(a)),
 };
 
@@ -71,7 +66,7 @@ events.get("/events", async (c) => {
     offset = "0",
     category = "",
     tone = "",
-    sortBy = "date",
+    sortBy = "significance",
     sortDir = "desc",
     sourcePriority = "",
     since = "",
@@ -146,7 +141,7 @@ events.get("/events", async (c) => {
   }
 
   const clusters = clusterEvents(rows);
-  const sorter = SORTERS[sortBy] || SORTERS.date;
+  const sorter = SORTERS[sortBy] || SORTERS.significance;
   let rankedAll = clusters.sort(sorter(sortDir === "asc" ? -1 : 1));
 
   if (sourcePriority) {
@@ -188,6 +183,12 @@ events.get("/events", async (c) => {
     decorated.push(...results.filter(Boolean));
   }
   await titles.save();
+
+  const t = titles.stats();
+  console.log(
+    `events ${country}: ${rawRows.length} rows, ${clusters.length} clusters, ` +
+      `${t.fetched} pages read, title cache ${t.cachedEntries} entries / ${(t.cachedChars / 1e3).toFixed(0)}K chars`,
+  );
 
   return c.json({
     events: decorated,

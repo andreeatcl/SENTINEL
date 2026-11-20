@@ -23,6 +23,7 @@ export default function Modal({
   width = "md",
   zIndex = "z-[2000]",
   sidebar,
+  topOnPhones,
   children,
 }) {
   const onCloseRef = useRef(onClose);
@@ -48,7 +49,7 @@ export default function Modal({
 
   return createPortal(
     <div
-      className={`fixed inset-0 ${zIndex} flex items-center justify-center bg-black/70 backdrop-blur-sm px-3 pt-16 pb-3 animate-fade-in`}
+      className={`fixed inset-0 ${zIndex} flex items-center ${topOnPhones ? "max-sm:items-start" : ""} justify-center bg-black/70 backdrop-blur-sm px-3 pt-16 pb-3 animate-fade-in`}
       onClick={onClose}
     >
       <div

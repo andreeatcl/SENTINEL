@@ -157,7 +157,7 @@ export default function CountryPicker({
                 visible[activeIndex] ? `${listId}-${activeIndex}` : undefined
               }
               aria-label="Search countries"
-              className="w-full max-sm:!text-base"
+              className="w-full"
             />
           </div>
 
@@ -171,7 +171,7 @@ export default function CountryPicker({
               id={listId}
               role="listbox"
               aria-label="Countries"
-              className="max-h-72 overflow-y-auto py-1"
+              className={`max-h-72 overflow-y-auto py-1 ${placement === "down" ? "max-sm:max-h-[30dvh]" : ""}`}
             >
               {visible.map((country, i) => {
                 const isSelected = country.name === value;

@@ -318,6 +318,32 @@
       "tier": "trusted",
       "country": "us"
     },
+    "timesofmalta.com": {
+      "tier": "trusted",
+      "country": "mt"
+    },
+    "courrierinternational.com": {
+      "tier": "trusted",
+      "country": "fr"
+    },
+    "thejakartapost.com": {
+      "tier": "trusted",
+      "country": "id"
+    },
+    "latintimes.com": {
+      "tier": "trusted",
+      "country": "us"
+    },
+    "pravda.ru": {
+      "tier": "state-affiliated",
+      "country": "ru",
+      "note": "Pro-Kremlin outlet (not the historic Soviet party newspaper)"
+    },
+    "english.pravda.ru": {
+      "tier": "state-affiliated",
+      "country": "ru",
+      "note": "Pro-Kremlin outlet (not the historic Soviet party newspaper)"
+    },
     "rt.com": {
       "tier": "state-affiliated",
       "country": "ru",
