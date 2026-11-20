@@ -36,7 +36,7 @@ function NavMenu({ items, tone, footer }) {
         <MenuIcon />
       </button>
       {open && (
-        <div className="pointer-events-auto absolute right-0 top-full mt-2 w-44 p-1 bg-carbon-900 border border-carbon-800 rounded-lg shadow-panel animate-pop-in">
+        <div className="pointer-events-auto transform-gpu absolute right-0 top-full mt-2 w-44 p-1 bg-carbon-900 border border-carbon-800 rounded-lg shadow-panel animate-pop-in">
           {items.map((item) => (
             <button
               key={item.label}

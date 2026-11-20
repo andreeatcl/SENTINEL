@@ -2,7 +2,7 @@ name: Import GDELT events
 
 on:
   schedule:
-    - cron: "5-59/15 * * * *" # :05/:20/:35/:50, after GDELT publishes; GitHub often runs late
+    - cron: "50 * * * *" # backup only
   workflow_dispatch:
 
 concurrency:
@@ -14,8 +14,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
       - name: Import

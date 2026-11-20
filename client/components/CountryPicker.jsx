@@ -134,10 +134,14 @@ export default function CountryPicker({
       {open && (
         <div
           className={`absolute ${
-            placement === "down" ? "top-full mt-2" : "bottom-full mb-2"
+            placement === "down"
+              ? "top-full mt-2"
+              : "bottom-full mb-2 max-sm:flex-col-reverse"
           } left-0 w-72 max-w-[calc(100vw-1.5rem)] z-10 flex flex-col bg-carbon-900 border border-carbon-800 rounded-xl shadow-panel overflow-hidden animate-pop-in`}
         >
-          <div className="p-2 border-b border-carbon-800">
+          <div
+            className={`p-2 border-carbon-800 ${placement === "down" ? "border-b" : "border-b max-sm:border-b-0 max-sm:border-t"}`}
+          >
             <Input
               size="sm"
               type="search"
