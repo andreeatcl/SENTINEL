@@ -264,9 +264,17 @@ const ACTOR_TYPE_LABELS = {
   UAF: "Unaligned Armed Forces",
 };
 
+// since codes repeat across thousands of rows - results are shared - dont mutate them
+const decoded = new Map();
+
 export function decodeActor(actorCode) {
   if (!actorCode) return null;
+  if (!decoded.has(actorCode))
+    decoded.set(actorCode, decodeUncached(actorCode));
+  return decoded.get(actorCode);
+}
 
+function decodeUncached(actorCode) {
   const chunks = actorCode.match(/.{1,3}/g) || [];
   let countryName = null;
   const roles = [];

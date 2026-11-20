@@ -14,7 +14,7 @@ const DEFAULT_FILTERS = {
   customTo: null,
 };
 
-const PAGES_PER_FETCH = 2;
+const PAGES_PER_FETCH = 1;
 
 // the ranking can shift between requests, so a later page may repeat an event -> we dedupe
 function appendNew(existing, incoming) {

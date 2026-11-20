@@ -1,11 +1,10 @@
 import sourceTrustLabels from "../../../data/sourceTrustLabels.json";
 
-function hostnameOf(url) {
-  try {
-    return new URL(url).hostname.replace(/^www\./, "");
-  } catch {
-    return null;
-  }
+// a regex instead of new URL(). apparently much cheaper over thousands of event rows
+const HOSTNAME_PATTERN = /^https?:\/\/(?:[^@/?#]*@)?(?:www\.)?([^/:?#]+)/i;
+
+export function hostnameOf(url) {
+  return url.match(HOSTNAME_PATTERN)?.[1].toLowerCase() || null;
 }
 
 export function getSourceTrustLabel(article) {

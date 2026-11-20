@@ -8,9 +8,9 @@ import { getSourceTrustLabel } from "../lib/sourceTrust.js";
 import { clusterEvents } from "../lib/eventClusters.js";
 
 const MAX_RANGE_DAYS = 8; // 7d range + one day back for late-dated rows
-const DEFAULT_LIMIT = 20;
-const MAX_LIMIT = 25;
-const MAX_SCAN = 40;
+const DEFAULT_LIMIT = 30;
+const MAX_LIMIT = 30;
+const MAX_SCAN = 40; // page fetches per request; free plan caps subrequests at 50
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 const INTEGER_PATTERN = /^\d+$/;
 

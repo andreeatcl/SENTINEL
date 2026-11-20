@@ -26,6 +26,7 @@ const COL = {
   SOURCE_URL: 60,
 };
 const EXPECTED_COLUMN_COUNT = 61;
+const MAX_ROWS_PER_COUNTRY_PER_FILE = 5;
 
 function dateAddedToIso(raw) {
   if (!raw || raw.length < 14) return null;
@@ -126,8 +127,11 @@ function filterAndGroupByCountry(csvText, oldestDay) {
       byUrl.set(sourceUrl, row);
   }
 
+  // big countries (USA) cost worker CPU per stored row on every /events read
   for (const code of Object.keys(byCountry)) {
-    byCountry[code] = [...byCountry[code].values()];
+    byCountry[code] = [...byCountry[code].values()]
+      .sort((a, b) => b.numMentions - a.numMentions)
+      .slice(0, MAX_ROWS_PER_COUNTRY_PER_FILE);
   }
   return { byCountry, rowsInFile };
 }

@@ -1,5 +1,5 @@
 import { decodeActor } from "./gdeltActorCodes.js";
-import { trustMultiplier } from "./sourceTrust.js";
+import { hostnameOf, trustMultiplier } from "./sourceTrust.js";
 
 const CATEGORY_WEIGHT = {
   "03": 0.6,
@@ -23,11 +23,7 @@ const CATEGORY_WEIGHT = {
 };
 
 function domainOf(url) {
-  try {
-    return new URL(url).hostname.replace(/^www\./, "");
-  } catch {
-    return url;
-  }
+  return hostnameOf(url) || url;
 }
 
 function actorKey(code) {
