@@ -5,6 +5,7 @@ import TopBar from "./components/topbar/TopBar";
 import MonitorPanel from "./components/monitor/MonitorPanel";
 import KeywordsModal from "./components/topbar/KeywordsModal";
 import SettingsModal from "./components/topbar/SettingsModal";
+import HowItWorksModal from "./components/help/HowItWorksModal";
 import FavoritesPanel from "./components/favorites/FavoritesPanel";
 import SavedSearchesPanel from "./components/topbar/SavedSearchesPanel";
 import NotesOverview from "./components/notes/NotesOverview";
@@ -33,6 +34,7 @@ export default function App() {
   const [settingsTab, setSettingsTab] = useState(() =>
     hasAnyApiKey() ? null : "keys",
   );
+  const [showHelp, setShowHelp] = useState(false);
   const [showFavorites, setShowFavorites] = useState(false);
   const [showSavedSearches, setShowSavedSearches] = useState(false);
   const [showNotes, setShowNotes] = useState(false);
@@ -235,6 +237,7 @@ export default function App() {
             refreshCredits();
           }}
         />
+        <HowItWorksModal isOpen={showHelp} onClose={() => setShowHelp(false)} />
         <FavoritesPanel
           isOpen={showFavorites}
           onClose={() => setShowFavorites(false)}
@@ -359,10 +362,11 @@ export default function App() {
         {/* Bottom HUD bar — hidden once the panel covers the screen */}
         {!panelOpen && (
           <div className="absolute bottom-3 left-3 z-[998] flex items-center gap-1.5 pointer-events-none">
-            {/* to do! this is a placeholder for now */}
             <button
               type="button"
-              onClick={() => setSettingsTab("keys")}
+              onClick={() => setShowHelp(true)}
+              aria-label="How it works"
+              title="How it works"
               className="pointer-events-auto w-9 h-9 flex items-center justify-center bg-carbon-900/90 border border-carbon-800 rounded-lg backdrop-blur-md text-carbon-300 hover:text-white transition-colors"
             >
               <InfoIcon className="w-5 h-5" />
