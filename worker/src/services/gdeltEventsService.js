@@ -29,7 +29,7 @@ const COL = {
   SOURCE_URL: 60,
 };
 const EXPECTED_COLUMN_COUNT = 61;
-const MAX_ROWS_PER_COUNTRY_PER_FILE = 5;
+const MAX_ROWS_PER_COUNTRY_PER_FILE = 8;
 
 function dateAddedToIso(raw) {
   if (!raw || raw.length < 14) return null;

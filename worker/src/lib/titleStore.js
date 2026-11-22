@@ -29,6 +29,9 @@ export async function openTitleStore(env, scope) {
   let fetched = 0;
 
   return {
+    has(url) {
+      return Boolean(titles[url] && isFresh(titles[url], Date.now()));
+    },
     async get(url) {
       const cached = titles[url];
       if (cached && isFresh(cached, Date.now())) return cached;

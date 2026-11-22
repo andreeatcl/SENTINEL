@@ -1,4 +1,4 @@
-const RETENTION_DAYS = 8; // 7d + margin
+const RETENTION_DAYS = 3; // 48h + margin
 const ROWS_PER_INSERT = 49; // D1 caps bound params at 100 - 2 shared + 2 per row
 
 async function getState(env, key) {

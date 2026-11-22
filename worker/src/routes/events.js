@@ -7,10 +7,14 @@ import { openTitleStore } from "../lib/titleStore.js";
 import { getSourceTrustLabel } from "../lib/sourceTrust.js";
 import { clusterEvents } from "../lib/eventClusters.js";
 
-const MAX_RANGE_DAYS = 8; // 7d range + one day back for late-dated rows
+const MAX_RANGE_DAYS = 3; // 48h range + one day back for late-dated rows
 const DEFAULT_LIMIT = 30;
 const MAX_LIMIT = 30;
-const MAX_SCAN = 40; // page fetches per request; free plan caps subrequests at 50
+const MAX_SCAN = 40; // rows checked per request; free plan caps subrequests at 50
+const MAX_NEW_PAGES = 8; // uncached headline reads per request (~2-6 ms CPU each)
+const RANKED_TTL_MS = 5 * 60000; // imports land every 15 min
+const RANKED_MAX_ENTRIES = 20;
+const SINCE_ROUND_MS = 5 * 60000; // client's since has ms precision, would defeat the cache
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 const INTEGER_PATTERN = /^\d+$/;
 
@@ -56,6 +60,65 @@ const SORTERS = {
     b._score - a._score,
   coverage: (dir) => (a, b) => dir * (coverageScore(b) - coverageScore(a)),
 };
+
+async function rankEvents(env, fipsCodes, fromDay, toDay, opts) {
+  const { sinceMs, category, tone, sortBy, sortDir, sourcePriority } = opts;
+  const rawRows = await getEventsForRange(env, fipsCodes, fromDay, toDay);
+  let rows = dedupeBySourceUrl(rawRows)
+    .filter(
+      (row) => Number.isNaN(sinceMs) || dateAddedTimestamp(row) >= sinceMs,
+    )
+    .map((row) => ({
+      ...row,
+      _trustLabel: getSourceTrustLabel({ url: row.sourceUrl }),
+    }));
+
+  const categories = category ? category.split(",").filter(Boolean) : [];
+  const tones = tone ? tone.split(",").filter(Boolean) : [];
+  if (categories.length > 0) {
+    rows = rows.filter((row) => categories.includes(String(row.eventRootCode)));
+  }
+  if (tones.length > 0) {
+    rows = rows.filter((row) =>
+      tones.includes(toneCategoryForRow(row.goldstein)),
+    );
+  }
+
+  const sorter = SORTERS[sortBy] || SORTERS.significance;
+  let rankedAll = clusterEvents(rows).sort(sorter(sortDir === "asc" ? -1 : 1));
+
+  if (sourcePriority) {
+    const matching = rankedAll.filter(
+      (row) => row._trustLabel?.tier === sourcePriority,
+    );
+    const rest = rankedAll.filter(
+      (row) => row._trustLabel?.tier !== sourcePriority,
+    );
+    rankedAll = [...matching, ...rest];
+  }
+  return { rankedAll, rawCount: rawRows.length };
+}
+
+// helps load more & repeated opens
+const rankedCache = new Map();
+
+function getRanked(key) {
+  const hit = rankedCache.get(key);
+  if (!hit) return null;
+  if (Date.now() - hit.at > RANKED_TTL_MS) {
+    rankedCache.delete(key);
+    return null;
+  }
+  return hit.value;
+}
+
+function setRanked(key, value) {
+  rankedCache.delete(key);
+  rankedCache.set(key, { value, at: Date.now() });
+  if (rankedCache.size > RANKED_MAX_ENTRIES) {
+    rankedCache.delete(rankedCache.keys().next().value);
+  }
+}
 
 events.get("/events", async (c) => {
   const {
@@ -116,55 +179,55 @@ events.get("/events", async (c) => {
     );
   }
 
-  const rawRows = await getEventsForRange(c.env, fipsCodes, fromDay, toDay);
-  const sinceMs = since ? Date.parse(since) : NaN;
-  let rows = dedupeBySourceUrl(rawRows);
+  const parsedSince = since ? Date.parse(since) : NaN;
+  const sinceMs = Number.isNaN(parsedSince)
+    ? NaN
+    : parsedSince - (parsedSince % SINCE_ROUND_MS);
+  const rankKey = [
+    fipsCodes.join(","),
+    fromDay,
+    toDay,
+    sinceMs,
+    category,
+    tone,
+    sortBy,
+    sortDir,
+    sourcePriority,
+  ].join("|");
 
-  rows = rows
-    .filter(
-      (row) => Number.isNaN(sinceMs) || dateAddedTimestamp(row) >= sinceMs,
-    )
-    .map((row) => ({
-      ...row,
-      _trustLabel: getSourceTrustLabel({ url: row.sourceUrl }),
-    }));
-
-  const categories = category ? category.split(",").filter(Boolean) : [];
-  const tones = tone ? tone.split(",").filter(Boolean) : [];
-  if (categories.length > 0) {
-    rows = rows.filter((row) => categories.includes(String(row.eventRootCode)));
+  let ranked = getRanked(rankKey);
+  const cacheHit = Boolean(ranked);
+  if (!ranked) {
+    ranked = await rankEvents(c.env, fipsCodes, fromDay, toDay, {
+      sinceMs,
+      category,
+      tone,
+      sortBy,
+      sortDir,
+      sourcePriority,
+    });
+    setRanked(rankKey, ranked);
   }
-  if (tones.length > 0) {
-    rows = rows.filter((row) =>
-      tones.includes(toneCategoryForRow(row.goldstein)),
-    );
-  }
-
-  const clusters = clusterEvents(rows);
-  const sorter = SORTERS[sortBy] || SORTERS.significance;
-  let rankedAll = clusters.sort(sorter(sortDir === "asc" ? -1 : 1));
-
-  if (sourcePriority) {
-    const matching = rankedAll.filter(
-      (row) => row._trustLabel?.tier === sourcePriority,
-    );
-    const rest = rankedAll.filter(
-      (row) => row._trustLabel?.tier !== sourcePriority,
-    );
-    rankedAll = [...matching, ...rest];
-  }
+  const { rankedAll, rawCount } = ranked;
 
   // skip events whose page gives no title
   const titles = await openTitleStore(c.env, `events:${[...fipsCodes].sort()}`);
   const decorated = [];
   let cursor = offsetNum;
   const scanEnd = Math.min(rankedAll.length, offsetNum + MAX_SCAN);
+  let newPagesLeft = MAX_NEW_PAGES;
   while (decorated.length < limitNum && cursor < scanEnd) {
-    const batch = rankedAll.slice(
-      cursor,
-      Math.min(scanEnd, cursor + limitNum - decorated.length),
-    );
-    cursor += batch.length;
+    const batch = [];
+    while (batch.length < limitNum - decorated.length && cursor < scanEnd) {
+      const row = rankedAll[cursor];
+      if (!titles.has(row.sourceUrl)) {
+        if (newPagesLeft === 0) break;
+        newPagesLeft--;
+      }
+      batch.push(row);
+      cursor++;
+    }
+    if (batch.length === 0) break;
     const results = await Promise.all(
       batch.map(async (row) => {
         const pageMeta = await titles.get(row.sourceUrl);
@@ -186,7 +249,7 @@ events.get("/events", async (c) => {
 
   const t = titles.stats();
   console.log(
-    `events ${country}: ${rawRows.length} rows, ${clusters.length} clusters, ` +
+    `events ${country}: ${rawCount} rows, ${rankedAll.length} clusters, ranked ${cacheHit ? "from memory" : "fresh"}, ` +
       `${t.fetched} pages read, title cache ${t.cachedEntries} entries / ${(t.cachedChars / 1e3).toFixed(0)}K chars`,
   );
 

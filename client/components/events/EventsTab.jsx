@@ -21,7 +21,7 @@ import {
 import { useReadItems } from "../../hooks/useReadItems";
 import { isRead, eventReadKey } from "../../utils/storage";
 
-const TIME_RANGES = ["6h", "24h", "48h", "7d"];
+const TIME_RANGES = ["6h", "24h", "48h"];
 
 const EVENT_SORT_OPTIONS = [
   { value: "significance", label: "Significance" },
@@ -157,7 +157,7 @@ export default function EventsTab({
               setDraftFilters((f) => ({
                 ...f,
                 timeRange: "custom",
-                customFrom: f.customFrom || daysAgo(7),
+                customFrom: f.customFrom || daysAgo(EVENTS_MAX_DAYS_BACK),
                 customTo: f.customTo || toDateOnly(new Date()),
               }))
             }

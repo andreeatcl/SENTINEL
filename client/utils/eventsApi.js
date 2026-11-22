@@ -7,10 +7,9 @@ const EVENTS_RANGE_HOURS = {
   "6h": 6,
   "24h": 24,
   "48h": 48,
-  "7d": 168,
 };
 
-export const EVENTS_MAX_DAYS_BACK = 7;
+export const EVENTS_MAX_DAYS_BACK = 2; // worker keeps 3 days (RETENTION_DAYS)
 
 export function toDateOnly(date) {
   return date.toISOString().slice(0, 10);
@@ -26,7 +25,7 @@ function customRangeParams(customFrom, customTo) {
 }
 
 function relativeRangeParams(timeRange) {
-  const hours = EVENTS_RANGE_HOURS[timeRange] ?? 168;
+  const hours = EVENTS_RANGE_HOURS[timeRange] ?? 48;
   const since = new Date(Date.now() - hours * 3600000);
   return {
     from: toDateOnly(new Date(since.getTime() - 86400000)),
@@ -52,7 +51,7 @@ async function fetchWithTimeout(url, timeoutMs) {
 
 export async function fetchEvents({
   country,
-  timeRange = "7d",
+  timeRange = "48h",
   offset = 0,
   category = [],
   tone = [],

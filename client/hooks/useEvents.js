@@ -4,7 +4,7 @@ import { CAMEO_ROOT_CATEGORIES } from "../utils/cameoCategories";
 import { TONE_LABELS } from "../utils/eventTone";
 
 const DEFAULT_FILTERS = {
-  timeRange: "7d",
+  timeRange: "48h",
   category: CAMEO_ROOT_CATEGORIES.map((c) => c.code),
   tone: Object.keys(TONE_LABELS),
   sortBy: "significance",
@@ -15,6 +15,7 @@ const DEFAULT_FILTERS = {
 };
 
 const PAGES_PER_FETCH = 1;
+const MAX_EMPTY_RETRIES = 2; // server can return 0 events when its new-page budget runs out
 
 // the ranking can shift between requests, so a later page may repeat an event -> we dedupe
 function appendNew(existing, incoming) {
@@ -33,7 +34,13 @@ async function fetchPages(params, offset) {
   const first = await fetchEvents({ ...params, offset });
   let events = first.events || [];
   let meta = first.meta || {};
-  for (let i = 1; i < PAGES_PER_FETCH && meta.hasMore; i++) {
+  for (
+    let i = 1;
+    meta.hasMore &&
+    (i < PAGES_PER_FETCH ||
+      (events.length === 0 && i < PAGES_PER_FETCH + MAX_EMPTY_RETRIES));
+    i++
+  ) {
     try {
       const next = await fetchEvents({ ...params, offset: meta.nextOffset });
       events = appendNew(events, next.events || []);
