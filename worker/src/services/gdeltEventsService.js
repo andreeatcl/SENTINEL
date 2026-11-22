@@ -5,7 +5,10 @@ import { EXCLUDED_ROOT_CODES } from "../lib/cameoEventCodes.js";
 import { decodeActor } from "../lib/gdeltActorCodes.js";
 import { isLowQualityDomain } from "../lib/lowQualitySources.js";
 
-const LAST_UPDATE_URL = "http://data.gdeltproject.org/gdeltv2/lastupdate.txt";
+const LAST_UPDATE_URL = "https://data.gdeltproject.org/gdeltv2/lastupdate.txt";
+const FETCH_TIMEOUT_MS = 60000;
+const FETCH_ATTEMPTS = 3;
+const RETRY_DELAY_MS = 10000;
 
 const COL = {
   GLOBAL_EVENT_ID: 0,
@@ -39,8 +42,30 @@ function dateAddedToIso(raw) {
   return `${y}-${mo}-${d}T${h}:${mi}:${s}Z`;
 }
 
+// for network errors - throws with gdeltUnreachable set after the last attempt
+async function fetchFromGdelt(url) {
+  for (let attempt = 1; ; attempt++) {
+    try {
+      return await fetch(url, {
+        signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+      });
+    } catch (cause) {
+      if (attempt >= FETCH_ATTEMPTS) {
+        const error = new Error(`GDELT unreachable: ${url}`, { cause });
+        error.gdeltUnreachable = true;
+        throw error;
+      }
+      console.log(
+        `GDELT fetch failed (${cause.cause?.code ?? cause.name}), retrying`,
+      );
+      await new Promise((r) => setTimeout(r, RETRY_DELAY_MS));
+    }
+  }
+}
+
 export async function fetchLatestExportFileMeta() {
-  const response = await fetch(LAST_UPDATE_URL);
+  const response = await fetchFromGdelt(LAST_UPDATE_URL);
+  if (!response.ok) return null;
   const text = await response.text();
 
   const line = text
@@ -71,7 +96,7 @@ export function daysBefore(day, n) {
 }
 
 async function fetchAndUnzipCsv(url) {
-  const response = await fetch(url);
+  const response = await fetchFromGdelt(url);
   if (!response.ok) return null;
   return unzipFirstFileAsText(new Uint8Array(await response.arrayBuffer()));
 }

@@ -67,7 +67,7 @@ function extractFrom(response, pageUrl) {
 
   return {
     stream: rewriter.transform(response),
-    reachedBody: () => inBody,
+    doneReading: () => inBody || Boolean(ogTitle && description && ogImage),
     getResult: () => {
       let image = null;
       const rawImage = decodeEntities(ogImage.trim());
@@ -98,10 +98,10 @@ export async function fetchPageMetadata(url) {
     });
     if (!response.ok) return null;
 
-    const { stream, reachedBody, getResult } = extractFrom(response, url);
+    const { stream, doneReading, getResult } = extractFrom(response, url);
     // everything we need is in head - so we stop reading once body starts
     const reader = stream.body.getReader();
-    while (!reachedBody()) {
+    while (!doneReading()) {
       const { done } = await reader.read();
       if (done) break;
     }

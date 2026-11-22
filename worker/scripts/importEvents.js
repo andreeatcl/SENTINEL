@@ -80,7 +80,15 @@ async function main() {
   let imported = 0;
   let retryFrom = null;
   for (const cursor of pending.slice(0, MAX_FILES_PER_RUN)) {
-    if (await ingestExportFile(env, FILE_URL(cursor), cursor)) {
+    let result;
+    try {
+      result = await ingestExportFile(env, FILE_URL(cursor), cursor);
+    } catch (error) {
+      if (!error.gdeltUnreachable) throw error;
+      console.warn(`${error.message}, stopping at ${cursor}`);
+      break;
+    }
+    if (result) {
       imported++;
     } else if (
       cursorToMs(latest.cursor) - cursorToMs(cursor) <
@@ -101,6 +109,10 @@ async function main() {
 }
 
 main().catch((error) => {
+  if (error.gdeltUnreachable) {
+    console.warn(`${error.message}, ending run (${error.cause})`);
+    return;
+  }
   console.error(error);
   process.exit(1);
 });
