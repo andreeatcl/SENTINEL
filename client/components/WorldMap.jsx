@@ -4,6 +4,7 @@ import {
   TileLayer,
   GeoJSON,
   CircleMarker,
+  Pane,
   ZoomControl,
 } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
@@ -149,7 +150,9 @@ export default function WorldMap({
             onCountryClick={onCountryClick}
           />
         )}
-        <EventMarkers events={events} onEventClick={onEventClick} />
+        <Pane name="events" style={{ zIndex: 450 }}>
+          <EventMarkers events={events} onEventClick={onEventClick} />
+        </Pane>
       </MapContainer>
 
       {/* GeoJSON loading overlay */}
