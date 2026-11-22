@@ -26,6 +26,8 @@ import {
   eventReadKey,
 } from "./utils/storage";
 
+const MAP_EVENT_COUNTRIES = 5;
+
 export default function App() {
   const [keywordsCountry, setKeywordsCountry] = useState(undefined);
   const [settingsTab, setSettingsTab] = useState(() =>
@@ -96,6 +98,24 @@ export default function App() {
 
   const panelOpen =
     !!selectedCountry || loading || articles.length > 0 || !!error || !!meta;
+
+  // events of the last few countries stay on the map
+  const [mapEventsByCountry, setMapEventsByCountry] = useState([]);
+  useEffect(() => {
+    if (!selectedCountry || eventsLoading || events.length === 0) return;
+    setMapEventsByCountry((prev) =>
+      [
+        { country: selectedCountry, events },
+        ...prev.filter((entry) => entry.country !== selectedCountry),
+      ].slice(0, MAP_EVENT_COUNTRIES),
+    );
+  }, [selectedCountry, eventsLoading, events]);
+  const mapEvents = useMemo(() => {
+    const seen = new Set();
+    return mapEventsByCountry
+      .flatMap((entry) => entry.events)
+      .filter((event) => !seen.has(event.id) && seen.add(event.id));
+  }, [mapEventsByCountry]);
 
   useEffect(() => {
     if (panelTab === "articles" && selectedCountry) handleOpenArticlesTab();
@@ -256,7 +276,7 @@ export default function App() {
           <WorldMap
             selectedCountry={selectedCountry}
             onCountryClick={selectCountry}
-            events={events}
+            events={mapEvents}
             onEventClick={openEvent}
           />
         </div>
