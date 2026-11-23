@@ -31,7 +31,8 @@ officeholders.get("/officeholders", async (c) => {
     await setCached(c.env, cacheKey, data, TTL_SECONDS);
     return c.json({ code, officeholders: data, fetchedAt: Date.now() });
   } catch (err) {
-    console.error("officeholders fetch failed", code, err.message);
+    // console.error("officeholders fetch failed", code, err.message);
+    console.error("officeholders fetch failed", err.message);
     return c.json({ error: "Couldn't reach Wikidata" }, 502);
   }
 });

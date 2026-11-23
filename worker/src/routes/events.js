@@ -247,11 +247,12 @@ events.get("/events", async (c) => {
   }
   await titles.save();
 
-  const t = titles.stats();
-  console.log(
-    `events ${country}: ${rawCount} rows, ${rankedAll.length} clusters, ranked ${cacheHit ? "from memory" : "fresh"}, ` +
-      `${t.fetched} pages read, title cache ${t.cachedEntries} entries / ${(t.cachedChars / 1e3).toFixed(0)}K chars`,
-  );
+  // off for privacy, uncomment to debug
+  // const t = titles.stats();
+  // console.log(
+  //   `events ${country}: ${rawCount} rows, ${rankedAll.length} clusters, ranked ${cacheHit ? "from memory" : "fresh"}, ` +
+  //     `${t.fetched} pages read, title cache ${t.cachedEntries} entries / ${(t.cachedChars / 1e3).toFixed(0)}K chars`,
+  // );
 
   return c.json({
     events: decorated,

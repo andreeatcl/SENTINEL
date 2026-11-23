@@ -27,7 +27,7 @@ import {
   eventReadKey,
 } from "./utils/storage";
 
-const MAP_EVENT_COUNTRIES = 5;
+const MAP_EVENT_COUNTRIES = 10;
 
 export default function App() {
   const [keywordsCountry, setKeywordsCountry] = useState(undefined);

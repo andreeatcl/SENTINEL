@@ -24,7 +24,8 @@ export async function getCached(env, cacheKey) {
     const raw = await env.CACHE.get(cacheKey);
     return raw ? JSON.parse(raw) : null;
   } catch (err) {
-    console.warn(`KV read skipped for ${cacheKey}: ${err.message}`);
+    // console.warn(`KV read skipped for ${cacheKey}: ${err.message}`);
+    console.warn(`KV read skipped: ${err.message}`);
     return null;
   }
 }

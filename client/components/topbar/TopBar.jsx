@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { SearchIcon, MenuIcon } from "../ui/icons";
 import { useBackupReminder } from "../../hooks/useBackupReminder";
+import { setPasscode } from "../../utils/storage";
 import worldMap from "../../assets/lockscreen/world-map.svg";
 
 const HUD_SURFACE =
@@ -88,6 +89,11 @@ export default function TopBar({
     { label: "Notes", onClick: onNotesClick },
     { label: "Saved", onClick: onSavedSearchesClick },
     { label: "Settings", onClick: onSettingsClick, tone: backupTone },
+    {
+      label: "Log off",
+      onClick: () => setPasscode(""),
+      tone: "text-signal-red",
+    },
   ];
 
   return (
